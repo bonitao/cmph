@@ -10,7 +10,7 @@
 //#define DEBUG
 #include "debug.h"
 
-#define hashsize(n) ((uint32)1<<(n))
+#define hashsize(n) ((cmph_uint32)1<<(n))
 #define hashmask(n) (hashsize(n)-1)
 
 
@@ -73,7 +73,7 @@ use a bitmask.  For example, if you need only 10 bits, do
 h = (h & hashmask(10));
 In which case, the hash table should have hashsize(10) elements.
 
-If you are hashing n strings (uint8 **)k, do it like this:
+If you are hashing n strings (cmph_uint8 **)k, do it like this:
 for (i=0, h=0; i<n; ++i) h = hash( k[i], len[i], h);
 
 By Bob Jenkins, 1996.  bob_jenkins@burtleburtle.net.  You may use this
@@ -84,25 +84,25 @@ Use for hash table lookup, or anything where one collision in 2^^32 is
 acceptable.  Do NOT use for cryptographic purposes.
 --------------------------------------------------------------------
  */
-jenkins_state_t *jenkins_state_new(uint32 size) //size of hash table
+cmph_jenkins_state_t *cmph_jenkins_state_new(cmph_uint32 size) //size of hash table
 {
-	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
+	cmph_jenkins_state_t *state = (cmph_jenkins_state_t *)malloc(sizeof(cmph_jenkins_state_t));
 	DEBUGP("Initializing jenkins hash\n");
 	state->seed = rand() % size;
-	state->nbits = (uint32)ceil(log(size)/M_LOG2E);
+	state->nbits = (cmph_uint32)ceil(log(size)/M_LOG2E);
 	state->size = size;
 	DEBUGP("Initialized jenkins with size %u, nbits %u and seed %u\n", size, state->nbits, state->seed);
 	return state;
 }
-void jenkins_state_destroy(jenkins_state_t *state)
+void cmph_jenkins_state_destroy(cmph_jenkins_state_t *state)
 {
 	free(state);
 }
 
-uint32 jenkins_hash(jenkins_state_t *state, const char *k, uint32 keylen)
+cmph_uint32 cmph_jenkins_hash(cmph_jenkins_state_t *state, const char *k, cmph_uint32 keylen)
 {
-	uint32 a, b, c;
-	uint32 len, length;
+	cmph_uint32 a, b, c;
+	cmph_uint32 len, length;
 
 	/* Set up the internal state */
 	length = keylen;
@@ -113,9 +113,9 @@ uint32 jenkins_hash(jenkins_state_t *state, const char *k, uint32 keylen)
 	/*---------------------------------------- handle most of the key */
 	while (len >= 12)
 	{
-		a += (k[0] +((uint32)k[1]<<8) +((uint32)k[2]<<16) +((uint32)k[3]<<24));
-		b += (k[4] +((uint32)k[5]<<8) +((uint32)k[6]<<16) +((uint32)k[7]<<24));
-		c += (k[8] +((uint32)k[9]<<8) +((uint32)k[10]<<16)+((uint32)k[11]<<24));
+		a += (k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
+		b += (k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
+		c += (k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
 		mix(a,b,c);
 		k += 12; len -= 12;
 	}
@@ -125,26 +125,26 @@ uint32 jenkins_hash(jenkins_state_t *state, const char *k, uint32 keylen)
 	switch(len)              /* all the case statements fall through */
 	{
 		case 11: 
-			c +=((uint32)k[10]<<24);
+			c +=((cmph_uint32)k[10]<<24);
 		case 10: 
-			c +=((uint32)k[9]<<16);
+			c +=((cmph_uint32)k[9]<<16);
 		case 9 : 
-			c +=((uint32)k[8]<<8);
+			c +=((cmph_uint32)k[8]<<8);
 			/* the first byte of c is reserved for the length */
 		case 8 : 
-			b +=((uint32)k[7]<<24);
+			b +=((cmph_uint32)k[7]<<24);
 		case 7 : 
-			b +=((uint32)k[6]<<16);
+			b +=((cmph_uint32)k[6]<<16);
 		case 6 : 
-			b +=((uint32)k[5]<<8);
+			b +=((cmph_uint32)k[5]<<8);
 		case 5 : 
 			b +=k[4];
 		case 4 : 
-			a +=((uint32)k[3]<<24);
+			a +=((cmph_uint32)k[3]<<24);
 		case 3 : 
-			a +=((uint32)k[2]<<16);
+			a +=((cmph_uint32)k[2]<<16);
 		case 2 : 
-			a +=((uint32)k[1]<<8);
+			a +=((cmph_uint32)k[1]<<8);
 		case 1 : 
 			a +=k[0];
 			/* case 0: nothing left to add */
@@ -162,29 +162,29 @@ uint32 jenkins_hash(jenkins_state_t *state, const char *k, uint32 keylen)
 	return c;
 }
 
-void jenkins_state_dump(jenkins_state_t *state, char **buf, uint32 *buflen)
+void cmph_jenkins_state_dump(cmph_jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
-	*buflen = sizeof(uint32)*3;
+	*buflen = sizeof(cmph_uint32)*3;
 	*buf = malloc(*buflen);
 	if (!*buf) 
 	{
 		*buflen = UINT_MAX;
 		return;
 	}
-	memcpy(*buf, &(state->seed), sizeof(uint32));
-	memcpy(*buf + sizeof(uint32), &(state->nbits), sizeof(uint32));
-	memcpy(*buf + sizeof(uint32)*2, &(state->size), sizeof(uint32));
+	memcpy(*buf, &(state->seed), sizeof(cmph_uint32));
+	memcpy(*buf + sizeof(cmph_uint32), &(state->nbits), sizeof(cmph_uint32));
+	memcpy(*buf + sizeof(cmph_uint32)*2, &(state->size), sizeof(cmph_uint32));
 	DEBUGP("Dumped jenkins state with seed %u\n", state->seed);
 
 	return;
 }
-jenkins_state_t *jenkins_state_load(const char *buf, uint32 buflen)
+cmph_jenkins_state_t *cmph_jenkins_state_load(const char *buf, cmph_uint32 buflen)
 {
-	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
-	state->seed = *(uint32 *)buf;
-	state->nbits = *(((uint32 *)buf) + 1);
-	state->size = *(((uint32 *)buf) + 2);
-	state->hashfunc = HASH_JENKINS;
+	cmph_jenkins_state_t *state = (cmph_jenkins_state_t *)malloc(sizeof(cmph_jenkins_state_t));
+	state->seed = *(cmph_uint32 *)buf;
+	state->nbits = *(((cmph_uint32 *)buf) + 1);
+	state->size = *(((cmph_uint32 *)buf) + 2);
+	state->hashfunc = CMPH_HASH_JENKINS;
 	DEBUGP("Loaded jenkins state with seed %u\n", state->seed);
 	return state;
 }

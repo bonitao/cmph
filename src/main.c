@@ -23,15 +23,15 @@ void usage(const char *prg)
 }
 void usage_long(const char *prg)
 {
-	uint32 i;
+	cmph_uint32 i;
 	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -c\t c value that determines the number of vertices in the graph\n");
 	fprintf(stderr, "  -a\t algorithm - valid values are\n");
-	for (i = 0; i < MPH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", mph_names[i]);
+	for (i = 0; i < CMPH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", cmph_names[i]);
 	fprintf(stderr, "  -f\t hash function (may be used multiple times) - valid values are\n");
-	for (i = 0; i < HASH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", hash_names[i]);
+	for (i = 0; i < CMPH_HASH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", cmph_hash_names[i]);
 	fprintf(stderr, "  -V\t print version number and exit\n");
 	fprintf(stderr, "  -v\t increase verbosity (may be used multiple times)\n");
 	fprintf(stderr, "  -k\t number of keys\n");
@@ -41,7 +41,7 @@ void usage_long(const char *prg)
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
-static int key_read(void *data, char **key, uint32 *keylen)
+static int key_read(void *data, char **key, cmph_uint32 *keylen)
 {
 	FILE *fd = (FILE *)data;
 	*key = NULL;
@@ -54,7 +54,7 @@ static int key_read(void *data, char **key, uint32 *keylen)
 		if (feof(fd)) return -1;
 		*key = (char *)realloc(*key, *keylen + strlen(buf) + 1);
 		memcpy(*key + *keylen, buf, strlen(buf));
-		*keylen += (uint32)strlen(buf);
+		*keylen += (cmph_uint32)strlen(buf);
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		break;
 	}
@@ -66,7 +66,7 @@ static int key_read(void *data, char **key, uint32 *keylen)
 	return *keylen;
 }
 
-static void key_dispose(void *data, char *key, uint32 keylen)
+static void key_dispose(void *data, char *key, cmph_uint32 keylen)
 {
 	free(key);
 }
@@ -76,9 +76,9 @@ static void key_rewind(void *data)
 	rewind(fd);
 }
 
-static uint32 count_keys(FILE *fd)
+static cmph_uint32 count_keys(FILE *fd)
 {
-	uint32 count = 0;
+	cmph_uint32 count = 0;
 	rewind(fd);
 	while(1)
 	{
@@ -100,17 +100,17 @@ int main(int argc, char **argv)
 	FILE *mphf_fd = stdout;
 	const char *keys_file = NULL;
 	FILE *keys_fd;
-	uint32 nkeys = UINT_MAX;
-	uint32 seed = UINT_MAX;
+	cmph_uint32 nkeys = UINT_MAX;
+	cmph_uint32 seed = UINT_MAX;
 	CMPH_HASH *hashes = NULL;
-	uint32 nhashes = 0;
-	uint32 i;
-	MPH_ALGO mph_algo = MPH_CZECH;
+	cmph_uint32 nhashes = 0;
+	cmph_uint32 i;
+	CMPH_ALGO mph_algo = CMPH_CZECH;
 	float c = 2.09;
-	mph_t *mph = NULL;
-	mphf_t *mphf = NULL;
+	cmph_mph_t *mph = NULL;
+	cmph_mphf_t *mphf = NULL;
 
-	key_source_t source;
+	cmph_key_source_t source;
 
 	while (1)
 	{
@@ -166,9 +166,9 @@ int main(int argc, char **argv)
 			case 'a':
 				{
 				char valid = 0;
-				for (i = 0; i < MPH_COUNT; ++i)
+				for (i = 0; i < CMPH_COUNT; ++i)
 				{
-					if (strcmp(mph_names[i], optarg) == 0)
+					if (strcmp(cmph_names[i], optarg) == 0)
 					{
 						mph_algo = i;
 						valid = 1;
@@ -185,13 +185,13 @@ int main(int argc, char **argv)
 			case 'f':
 				{
 				char valid = 0;
-				for (i = 0; i < HASH_COUNT; ++i)
+				for (i = 0; i < CMPH_HASH_COUNT; ++i)
 				{
-					if (strcmp(hash_names[i], optarg) == 0)
+					if (strcmp(cmph_hash_names[i], optarg) == 0)
 					{
 						hashes = (CMPH_HASH *)realloc(hashes, sizeof(CMPH_HASH) * ( nhashes + 2 ));
 						hashes[nhashes] = i;
-						hashes[nhashes + 1] = HASH_COUNT;
+						hashes[nhashes + 1] = CMPH_HASH_COUNT;
 						++nhashes;
 						valid = 1;
 						break;
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	keys_file = argv[optind];
-	if (seed == UINT_MAX) seed = (uint32)time(NULL);
+	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	srand(seed);
 
 	if (mphf_file == NULL)
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 	}
 
 	source.data = (void *)keys_fd;
-	if (seed == UINT_MAX) seed = (uint32)time(NULL);
+	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	if(nkeys == UINT_MAX) source.nkeys = count_keys(keys_fd);
 	else source.nkeys = nkeys;
 	source.read = key_read;
@@ -245,17 +245,17 @@ int main(int argc, char **argv)
 	{
 		//Create mphf
 	
-		mph = mph_new(mph_algo, &source);
-		if (nhashes) mph_set_hashfuncs(mph, hashes);
-		mph_set_verbosity(mph, verbosity);
-		if(mph_algo == MPH_BMZ && c >= 2.0) c=1.15;
-		if (c != 0) mph_set_graphsize(mph, c);
-		mphf = mph_create(mph);
+		mph = cmph_mph_new(mph_algo, &source);
+		if (nhashes) cmph_mph_set_hashfuncs(mph, hashes);
+		cmph_mph_set_verbosity(mph, verbosity);
+		if(mph_algo == CMPH_BMZ && c >= 2.0) c=1.15;
+		if (c != 0) cmph_mph_set_graphsize(mph, c);
+		mphf = cmph_mph_create(mph);
 
 		if (mphf == NULL)
 		{
 			fprintf(stderr, "Unable to create minimum perfect hashing function\n");
-			mph_destroy(mph);
+			cmph_mph_destroy(mph);
 			free(mphf_file);
 			return -1;
 		}
@@ -267,13 +267,13 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		mphf_dump(mphf, mphf_fd);
-		mphf_destroy(mphf);
+		cmph_mphf_dump(mphf, mphf_fd);
+		cmph_mphf_destroy(mphf);
 		fclose(mphf_fd);
 	}
 	else
 	{
-	    uint8 * hashtable = NULL;
+	    cmph_uint8 * hashtable = NULL;
 		mphf_fd = fopen(mphf_file, "r");
 		if (mphf_fd == NULL)
 		{
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		mphf = mphf_load(mphf_fd);
+		mphf = cmph_mphf_load(mphf_fd);
 		fclose(mphf_fd);
 		if (!mphf)
 		{
@@ -289,16 +289,16 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		hashtable = (uint8*)malloc(source.nkeys*sizeof(uint8));
+		hashtable = (cmph_uint8*)malloc(source.nkeys*sizeof(cmph_uint8));
 		memset(hashtable, 0, source.nkeys);
 		//check all keys
 		for (i = 0; i < source.nkeys; ++i)
 		{
-			uint32 h;
+			cmph_uint32 h;
 			char *buf;
-			uint32 buflen = 0;
+			cmph_uint32 buflen = 0;
 			source.read(source.data, &buf, &buflen);
-			h = mphf_search(mphf, buf, buflen);
+			h = cmph_mphf_search(mphf, buf, buflen);
 			if(hashtable[h])fprintf(stderr, "collision: %u\n",h);
 			assert(hashtable[h]==0);
 			hashtable[h] = 1;
@@ -308,7 +308,7 @@ int main(int argc, char **argv)
 			}
 			source.dispose(source.data, buf, buflen);
 		}
-		mphf_destroy(mphf);
+		cmph_mphf_destroy(mphf);
 		free(hashtable);
 	}
 	fclose(keys_fd);

@@ -1,23 +1,23 @@
 #include "djb2_hash.h"
 #include <stdlib.h>
 
-djb2_state_t *djb2_state_new()
+cmph_djb2_state_t *cmph_djb2_state_new()
 {
-	djb2_state_t *state = (djb2_state_t *)malloc(sizeof(djb2_state_t));
-	state->hashfunc = HASH_DJB2;
+	cmph_djb2_state_t *state = (cmph_djb2_state_t *)malloc(sizeof(cmph_djb2_state_t));
+	state->hashfunc = CMPH_HASH_DJB2;
 	return state;
 }
 
-void djb2_state_destroy(djb2_state_t *state)
+void cmph_djb2_state_destroy(cmph_djb2_state_t *state)
 {
 	free(state);
 }
 
-uint32 djb2_hash(djb2_state_t *state, const char *k, uint32 keylen)
+cmph_uint32 cmph_djb2_hash(cmph_djb2_state_t *state, const char *k, cmph_uint32 keylen)
 {
-	register uint32 hash = 5381;
+	register cmph_uint32 hash = 5381;
 	const unsigned char *ptr = k;
-	uint32 i = 0;
+	cmph_uint32 i = 0;
 	while (i < keylen) 
 	{
 		hash = hash*33 ^ *ptr;
@@ -27,16 +27,16 @@ uint32 djb2_hash(djb2_state_t *state, const char *k, uint32 keylen)
 }
 
 
-void djb2_state_dump(djb2_state_t *state, char **buf, uint32 *buflen)
+void cmph_djb2_state_dump(cmph_djb2_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buf = NULL;
 	*buflen = 0;
 	return;
 }
 
-djb2_state_t *djb2_state_load(const char *buf, uint32 buflen)
+cmph_djb2_state_t *cmph_djb2_state_load(const char *buf, cmph_uint32 buflen)
 {
-	djb2_state_t *state = (djb2_state_t *)malloc(sizeof(djb2_state_t));
-	state->hashfunc = HASH_DJB2;
+	cmph_djb2_state_t *state = (cmph_djb2_state_t *)malloc(sizeof(cmph_djb2_state_t));
+	state->hashfunc = CMPH_HASH_DJB2;
 	return state;
 }
