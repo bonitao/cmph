@@ -5,7 +5,7 @@ CMPH - C Minimal Perfect Hashing Library
 
 -------------------------------------------------------------------
 
-**Description**
+==Description==
 
 C Minimal Perfect Hashing Library is a portable LGPLed library to create and
 to work with minimal perfect hash functions. The cmph library encapsulates the newest
@@ -31,35 +31,35 @@ of the distinguishable features of cmph:
 
 ----------------------------------------
 
-**Supported Algorithms**
+==Supported Algorithms==
 
  
 %html% - [BMZ Algorithm bmz.html].
 %txt% - BMZ Algorithm.
   A very fast algorithm based on cyclic random graphs to construct minimal
   perfect hash functions in linear time. The resulting functions are not order preserving and
-  can be stored in only 4cn bytes, where c is between 0.93 and 1.15.  
+  can be stored in only //4cn// bytes, where //c// is between 0.93 and 1.15.  
 %html% - [CHM Algorithm chm.html].
 %txt% - CHM Algorithm.
   An algorithm based on acyclic random graphs to construct minimal
   perfect hash functions in linear time. The resulting functions are order preserving and
-  are stored in 4cn bytes, where c is greater than 2.
+  are stored in //4cn// bytes, where //c// is greater than 2.
 
 %html% [Click Here comparison.html] to see a comparison of the supported algorithms. 
 
 
 ----------------------------------------
 
-**News for version 0.3**
+==News for version 0.3==
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
-  24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
+  //24.6n + O(1)// bytes. The resulting function can be stored in //3.72n// bytes.
 %html% [click here bmz.html] for details.
 
 
 ----------------------------------------
 
-**Examples**
+==Examples==
 
 Using cmph is quite simple. Take a look.
 
@@ -113,7 +113,7 @@ Using cmph is quite simple. Take a look.
 ```
 --------------------------------------
 
-**The cmph application**
+==The cmph application==
 
 cmph is the name of both the library and the utility
 application that comes with this package. You can use the cmph
@@ -157,16 +157,16 @@ utility.
    keysfile       line separated file with keys
 ```
 
-**Additional Documentation**
+==Additional Documentation==
 
 [FAQ faq.html]
 
-**Downloads**
+==Downloads==
 
 Use the project page at sourceforge: http://sf.net/projects/cmph
 
 
-**License Stuff**
+==License Stuff==
 
 Code is under the LGPL. 
 ----------------------------------------

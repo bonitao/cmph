@@ -1,2 +1,4 @@
 %! PreProc(html): '^%html% ' ''
 %! PreProc(txt): '^%txt% ' ''
+%! PostProc(html): "&amp;" "&"
+%! PostProc(txt): "&nbsp;" " "
