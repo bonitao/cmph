@@ -16,9 +16,15 @@
 
 static uint32 UNDEFINED = UINT_MAX;
 
+static const char bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+#define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8])
+#define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8])
+#define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8])))
+
 static int bmz_gen_edges(mph_t *mph);
 static void bmz_traverse_critical_nodes(bmz_mph_data_t *bmz, uint32 v, uint32 * biggest_g_value, uint32 * biggest_edge_value, uint8 * used_edges);
 static void bmz_traverse_non_critical_nodes(bmz_mph_data_t *bmz, uint8 * used_edges);
+
 
 mph_t *bmz_mph_new(key_source_t *key_source)
 {
@@ -70,7 +76,6 @@ mphf_t *bmz_mph_create(mph_t *mph, float bmz_c)
 	uint32 i;
 	uint32 iterations = 10;
 	uint8 *used_edges = NULL;
-        uint32 unused_edge_index = 0; 
 	uint32 biggest_g_value = 0;
 	uint32 biggest_edge_value = 1;	
 	DEBUGP("bmz_c: %f\n", bmz_c);
@@ -131,12 +136,13 @@ mphf_t *bmz_mph_create(mph_t *mph, float bmz_c)
 	// Searching step
 	if (mph->verbosity)
 	{
-		fprintf(stderr, "Starting Searching step\n");
+		fprintf(stderr, "Starting Searching step.\n");
 		fprintf(stderr, "\tTraversing critical vertices.\n");
 	}
 	DEBUGP("Searching step\n");
-	used_edges = (uint8 *)malloc(bmz->m*sizeof(uint8));
-	memset(used_edges, 0, bmz->m);
+
+	used_edges = (uint8 *)malloc((bmz->m*sizeof(uint8))/8 + 1);
+	memset(used_edges, 0, bmz->m/8 + 1);
 	free(bmz->g);
 	bmz->g = malloc(bmz->n * sizeof(uint32));
 	assert(bmz->g);
@@ -211,7 +217,7 @@ static void bmz_traverse_critical_nodes(bmz_mph_data_t *bmz, uint32 v, uint32 * 
 					        if (graph_node_is_critical(bmz->graph, lav) && (bmz->g[lav] != UNDEFINED))
 						{
    						        assert(next_g + bmz->g[lav] < bmz->m);
-							if (used_edges[next_g + bmz->g[lav]]) 
+							if (GETBIT(used_edges, next_g + bmz->g[lav])) 
 							{
 							        collision = 1;
 								break;
@@ -226,7 +232,7 @@ static void bmz_traverse_critical_nodes(bmz_mph_data_t *bmz, uint32 v, uint32 * 
 				{
 				        if (graph_node_is_critical(bmz->graph, lav) && (bmz->g[lav] != UNDEFINED))
 					{
-					        used_edges[next_g + bmz->g[lav]] = 1;
+                   			        SETBIT(used_edges,next_g + bmz->g[lav]);
 						if(next_g + bmz->g[lav] > *biggest_edge_value) *biggest_edge_value = next_g + bmz->g[lav];
 					}
 				}
@@ -245,7 +251,7 @@ static uint32 next_unused_edge(bmz_mph_data_t *bmz, uint8 * used_edges, uint32 u
        while(1)
        {
 		assert(unused_edge_index < bmz->m);
-		if(used_edges[unused_edge_index]) unused_edge_index ++;
+		if(GETBIT(used_edges, unused_edge_index)) unused_edge_index ++;
 		else break;
        }
        return unused_edge_index;
@@ -259,16 +265,18 @@ static void bmz_traverse(bmz_mph_data_t *bmz, uint8 * used_edges, uint32 v, uint
 	{
 		DEBUGP("Visiting neighbor %u\n", neighbor);
 		if(bmz->g[neighbor] != UNDEFINED) continue;
-		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index + 1);
+		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index);
 		bmz->g[neighbor] = *unused_edge_index - bmz->g[v];
+		(*unused_edge_index)++;
 		bmz_traverse(bmz, used_edges, neighbor, unused_edge_index);
+		
 	}  
 }
 
 static void bmz_traverse_non_critical_nodes(bmz_mph_data_t *bmz, uint8 * used_edges)
 {
 
-	uint32 i, v1, v2, unused_edge_index = -1;
+	uint32 i, v1, v2, unused_edge_index = 0;
 	DEBUGP("Labelling non critical vertices\n");
 	for(i = 0; i < bmz->m; i++)
 	{
