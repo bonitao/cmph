@@ -1,6 +1,8 @@
 BMZ Algorithm
 
 
+%!includeconf: CONFIG.t2t
+
 ----------------------------------------
 
 **History**
@@ -12,7 +14,7 @@ BMZ Algorithm
 **Papers**
 
 ----------------------------------------
-[Home README.html]
+[Home index.html]
 ----------------------------------------
 Enjoy!
 
@@ -20,7 +22,5 @@ Davi de Castro Reis
 
 Fabiano Cupertino Botelho
 
-
-%preproc(html): '^%html% ' ''
-%html% <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=96251&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
+%!include(html): ''LOGO.html''
 Last Updated: %%date(%c)
