@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	CMPH_HASH *hashes = NULL;
 	cmph_uint32 nhashes = 0;
 	cmph_uint32 i;
-	CMPH_ALGO mph_algo = CMPH_CZECH;
+	CMPH_ALGO mph_algo = CMPH_CHM;
 	float c = 2.09;
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
