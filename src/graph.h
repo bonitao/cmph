@@ -4,37 +4,37 @@
 #include <limits.h>
 #include "cmph_types.h"
 
-#define GRAPH_NO_NEIGHBOR UINT_MAX
+#define CMPH_GRAPH_NO_NEIGHBOR UINT_MAX
 
-typedef struct __graph_t graph_t;
-typedef struct __graph_iterator_t graph_iterator_t;
-struct __graph_iterator_t
+typedef struct cmph__graph_t cmph_graph_t;
+typedef struct cmph__graph_iterator_t cmph_graph_iterator_t;
+struct cmph__graph_iterator_t
 {
-	uint32 vertex;
-	uint32 edge;
+	cmph_uint32 vertex;
+	cmph_uint32 edge;
 };
 
 
 
-graph_t *graph_new(uint32 nnodes, uint32 nedges);
-void graph_destroy(graph_t *graph);
+cmph_graph_t *cmph_graph_new(cmph_uint32 nnodes, cmph_uint32 nedges);
+void cmph_graph_destroy(cmph_graph_t *graph);
 
-void graph_add_edge(graph_t *g, uint32 v1, uint32 v2);
-void graph_del_edge(graph_t *g, uint32 v1, uint32 v2);
-void graph_clear_edges(graph_t *g);
-uint32 graph_edge_id(graph_t *g, uint32 v1, uint32 v2);
-uint8 graph_contains_edge(graph_t *g, uint32 v1, uint32 v2);
+void cmph_graph_add_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2);
+void cmph_graph_del_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2);
+void cmph_graph_clear_edges(cmph_graph_t *g);
+cmph_uint32 cmph_graph_edge_id(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2);
+cmph_uint8 cmph_graph_contains_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2);
 
-graph_iterator_t graph_neighbors_it(graph_t *g, uint32 v);
-uint32 graph_next_neighbor(graph_t *g, graph_iterator_t* it);
+cmph_graph_iterator_t cmph_graph_neighbors_it(cmph_graph_t *g, cmph_uint32 v);
+cmph_uint32 cmph_graph_next_neighbor(cmph_graph_t *g, cmph_graph_iterator_t* it);
 
-void graph_obtain_critical_nodes(graph_t *g);            /* included -- Fabiano*/
-uint8 graph_node_is_critical(graph_t * g, uint32 v);     /* included -- Fabiano */
-uint32 graph_ncritical_nodes(graph_t *g);                /* included -- Fabiano*/
-uint32 graph_vertex_id(graph_t *g, uint32 e, uint32 id); /* included -- Fabiano*/
+void cmph_graph_obtain_critical_nodes(cmph_graph_t *g);            /* included -- Fabiano*/
+cmph_uint8 cmph_graph_node_is_critical(cmph_graph_t * g, cmph_uint32 v);     /* included -- Fabiano */
+cmph_uint32 cmph_graph_ncritical_nodes(cmph_graph_t *g);                /* included -- Fabiano*/
+cmph_uint32 cmph_graph_vertex_id(cmph_graph_t *g, cmph_uint32 e, cmph_uint32 id); /* included -- Fabiano*/
 
-int graph_is_cyclic(graph_t *g);
+int cmph_graph_is_cyclic(cmph_graph_t *g);
 
-void graph_print(graph_t *);
+void cmph_graph_print(cmph_graph_t *);
 
 #endif

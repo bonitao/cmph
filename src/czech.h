@@ -4,16 +4,16 @@
 #include "graph.h"
 #include "cmph.h"
 
-typedef struct __czech_mphf_data_t czech_mphf_data_t;
-typedef struct __czech_mph_data_t czech_mph_data_t;
+typedef struct cmph__czech_mphf_data_t cmph_czech_mphf_data_t;
+typedef struct cmph__czech_mph_data_t cmph_czech_mph_data_t;
 
-mph_t *czech_mph_new(key_source_t *key_source);
-void czech_mph_set_hashfuncs(mph_t *mph, CMPH_HASH *hashfuncs);
-void czech_mph_destroy(mph_t *mph);
-mphf_t *czech_mph_create(mph_t *mph, float c);
+cmph_mph_t *cmph_czech_mph_new(cmph_key_source_t *key_source);
+void cmph_czech_mph_set_hashfuncs(cmph_mph_t *mph, CMPH_HASH *hashfuncs);
+void cmph_czech_mph_destroy(cmph_mph_t *mph);
+cmph_mphf_t *cmph_czech_mph_create(cmph_mph_t *mph, float c);
 
-void czech_mphf_load(FILE *f, mphf_t *mphf);
-int czech_mphf_dump(mphf_t *mphf, FILE *f);
-void czech_mphf_destroy(mphf_t *mphf);
-uint32 czech_mphf_search(mphf_t *mphf, const char *key, uint32 keylen);
+void cmph_czech_mphf_load(FILE *f, cmph_mphf_t *mphf);
+int cmph_czech_mphf_dump(cmph_mphf_t *mphf, FILE *f);
+void cmph_czech_mphf_destroy(cmph_mphf_t *mphf);
+cmph_uint32 cmph_czech_mphf_search(cmph_mphf_t *mphf, const char *key, cmph_uint32 keylen);
 #endif

@@ -2,17 +2,17 @@
 #define __CMPH_VSTACK_H__
 
 #include "cmph_types.h"
-typedef struct __vstack_t vstack_t;
+typedef struct cmph__vstack_t cmph_vstack_t;
 
-vstack_t *vstack_new();
-void vstack_destroy(vstack_t *stack);
+cmph_vstack_t *cmph_vstack_new();
+void cmph_vstack_destroy(cmph_vstack_t *stack);
 
-void vstack_push(vstack_t *stack, uint32 val);
-uint32 vstack_top(vstack_t *stack);
-void vstack_pop(vstack_t *stack);
-int vstack_empty(vstack_t *stack);
-uint32 vstack_size(vstack_t *stack);
+void cmph_vstack_push(cmph_vstack_t *stack, cmph_uint32 val);
+cmph_uint32 cmph_vstack_top(cmph_vstack_t *stack);
+void cmph_vstack_pop(cmph_vstack_t *stack);
+int cmph_vstack_empty(cmph_vstack_t *stack);
+cmph_uint32 cmph_vstack_size(cmph_vstack_t *stack);
 
-void vstack_reserve(vstack_t *stack, uint32 size);
+void cmph_vstack_reserve(cmph_vstack_t *stack, cmph_uint32 size);
 
 #endif
