@@ -12,7 +12,87 @@
 
 const char *cmph_names[] = { "bmz", "czech", NULL }; /* included -- Fabiano */
 
-cmph_config_t *cmph_config_new(cmph_key_source_t *key_source)
+static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
+{
+	FILE *fd = (FILE *)data;
+	*key = NULL;
+	*keylen = 0;
+	while(1)
+	{
+		char buf[BUFSIZ];
+		char *c = fgets(buf, BUFSIZ, fd); 
+		if (c == NULL) return -1;
+		if (feof(fd)) return -1;
+		*key = (char *)realloc(*key, *keylen + strlen(buf) + 1);
+		memcpy(*key + *keylen, buf, strlen(buf));
+		*keylen += (cmph_uint32)strlen(buf);
+		if (buf[strlen(buf) - 1] != '\n') continue;
+		break;
+	}
+	if ((*keylen) && (*key)[*keylen - 1] == '\n')
+	{
+		(*key)[(*keylen) - 1] = 0;
+		--(*keylen);
+	}
+	return *keylen;
+}
+
+static void key_nlfile_dispose(void *data, char *key, cmph_uint32 keylen)
+{
+	free(key);
+}
+static void key_nlfile_rewind(void *data)
+{
+	FILE *fd = (FILE *)data;
+	rewind(fd);
+}
+
+static cmph_uint32 count_nlfile_keys(FILE *fd)
+{
+	cmph_uint32 count = 0;
+	rewind(fd);
+	while(1)
+	{
+		char buf[BUFSIZ];
+		fgets(buf, BUFSIZ, fd); 
+		if (feof(fd)) break;
+		if (buf[strlen(buf) - 1] != '\n') continue;
+		++count;
+	}
+	rewind(fd);
+	return count;
+}
+
+cmph_io_adapter_t *cmph_io_nlfile_adapter(FILE * keys_fd)
+{
+  cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
+  assert(key_source);
+  key_source->data = (void *)keys_fd;
+  key_source->nkeys = count_nlfile_keys(keys_fd);
+  key_source->read = key_nlfile_read;
+  key_source->dispose = key_nlfile_dispose;
+  key_source->rewind = key_nlfile_rewind;
+  return key_source;
+}
+
+cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys)
+{
+  cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
+  assert(key_source);
+  key_source->data = (void *)keys_fd;
+  key_source->nkeys = nkeys;
+  key_source->read = key_nlfile_read;
+  key_source->dispose = key_nlfile_dispose;
+  key_source->rewind = key_nlfile_rewind;
+  return key_source;
+}
+
+cmph_io_adapter_t *cmph_io_vector_adapter(const char ** vector, cmph_uint32 nkeys)
+{
+  return NULL;
+}
+
+cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source)
 {
 	cmph_config_t *mph = NULL;
 	mph = __config_new(key_source);

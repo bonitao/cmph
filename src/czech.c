@@ -23,7 +23,7 @@
 static int czech_gen_edges(cmph_config_t *mph);
 static void czech_traverse(czech_config_data_t *czech, cmph_uint8 *visited, cmph_uint32 v);
 
-czech_config_data_t *czech_config_new(cmph_key_source_t *key_source)
+czech_config_data_t *czech_config_new(cmph_io_adapter_t *key_source)
 {
 	czech_config_data_t *czech = NULL; 	
 	czech = (czech_config_data_t *)malloc(sizeof(czech_config_data_t));
