@@ -12,6 +12,7 @@ cmph_config_t *__config_new(cmph_io_adapter_t *key_source)
 	if (mph == NULL) return NULL;
 	mph->key_source = key_source;
 	mph->verbosity = 0;
+	mph->data = NULL;
 	float c = 0;
 	return mph;
 }
@@ -23,9 +24,8 @@ void __config_destroy(cmph_config_t *mph)
 
 void __cmph_dump(cmph_t *mphf, FILE *fd)
 {
-	cmph_uint32 nsize = htonl(mphf->size);
 	fwrite(cmph_names[mphf->algo], (cmph_uint32)(strlen(cmph_names[mphf->algo]) + 1), 1, fd);
-	fwrite(&nsize, sizeof(mphf->size), 1, fd);
+	fwrite(&(mphf->size), sizeof(mphf->size), 1, fd);
 }
 cmph_t *__cmph_load(FILE *f) 
 {
@@ -58,7 +58,6 @@ cmph_t *__cmph_load(FILE *f)
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = algo;
 	fread(&(mphf->size), sizeof(mphf->size), 1, f);
-	mphf->size = ntohl(mphf->size);
 	mphf->data = NULL;
 	DEBUGP("Algorithm is %s and mphf is sized %u\n", cmph_names[algo],  mphf->size);
 

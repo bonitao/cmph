@@ -10,20 +10,14 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <netinet/in.h>
 
 //#define DEBUG
 #include "debug.h"
 
-/* static const char bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 }; */
-/* #define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8]) */
-/* #define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8]) */
-/* #define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8]))) */
-
 static int chm_gen_edges(cmph_config_t *mph);
 static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint32 v);
 
-chm_config_data_t *chm_config_new(cmph_io_adapter_t *key_source)
+chm_config_data_t *chm_config_new()
 {
 	chm_config_data_t *chm = NULL; 	
 	chm = (chm_config_data_t *)malloc(sizeof(chm_config_data_t));
@@ -173,7 +167,7 @@ static int chm_gen_edges(cmph_config_t *mph)
 	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
 	int cycles = 0;
 
-	DEBUGP("Generating edges for %u vertices\n", chm->n);
+	DEBUGP("Generating edges for %u vertices with hash functions %s and %s\n", chm->n, cmph_hash_names[chm->hashfuncs[0]], cmph_hash_names[chm->hashfuncs[1]]);
 	graph_clear_edges(chm->graph);	
 	mph->key_source->rewind(mph->key_source->data);
 	for (e = 0; e < mph->key_source->nkeys; ++e)
@@ -206,39 +200,28 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	cmph_uint32 nbuflen;
 	cmph_uint32 i;
-	cmph_uint32 two = htonl(2); //number of hash functions
+	cmph_uint32 two = 2; //number of hash functions
 	chm_data_t *data = (chm_data_t *)mphf->data;
-	cmph_uint32 nn, nm;
 	__cmph_dump(mphf, fd);
 
 	fwrite(&two, sizeof(cmph_uint32), 1, fd);
-
 	hash_state_dump(data->hashes[0], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	nbuflen = htonl(buflen);
-	fwrite(&nbuflen, sizeof(cmph_uint32), 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
 	fwrite(buf, buflen, 1, fd);
 	free(buf);
 
 	hash_state_dump(data->hashes[1], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	nbuflen = htonl(buflen);
-	fwrite(&nbuflen, sizeof(cmph_uint32), 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
 	fwrite(buf, buflen, 1, fd);
 	free(buf);
 
-	nn = htonl(data->n);
-	fwrite(&nn, sizeof(cmph_uint32), 1, fd);
-	nm = htonl(data->m);
-	fwrite(&nm, sizeof(cmph_uint32), 1, fd);
+	fwrite(&(data->n), sizeof(cmph_uint32), 1, fd);
+	fwrite(&(data->m), sizeof(cmph_uint32), 1, fd);
 	
-	for (i = 0; i < data->n; ++i)
-	{
-		cmph_uint32 ng = htonl(data->g[i]);
-		fwrite(&ng, sizeof(cmph_uint32), 1, fd);
-	}
+	fwrite(data->g, sizeof(cmph_uint32)*data->n, 1, fd);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < data->n; ++i) fprintf(stderr, "%u ", data->g[i]);
@@ -260,7 +243,6 @@ void chm_load(FILE *f, cmph_t *mphf)
 	DEBUGP("Loading chm mphf\n");
 	mphf->data = chm;
 	fread(&nhashes, sizeof(cmph_uint32), 1, f);
-	nhashes = ntohl(nhashes);
 	chm->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
 	chm->hashes[nhashes] = NULL;
 	DEBUGP("Reading %u hashes\n", nhashes);
@@ -268,7 +250,6 @@ void chm_load(FILE *f, cmph_t *mphf)
 	{
 		hash_state_t *state = NULL;
 		fread(&buflen, sizeof(cmph_uint32), 1, f);
-		buflen = ntohl(buflen);
 		DEBUGP("Hash state has %u bytes\n", buflen);
 		buf = (char *)malloc(buflen);
 		fread(buf, buflen, 1, f);
@@ -279,13 +260,10 @@ void chm_load(FILE *f, cmph_t *mphf)
 
 	DEBUGP("Reading m and n\n");
 	fread(&(chm->n), sizeof(cmph_uint32), 1, f);	
-	chm->n = ntohl(chm->n);
 	fread(&(chm->m), sizeof(cmph_uint32), 1, f);	
-	chm->m = ntohl(chm->m);
 
 	chm->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*chm->n);
 	fread(chm->g, chm->n*sizeof(cmph_uint32), 1, f);
-	for (i = 0; i < chm->n; ++i) chm->g[i] = ntohl(chm->g[i]);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < chm->n; ++i) fprintf(stderr, "%u ", chm->g[i]);

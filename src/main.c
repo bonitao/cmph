@@ -1,4 +1,8 @@
+#ifdef WIN32
 #include "../wingetopt.h"
+#else
+#include <getopt.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -218,7 +222,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-    	        cmph_uint8 * hashtable = NULL;
+		cmph_uint8 * hashtable = NULL;
 		mphf_fd = fopen(mphf_file, "r");
 		if (mphf_fd == NULL)
 		{
