@@ -23,21 +23,23 @@ typedef struct
 	void (*rewind)(void *);
 } cmph_key_source_t;
 
-/** Hash generation API **/
+/** Hash configuration API **/
 cmph_config_t *cmph_config_new(cmph_key_source_t *key_source);
 void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
 void cmph_config_set_verbosity(cmph_config_t *mph, cmph_uint32 verbosity);
 void cmph_config_set_graphsize(cmph_config_t *mph, float c);
 void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo);
 void cmph_config_destroy(cmph_config_t *mph);
-cmph_t *cmph_new(cmph_config_t *mph);
 
-/** Hash querying API **/
-cmph_t *cmph_load(FILE *f);
-int cmph_dump(cmph_t *mphf, FILE *f);
+/** Hash API **/
+cmph_t *cmph_new(cmph_config_t *mph);
 cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen);
 cmph_uint32 cmph_size(cmph_t *mphf);
 void cmph_destroy(cmph_t *mphf);
+
+/** Hash serialization/deserialization */
+int cmph_dump(cmph_t *mphf, FILE *f);
+cmph_t *cmph_load(FILE *f);
 
 #ifdef __cplusplus
 }

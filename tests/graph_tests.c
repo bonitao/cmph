@@ -6,14 +6,14 @@
 int main(int argc, char **argv)
 {
 	graph_iterator_t it;
-	uint32 i, neighbor;
+	cmph_uint32 i, neighbor;
 	graph_t *g = graph_new(5, 10);
 
 	fprintf(stderr, "Building random graph\n");
 	for (i = 0; i < 10; ++i)
 	{
-		uint32 v1 = i % 5;
-		uint32 v2 = (i*2) % 5;
+		cmph_uint32 v1 = i % 5;
+		cmph_uint32 v2 = (i*2) % 5;
 		if (v1 == v2) continue;
 		graph_add_edge(g, v1, v2);
 		DEBUGP("Added edge %u %u\n", v1, v2);

@@ -15,9 +15,10 @@ features of cmph:
 - Fast
 - Space-efficient with main memory usage carefully documented
 - The best modern algorithms are available (or at least scheduled for implementation :-))
-- Object oriented implementation
 - Works with in-disk key sets through use of adapter pattern
 - Serialization of hash functions
+- Portable C code (currently works on GNU/Linux and WIN32)
+- Object oriented implementation
 - Easily extensible
 - Well encapsulated API aiming binary compatibility through releases
 - Free Software
