@@ -1,0 +1,149 @@
+== cmph - C Minimal Perfect Hashing Library ==
+
+
+**Description**
+
+C Minimal Perfect Hashing Library is a portable LGPLed library to create and
+work with minimal perfect hashes. The cmph library encapsulates the newest
+and more efficient algorithms in the literature in a ease-to-use, 
+production-quality, fast API. The library is designed to work big entries that 
+won't fit in the main memory. It has been used successfully to create hashes
+bigger than 100 million entries. Although there is a lack of similar libraries
+in the free software world, we can point out some of the "distinguishing" 
+features of cmph:
+
+- Fast
+- Space-efficient with main memory usage carefully documented
+- The best modern algorithms are available (or at least scheduled for implementation :-))
+- Object oriented implementation
+- Works with in-disk key sets through use of adapter pattern
+- Serialization of hash functions
+- Easily extensible
+- Well encapsulated API aiming binary compatibility through releases
+- Free Software
+
+
+**News for version 0.3**
+
+- New heuristics in bmz algorithm, providing hash creation with only
+  (0.93 * 16 + 4)*n bytes and hash query with (0.93*4)n bytes
+
+**Examples**
+
+Using cmph is quite ease. Take a look.
+
+
+```
+ // Create minimal perfect hash from in-memory vector
+ #include <cmph.h>
+ ...
+ 
+ const char **vector;
+ unsigned int nkeys;
+ //Fill vector
+ //...
+ 
+ //Create minimal perfect hash
+ cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
+ cmph_t *hash = cmph_new(config);
+ cmph_config_destroy(config);
+ 
+ //Find key
+ const char *key = "sample key";
+ unsigned int id = cmph_search(hash, key);
+ 
+ //Destroy hash
+ cmph_destroy(hash);
+```
+-------------------------------
+
+```
+ // Create minimal perfect hash from in-disk keys using BMZ algorithm
+ #include <cmph.h>
+ ...
+ 
+ //Open file with newline separated list of keys
+ FILE *fd = fopen("keysfile_newline_separated", "r");
+ //check for errors
+ //...
+ 
+ cmph_config_t *config = cmph_config_new(cmph_io_nlfile_adapter(fd));
+ cmph_config_set_algo(config, CMPH_BMZ);
+ cmph_t *hash = cmph_new(config);
+ cmph_config_destroy(config);
+ fclose(fd);
+ 
+ //Find key
+ const char *key = "sample key";
+ unsigned int id = cmph_search(hash, key);
+ 
+ //Destroy hash
+ cmph_destroy(hash);
+```
+--------------------------------------
+
+
+**The cmph application**
+
+cmph is the name of both the library and the utility
+application that comes with this package. You can use the cmph
+application to create minimal perfect hashes from command line. The cmph utility
+comes with a number of flags, but it is very simple to create and query 
+minimal perfect hashes:
+
+```
+ $ # Create mph for keys in file keys_file
+ $ ./cmph keys_file
+ $ # Query id of keys in the file keys_query
+ $ ./cmph -m keys_file.mph keys_query
+```
+
+The additional options let you set most of the parameters you have
+available through the C API. Below you can see the full help message for the 
+utility.
+
+
+```
+ usage: cmph [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile
+ Minimum perfect hashing tool
+ 
+   -h	 print this help message
+   -c	 c value that determines the number of vertices in the graph
+   -a	 algorithm - valid values are
+     	  * czech
+     	  * bmz
+   -f	 hash function (may be used multiple times) - valid values are
+     	  * jenkins
+     	  * djb2
+     	  * sdbm
+     	  * fnv
+     	  * glib
+     	  * pjw
+   -V	 print version number and exit
+   -v	 increase verbosity (may be used multiple times)
+   -k	 number of keys
+   -g	 generation mode
+   -s	 random seed
+   -m	 minimum perfect hash function file 
+   keysfile	 line separated file with keys
+```
+
+**Downloads**
+
+Use the project page at sourceforge: http://sf.net/projects/cmph
+
+**License Stuff**
+
+Code is under the LGPL. 
+----------------------------------------
+
+Enjoy!
+
+Davi de Castro Reis
+
+Fabiano Cupertino Botelho
+
+
+%preproc(html): '^%html% ' ''
+%html% <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=96251&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
+Last Updated: %%date(%c)

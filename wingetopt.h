@@ -16,8 +16,8 @@ extern "C" {
 	int   opterr = 1;       /* non-zero if a question mark should be returned */
 
 	int getopt(int argc, char *argv[], char *opstring); 
-	#endif
-#endif
+	#endif //_GETOPT_
+#endif //WIN32
 
 #ifdef __cplusplus
 }
