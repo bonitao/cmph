@@ -12,12 +12,12 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
 	uint32 i;
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -a\t algorithm - valid values are\n");
@@ -26,6 +26,7 @@ void usage_long(const char *prg)
 	for (i = 0; i < HASH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", hash_names[i]);
 	fprintf(stderr, "  -V\t print version number and exit\n");
 	fprintf(stderr, "  -v\t increase verbosity (may be used multiple times)\n");
+	fprintf(stderr, "  -k\t number of keys\n");
 	fprintf(stderr, "  -g\t generation mode\n");
 	fprintf(stderr, "  -s\t random seed\n");
 	fprintf(stderr, "  -m\t minimum perfect hash function file \n");
@@ -91,6 +92,7 @@ int main(int argc, char **argv)
 	FILE *mphf_fd = stdout;
 	const char *keys_file = NULL;
 	FILE *keys_fd;
+	uint32 nkeys = UINT_MAX;
 	uint32 seed = UINT_MAX;
 	CMPH_HASH *hashes = NULL;
 	uint32 nhashes = 0;
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		char c = getopt(argc, argv, "hVva:f:gm:s:");
+		char c = getopt(argc, argv, "hVvk:a:f:gm:s:");
 		if (c == -1) break;
 		switch (c)
 		{
@@ -119,6 +121,16 @@ int main(int argc, char **argv)
 				break;
 			case 'g':
 				generate = 1;
+				break;
+			case 'k':
+			        {
+					char *endptr;
+					nkeys = strtoul(optarg, &endptr, 10);
+					if(*endptr != 0) {
+						fprintf(stderr, "Invalid number of keys %s\n", optarg);
+						exit(1);
+					}
+				}
 				break;
 			case 'm':
 				mphf_file = strdup(optarg);
@@ -195,7 +207,7 @@ int main(int argc, char **argv)
 		memcpy(mphf_file + strlen(keys_file), ".mph\0", 5);
 	}	
 
-	keys_fd = fopen(keys_file, "r");
+	keys_fd = fopen64(keys_file, "r");
 	if (keys_fd == NULL)
 	{
 		fprintf(stderr, "Unable to open file %s: %s\n", keys_file, strerror(errno));
@@ -203,7 +215,9 @@ int main(int argc, char **argv)
 	}
 
 	source.data = (void *)keys_fd;
-	source.nkeys = count_keys(keys_fd);
+	if (seed == UINT_MAX) seed = time(NULL);
+	if(nkeys == UINT_MAX) source.nkeys = count_keys(keys_fd);
+	else source.nkeys = nkeys;
 	source.read = key_read;
 	source.dispose = key_dispose;
 	source.rewind = key_rewind;
