@@ -190,7 +190,7 @@ static void bmz_traverse_critical_nodes(bmz_mph_data_t *bmz, uint32 v, uint32 * 
 	uint32 u;   /* Auxiliary vertex */
 	uint32 lav; /* lookahead vertex */
 	uint8 collision;
-	vqueue_t * q = vqueue_new(graph_ncritical_nodes(bmz->graph));
+	vqueue_t * q = vqueue_new((uint32)(0.5*graph_ncritical_nodes(bmz->graph)));
 	graph_iterator_t it, it1;
 
 	DEBUGP("Labelling critical vertices\n");
