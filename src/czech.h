@@ -6,7 +6,7 @@
 typedef struct __czech_data_t czech_data_t;
 typedef struct __czech_config_data_t czech_config_data_t;
 
-czech_config_data_t *czech_config_new(cmph_key_source_t *key_source);
+czech_config_data_t *czech_config_new(cmph_io_adapter_t *key_source);
 void czech_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
 void czech_config_destroy(cmph_config_t *mph);
 cmph_t *czech_new(cmph_config_t *mph, float c);

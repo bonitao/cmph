@@ -40,56 +40,6 @@ void usage_long(const char *prg)
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
-static int key_read(void *data, char **key, cmph_uint32 *keylen)
-{
-	FILE *fd = (FILE *)data;
-	*key = NULL;
-	*keylen = 0;
-	while(1)
-	{
-		char buf[BUFSIZ];
-		char *c = fgets(buf, BUFSIZ, fd); 
-		if (c == NULL) return -1;
-		if (feof(fd)) return -1;
-		*key = (char *)realloc(*key, *keylen + strlen(buf) + 1);
-		memcpy(*key + *keylen, buf, strlen(buf));
-		*keylen += (cmph_uint32)strlen(buf);
-		if (buf[strlen(buf) - 1] != '\n') continue;
-		break;
-	}
-	if ((*keylen) && (*key)[*keylen - 1] == '\n')
-	{
-		(*key)[(*keylen) - 1] = 0;
-		--(*keylen);
-	}
-	return *keylen;
-}
-
-static void key_dispose(void *data, char *key, cmph_uint32 keylen)
-{
-	free(key);
-}
-static void key_rewind(void *data)
-{
-	FILE *fd = (FILE *)data;
-	rewind(fd);
-}
-
-static cmph_uint32 count_keys(FILE *fd)
-{
-	cmph_uint32 count = 0;
-	rewind(fd);
-	while(1)
-	{
-		char buf[BUFSIZ];
-		fgets(buf, BUFSIZ, fd); 
-		if (feof(fd)) break;
-		if (buf[strlen(buf) - 1] != '\n') continue;
-		++count;
-	}
-	rewind(fd);
-	return count;
-}
 
 int main(int argc, char **argv)
 {
@@ -109,7 +59,7 @@ int main(int argc, char **argv)
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
 
-	cmph_key_source_t source;
+	cmph_io_adapter_t *source;
 
 	while (1)
 	{
@@ -232,18 +182,14 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	source.data = (void *)keys_fd;
 	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
-	if(nkeys == UINT_MAX) source.nkeys = count_keys(keys_fd);
-	else source.nkeys = nkeys;
-	source.read = key_read;
-	source.dispose = key_dispose;
-	source.rewind = key_rewind;
-	
+	if(nkeys == UINT_MAX) source = cmph_io_nlfile_adapter(keys_fd);
+	else source = cmph_io_nlnkfile_adapter(keys_fd, nkeys);
+
 	if (generate)
 	{
 		//Create mphf
-		config = cmph_config_new(&source);
+		config = cmph_config_new(source);
 		cmph_config_set_algo(config, mph_algo);
 		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
 		cmph_config_set_verbosity(config, verbosity);
@@ -288,15 +234,15 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		hashtable = (cmph_uint8*)malloc(source.nkeys*sizeof(cmph_uint8));
-		memset(hashtable, 0, source.nkeys);
+		hashtable = (cmph_uint8*)malloc(source->nkeys*sizeof(cmph_uint8));
+		memset(hashtable, 0, source->nkeys);
 		//check all keys
-		for (i = 0; i < source.nkeys; ++i)
+		for (i = 0; i < source->nkeys; ++i)
 		{
 			cmph_uint32 h;
 			char *buf;
 			cmph_uint32 buflen = 0;
-			source.read(source.data, &buf, &buflen);
+			source->read(source->data, &buf, &buflen);
 			h = cmph_search(mphf, buf, buflen);
 			if(hashtable[h])fprintf(stderr, "collision: %u\n",h);
 			assert(hashtable[h]==0);
@@ -305,12 +251,13 @@ int main(int argc, char **argv)
 			{
 				printf("%s -> %u\n", buf, h);
 			}
-			source.dispose(source.data, buf, buflen);
+			source->dispose(source->data, buf, buflen);
 		}
 		cmph_destroy(mphf);
 		free(hashtable);
 	}
 	fclose(keys_fd);
 	free(mphf_file);
+	free(source);
 	return 0;
 }

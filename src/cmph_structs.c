@@ -5,7 +5,7 @@
 //#define DEBUG
 #include "debug.h"
 
-cmph_config_t *__config_new(cmph_key_source_t *key_source)
+cmph_config_t *__config_new(cmph_io_adapter_t *key_source)
 {
 	cmph_config_t *mph = (cmph_config_t *)malloc(sizeof(cmph_config_t));
 	DEBUGP("Creating mph with algorithm %s\n", cmph_names[algo]);
