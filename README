@@ -1,6 +1,6 @@
 CMPH - C Minimal Perfect Hashing Library
 
-----------------------------------------
+-------------------------------------------------------------------
 
 Description
 
@@ -11,8 +11,8 @@ production-quality and fast API. The library is designed to work with big entrie
 can not fit in the main memory. It has been used successfully for constructing minimal perfect
 hashing functions for sets with more than 100 million of keys. 
 Although there is a lack of similar libraries
-in the free software world, we can point out some of the distinguishable 
-features of cmph:
+in the free software world (gperf is a bit different (gperf.html)), we can point out some 
+of the distinguishable features of cmph:
 
 - Fast.
 - Space-efficient with main memory usage carefully documented.
@@ -162,7 +162,7 @@ Davi de Castro Reis
 
 Fabiano Cupertino Botelho
 
-Last Updated: Tue Jan 25 18:43:38 2005
+Last Updated: Wed Jan 26 22:37:36 2005
 
 
 
