@@ -1,4 +1,4 @@
-#include <getopt.h>
+#include "../wingetopt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -8,7 +8,6 @@
 #include <assert.h>
 #include "cmph.h"
 #include "hash.h"
-#include "../wingetopt.h"
 
 #ifdef WIN32
 #define VERSION "0.2"

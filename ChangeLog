@@ -1,3 +1,37 @@
+2005-01-19 10:40  davi
+
+	* acinclude.m4, configure.ac: Added macros for large file support.
+
+2005-01-18 19:06  fc_botelho
+
+	* src/: bmz.c, bmz.h, bmz_structs.h, cmph.c, cmph.h,
+	cmph_structs.c, cmph_structs.h, cmph_types.h, czech.c, czech.h,
+	czech_structs.h, djb2_hash.c, djb2_hash.h, fnv_hash.c, fnv_hash.h,
+	graph.c, graph.h, hash.c, hash.h, hash_state.h, jenkins_hash.c,
+	jenkins_hash.h, main.c, sdbm_hash.c, sdbm_hash.h, vqueue.c,
+	vqueue.h, vstack.c, vstack.h: version with cmph prefix
+
+2005-01-18 15:10  davi
+
+	* ChangeLog, cmph.vcproj, cmphapp.vcproj, wingetopt.c, wingetopt.h:
+	Added missing files.
+
+2005-01-18 14:25  fc_botelho
+
+	* aclocal.m4: initial version
+
+2005-01-18 14:16  fc_botelho
+
+	* aclocal.m4: initial version
+
+2005-01-18 13:58  fc_botelho
+
+	* src/czech.c: using bit mask to represent boolean values
+
+2005-01-18 13:56  fc_botelho
+
+	* src/czech.c: no message
+
 2005-01-18 10:18  davi
 
 	* COPYING, INSTALL, src/Makefile.am, src/bmz.c, src/bmz.h,
