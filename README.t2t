@@ -54,7 +54,7 @@ of the distinguishable features of cmph:
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
   24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
-  [click here bmz.html] for details.
+%html% [click here bmz.html] for details.
 
 
 ----------------------------------------
@@ -146,9 +146,7 @@ utility.
    -f     hash function (may be used multiple times) - valid values are
            * djb2
            * fnv
-           * glib
            * jenkins
-           * pjw
            * sdbm
    -V     print version number and exit
    -v     increase verbosity (may be used multiple times)
@@ -173,11 +171,7 @@ Use the project page at sourceforge: http://sf.net/projects/cmph
 Code is under the LGPL. 
 ----------------------------------------
 
-Enjoy!
-
-Davi de Castro Reis davi@users.sourceforge.net
-
-Fabiano Cupertino Botelho fc_botelho@users.sourceforge.net
+%!include: FOOTER.t2t
 
 %!include(html): ''LOGO.html''
 Last Updated: %%date(%c)
