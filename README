@@ -1,37 +1,59 @@
-== cmph - C Minimal Perfect Hashing Library ==
+CMPH - C Minimal Perfect Hashing Library
+
+----------------------------------------
 
 Description
 
 C Minimal Perfect Hashing Library is a portable LGPLed library to create and
-work with minimal perfect hashes. The cmph library encapsulates the newest
-and more efficient algorithms in the literature in a ease-to-use, 
-production-quality, fast API. The library is designed to work big entries that 
-won't fit in the main memory. It has been used successfully to create hashes
-bigger than 100 million entries. Although there is a lack of similar libraries
-in the free software world, we can point out some of the "distinguishing" 
+to work with minimal perfect hashing functions. The cmph library encapsulates the newest
+and more efficient algorithms (available in the literature) in an easy-to-use, 
+production-quality and fast API. The library is designed to work with big entries that 
+can not fit in the main memory. It has been used successfully for constructing minimal perfect
+hashing functions for sets with more than 100 million of keys. 
+Although there is a lack of similar libraries
+in the free software world, we can point out some of the distinguishable 
 features of cmph:
 
-- Fast
-- Space-efficient with main memory usage carefully documented
-- The best modern algorithms are available (or at least scheduled for implementation :-))
-- Object oriented implementation
-- Works with in-disk key sets through use of adapter pattern
-- Serialization of hash functions
-- Easily extensible
-- Well encapsulated API aiming binary compatibility through releases
-- Free Software
+- Fast.
+- Space-efficient with main memory usage carefully documented.
+- The best modern algorithms are available (or at least scheduled for implementation :-)).
+- Works with in-disk key sets through of using the adapter pattern.
+- Serialization of hash functions.
+- Portable C code (currently works on GNU/Linux and WIN32).
+- Object oriented implementation.
+- Easily extensible.
+- Well encapsulated API aiming binary compatibility through releases.
+- Free Software.
+
+----------------------------------------
+
+Supported Algorithms
+
+- BMZ Algorithm.
+  A very fast algorithm based on cyclic random graphs to construct minimal
+  perfect hash functions in linear time. The resulting functions are not order preserving and
+  can be stored in only 4cn bytes, where c is between 0.93 and 1.15.  
+- CHM Algorithm.
+  An algorithm based on acyclic random graphs to construct minimal
+  perfect hash functions in linear time. The resulting functions are order preserving and
+  are stored in 4cn bytes, where c is greater than 2.
+
+----------------------------------------
 
 News for version 0.3
 
-- New heuristics in bmz algorithm, providing hash creation with only
-  (0.93 * 16 + 4)*n bytes and hash query with (0.93*4)n bytes
+- New heuristic added to the bmz algorithm permits to generate a mphf with only
+  24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
+  click here (bmz.html) for details.
+
+----------------------------------------
 
 Examples
 
-Using cmph is quite ease. Take a look.
+Using cmph is quite simple. Take a look.
 
 
-   // Create minimal perfect hash from in-memory vector
+   // Create minimal perfect hash function from in-memory vector
    #include <cmph.h>
    ...
    
@@ -40,7 +62,7 @@ Using cmph is quite ease. Take a look.
    //Fill vector
    //...
    
-   //Create minimal perfect hash
+   //Create minimal perfect hashing function using the default(chm) algorithm.
    cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
    cmph_t *hash = cmph_new(config);
    cmph_config_destroy(config);
@@ -55,7 +77,7 @@ Using cmph is quite ease. Take a look.
 -------------------------------
 
 
-   // Create minimal perfect hash from in-disk keys using BMZ algorithm
+   // Create minimal perfect hash function from in-disk keys using BMZ algorithm
    #include <cmph.h>
    ...
    
@@ -83,13 +105,14 @@ The cmph application
 
 cmph is the name of both the library and the utility
 application that comes with this package. You can use the cmph
-application to create minimal perfect hashes from command line. The cmph utility
-comes with a number of flags, but it is very simple to create and query 
-minimal perfect hashes:
+application for constructing minimal perfect hashing functions from the command line. 
+The cmph utility
+comes with a number of flags, but it is very simple to create and to query 
+minimal perfect hashing functions:
 
 
-   $ # Create mph for keys in file keys_file
-   $ ./cmph keys_file
+   $ # Using the chm algorithm (default one) for constructing a mphf for keys in file keys_file
+   $ ./cmph -g keys_file
    $ # Query id of keys in the file keys_query
    $ ./cmph -m keys_file.mph keys_query
 
@@ -99,28 +122,28 @@ available through the C API. Below you can see the full help message for the
 utility.
 
 
-   usage: cmph [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile
+   usage: cmph [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-m file.mph] [-a algorithm] keysfile
    Minimum perfect hashing tool
-   
-     -h	 print this help message
-     -c	 c value that determines the number of vertices in the graph
-     -a	 algorithm - valid values are
-       	  * czech
-       	  * bmz
-     -f	 hash function (may be used multiple times) - valid values are
-       	  * jenkins
-       	  * djb2
-       	  * sdbm
-       	  * fnv
-       	  * glib
-       	  * pjw
-     -V	 print version number and exit
-     -v	 increase verbosity (may be used multiple times)
-     -k	 number of keys
-     -g	 generation mode
-     -s	 random seed
-     -m	 minimum perfect hash function file 
-     keysfile	 line separated file with keys
+  
+     -h     print this help message
+     -c     c value that determines the number of vertices in the graph
+     -a     algorithm - valid values are
+             * bmz
+             * chm
+     -f     hash function (may be used multiple times) - valid values are
+             * djb2
+             * fnv
+             * glib
+             * jenkins
+             * pjw
+             * sdbm
+     -V     print version number and exit
+     -v     increase verbosity (may be used multiple times)
+     -k     number of keys
+     -g     generation mode
+     -s     random seed
+     -m     minimum perfect hash function file
+     keysfile       line separated file with keys
 
 
 Downloads
@@ -139,7 +162,7 @@ Davi de Castro Reis
 
 Fabiano Cupertino Botelho
 
-Last Updated: Thu Jan 20 11:01:01 2005
+Last Updated: Tue Jan 25 18:43:38 2005
 
 
 
