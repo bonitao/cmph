@@ -11,6 +11,15 @@ CHM Algorithm
 
 **Papers**
 
++ Z.J. Czech, G. Havas, and B.S. Majewski. [An optimal algorithm for generating minimal perfect hash functions. papers/chm92.pdf], Information Processing Letters, 43(5):257-264, 1992.
+
++ Z.J. Czech, G. Havas, and B.S. Majewski. Fundamental study perfect hashing.
+  Theoretical Computer Science, 182:1-143, 1997.
+
++ B.S. Majewski, N.C. Wormald, G. Havas, and Z.J. Czech. A family of perfect hashing methods.
+  The Computer Journal, 39(6):547--554, 1996.
+
+
 ----------------------------------------
 [Home index.html]
 ----------------------------------------
