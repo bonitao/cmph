@@ -47,7 +47,7 @@ features of cmph:
 **News for version 0.3**
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
-  (xxx)*n bytes. The resulting function can be stored in (0.93*4)n bytes.
+  24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
   [click here BMZ.html] for details.
 
 
