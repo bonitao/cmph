@@ -1,0 +1,5 @@
+txt2tags -t html -i README.t2t -o index.html
+txt2tags -t html -i BMZ.t2t -o bmz.html
+txt2tags -t html -i CHM.t2t -o chm.html
+txt2tags -t html -i COMPARISON.t2t -o comparison.html
+txt2tags -t txt -i README.t2t -o README
