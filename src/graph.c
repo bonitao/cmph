@@ -6,18 +6,19 @@
 #include <assert.h>
 #include <string.h>
 #include "vstack.h"
+#include "bitbool.h"
 
 //#define DEBUG
 #include "debug.h"
 
-static const cmph_uint8 bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
-#define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8])
-#define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8])
-#define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8])))
+/* static const cmph_uint8 bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 }; */
+/* #define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8]) */
+/* #define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8]) */
+/* #define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8]))) */
 
 #define abs_edge(e, i) (e % g->nedges + i * g->nedges)
 
-struct cmph__graph_t
+struct __graph_t
 {
 	cmph_uint32 nnodes;
 	cmph_uint32 nedges;
@@ -32,9 +33,9 @@ struct cmph__graph_t
 
 static cmph_uint32 EMPTY = UINT_MAX;
 
-cmph_graph_t *cmph_graph_new(cmph_uint32 nnodes, cmph_uint32 nedges)
+graph_t *graph_new(cmph_uint32 nnodes, cmph_uint32 nedges)
 {
-	cmph_graph_t *graph = (cmph_graph_t *)malloc(sizeof(cmph_graph_t));
+	graph_t *graph = (graph_t *)malloc(sizeof(graph_t));
 	if (!graph) return NULL;
 
 	graph->edges = (cmph_uint32 *)malloc(sizeof(cmph_uint32) * 2 * nedges);
@@ -45,12 +46,12 @@ cmph_graph_t *cmph_graph_new(cmph_uint32 nnodes, cmph_uint32 nedges)
 	graph->nnodes = nnodes;
 	graph->nedges = nedges;
 
-	cmph_graph_clear_edges(graph);
+	graph_clear_edges(graph);
 	return graph;
 }
 
 
-void cmph_graph_destroy(cmph_graph_t *graph)
+void graph_destroy(graph_t *graph)
 {
 	DEBUGP("Destroying graph\n");
 	free(graph->edges);
@@ -61,7 +62,7 @@ void cmph_graph_destroy(cmph_graph_t *graph)
 	return;
 }
 
-void cmph_graph_print(cmph_graph_t *g)
+void graph_print(graph_t *g)
 {
 	cmph_uint32 i, e;
 	for (i = 0; i < g->nnodes; ++i)
@@ -81,7 +82,7 @@ void cmph_graph_print(cmph_graph_t *g)
 	return;
 }
 
-void cmph_graph_add_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
+void graph_add_edge(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 {
 	cmph_uint32 e = g->cedges;
 
@@ -101,7 +102,7 @@ void cmph_graph_add_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 	++(g->cedges);
 }
 
-static int check_edge(cmph_graph_t *g, cmph_uint32 e, cmph_uint32 v1, cmph_uint32 v2)
+static int check_edge(graph_t *g, cmph_uint32 e, cmph_uint32 v1, cmph_uint32 v2)
 {
 	DEBUGP("Checking edge %u %u looking for %u %u\n", g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)], v1, v2);
 	if (g->edges[abs_edge(e, 0)] == v1 && g->edges[abs_edge(e, 1)] == v2) return 1;
@@ -109,7 +110,7 @@ static int check_edge(cmph_graph_t *g, cmph_uint32 e, cmph_uint32 v1, cmph_uint3
 	return 0;
 }
 
-cmph_uint32 cmph_graph_edge_id(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
+cmph_uint32 graph_edge_id(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 {
 	cmph_uint32 e;
 	e = g->first[v1];
@@ -123,7 +124,7 @@ cmph_uint32 cmph_graph_edge_id(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 	while (!check_edge(g, e, v1, v2));
 	return abs_edge(e, 0);
 }
-static void del_edge_point(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
+static void del_edge_point(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 {
 	cmph_uint32 e, prev;
 
@@ -151,14 +152,14 @@ static void del_edge_point(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 }
 
 	
-void cmph_graph_del_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
+void graph_del_edge(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 {
 	g->shrinking = 1;
 	del_edge_point(g, v1, v2);
 	del_edge_point(g, v2, v1);
 }
 
-void cmph_graph_clear_edges(cmph_graph_t *g)
+void graph_clear_edges(graph_t *g)
 {
 	cmph_uint32 i;
 	for (i = 0; i < g->nnodes; ++i) g->first[i] = EMPTY;
@@ -171,7 +172,7 @@ void cmph_graph_clear_edges(cmph_graph_t *g)
 	g->shrinking = 0;
 }
 
-static int find_degree1_edge(cmph_graph_t *g, cmph_uint32 v, char *deleted, cmph_uint32 *e)
+static int find_degree1_edge(graph_t *g, cmph_uint32 v, char *deleted, cmph_uint32 *e)
 {
 	cmph_uint32 edge = g->first[v];
 	char found = 0;
@@ -195,7 +196,7 @@ static int find_degree1_edge(cmph_graph_t *g, cmph_uint32 v, char *deleted, cmph
 	return found;
 }
 
-static void cyclic_del_edge(cmph_graph_t *g, cmph_uint32 v, char *deleted)
+static void cyclic_del_edge(graph_t *g, cmph_uint32 v, char *deleted)
 {
 
 	cmph_uint32 e;
@@ -224,7 +225,7 @@ static void cyclic_del_edge(cmph_graph_t *g, cmph_uint32 v, char *deleted)
 	}
 }
 
-int cmph_graph_is_cyclic(cmph_graph_t *g)
+int graph_is_cyclic(graph_t *g)
 {
 	cmph_uint32 i;
 	cmph_uint32 v;
@@ -249,12 +250,12 @@ int cmph_graph_is_cyclic(cmph_graph_t *g)
 	return 0;
 }
 
-cmph_uint8 cmph_graph_node_is_critical(cmph_graph_t * g, cmph_uint32 v) /* included -- Fabiano */
+cmph_uint8 graph_node_is_critical(graph_t * g, cmph_uint32 v) /* included -- Fabiano */
 {
         return GETBIT(g->critical_nodes,v);
 }
 
-void cmph_graph_obtain_critical_nodes(cmph_graph_t *g) /* included -- Fabiano*/
+void graph_obtain_critical_nodes(graph_t *g) /* included -- Fabiano*/
 {
         cmph_uint32 i;
 	cmph_uint32 v;
@@ -290,7 +291,7 @@ void cmph_graph_obtain_critical_nodes(cmph_graph_t *g) /* included -- Fabiano*/
 	free(deleted);
 }
 
-cmph_uint8 cmph_graph_contains_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32 v2) /* included -- Fabiano*/
+cmph_uint8 graph_contains_edge(graph_t *g, cmph_uint32 v1, cmph_uint32 v2) /* included -- Fabiano*/
 {
 	cmph_uint32 e;
 	e = g->first[v1];
@@ -305,27 +306,27 @@ cmph_uint8 cmph_graph_contains_edge(cmph_graph_t *g, cmph_uint32 v1, cmph_uint32
 	return 1;
 }
 
-cmph_uint32 cmph_graph_vertex_id(cmph_graph_t *g, cmph_uint32 e, cmph_uint32 id) /* included -- Fabiano*/
+cmph_uint32 graph_vertex_id(graph_t *g, cmph_uint32 e, cmph_uint32 id) /* included -- Fabiano*/
 {
   return (g->edges[e + id*g->nedges]);
 }
 
-cmph_uint32 cmph_graph_ncritical_nodes(cmph_graph_t *g) /* included -- Fabiano*/
+cmph_uint32 graph_ncritical_nodes(graph_t *g) /* included -- Fabiano*/
 {
   return g->ncritical_nodes;
 }
 
-cmph_graph_iterator_t cmph_graph_neighbors_it(cmph_graph_t *g, cmph_uint32 v)
+graph_iterator_t graph_neighbors_it(graph_t *g, cmph_uint32 v)
 {
-	cmph_graph_iterator_t it;
+	graph_iterator_t it;
 	it.vertex = v;
 	it.edge = g->first[v];
 	return it;
 }
-cmph_uint32 cmph_graph_next_neighbor(cmph_graph_t *g, cmph_graph_iterator_t* it)
+cmph_uint32 graph_next_neighbor(graph_t *g, graph_iterator_t* it)
 {
 	cmph_uint32 ret;
-	if(it->edge == EMPTY) return CMPH_GRAPH_NO_NEIGHBOR; 
+	if(it->edge == EMPTY) return GRAPH_NO_NEIGHBOR; 
 	if (g->edges[it->edge] == it->vertex) ret = g->edges[it->edge + g->nedges];
 	else ret = g->edges[it->edge];
 	it->edge = g->next[it->edge];

@@ -106,8 +106,8 @@ int main(int argc, char **argv)
 	cmph_uint32 i;
 	CMPH_ALGO mph_algo = CMPH_CZECH;
 	float c = 2.09;
-	cmph_mph_t *mph = NULL;
-	cmph_mphf_t *mphf = NULL;
+	cmph_config_t *config = NULL;
+	cmph_t *mphf = NULL;
 
 	cmph_key_source_t source;
 
@@ -243,18 +243,18 @@ int main(int argc, char **argv)
 	if (generate)
 	{
 		//Create mphf
-	
-		mph = cmph_mph_new(mph_algo, &source);
-		if (nhashes) cmph_mph_set_hashfuncs(mph, hashes);
-		cmph_mph_set_verbosity(mph, verbosity);
+		config = cmph_config_new(&source);
+		cmph_config_set_algo(config, mph_algo);
+		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
+		cmph_config_set_verbosity(config, verbosity);
 		if(mph_algo == CMPH_BMZ && c >= 2.0) c=1.15;
-		if (c != 0) cmph_mph_set_graphsize(mph, c);
-		mphf = cmph_mph_create(mph);
+		if (c != 0) cmph_config_set_graphsize(config, c);
+		mphf = cmph_new(config);
 
 		if (mphf == NULL)
 		{
 			fprintf(stderr, "Unable to create minimum perfect hashing function\n");
-			cmph_mph_destroy(mph);
+			cmph_config_destroy(config);
 			free(mphf_file);
 			return -1;
 		}
@@ -266,13 +266,13 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		cmph_mphf_dump(mphf, mphf_fd);
-		cmph_mphf_destroy(mphf);
+		cmph_dump(mphf, mphf_fd);
+		cmph_destroy(mphf);
 		fclose(mphf_fd);
 	}
 	else
 	{
-	    cmph_uint8 * hashtable = NULL;
+    	        cmph_uint8 * hashtable = NULL;
 		mphf_fd = fopen(mphf_file, "r");
 		if (mphf_fd == NULL)
 		{
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		mphf = cmph_mphf_load(mphf_fd);
+		mphf = cmph_load(mphf_fd);
 		fclose(mphf_fd);
 		if (!mphf)
 		{
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
 			char *buf;
 			cmph_uint32 buflen = 0;
 			source.read(source.data, &buf, &buflen);
-			h = cmph_mphf_search(mphf, buf, buflen);
+			h = cmph_search(mphf, buf, buflen);
 			if(hashtable[h])fprintf(stderr, "collision: %u\n",h);
 			assert(hashtable[h]==0);
 			hashtable[h] = 1;
@@ -307,7 +307,7 @@ int main(int argc, char **argv)
 			}
 			source.dispose(source.data, buf, buflen);
 		}
-		cmph_mphf_destroy(mphf);
+		cmph_destroy(mphf);
 		free(hashtable);
 	}
 	fclose(keys_fd);

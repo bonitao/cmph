@@ -1,19 +1,19 @@
 #include "sdbm_hash.h"
 #include <stdlib.h>
 
-cmph_sdbm_state_t *cmph_sdbm_state_new()
+sdbm_state_t *sdbm_state_new()
 {
-	cmph_sdbm_state_t *state = (cmph_sdbm_state_t *)malloc(sizeof(cmph_sdbm_state_t));
+	sdbm_state_t *state = (sdbm_state_t *)malloc(sizeof(sdbm_state_t));
 	state->hashfunc = CMPH_HASH_SDBM;
 	return state;
 }
 
-void cmph_sdbm_state_destroy(cmph_sdbm_state_t *state)
+void sdbm_state_destroy(sdbm_state_t *state)
 {
 	free(state);
 }
 
-cmph_uint32 cmph_sdbm_hash(cmph_sdbm_state_t *state, const char *k, cmph_uint32 keylen)
+cmph_uint32 sdbm_hash(sdbm_state_t *state, const char *k, cmph_uint32 keylen)
 {
 	register cmph_uint32 hash = 0;
 	const unsigned char *ptr = k;
@@ -27,16 +27,16 @@ cmph_uint32 cmph_sdbm_hash(cmph_sdbm_state_t *state, const char *k, cmph_uint32 
 }
 
 
-void cmph_sdbm_state_dump(cmph_sdbm_state_t *state, char **buf, cmph_uint32 *buflen)
+void sdbm_state_dump(sdbm_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buf = NULL;
 	*buflen = 0;
 	return;
 }
 
-cmph_sdbm_state_t *cmph_sdbm_state_load(const char *buf, cmph_uint32 buflen)
+sdbm_state_t *sdbm_state_load(const char *buf, cmph_uint32 buflen)
 {
-	cmph_sdbm_state_t *state = (cmph_sdbm_state_t *)malloc(sizeof(cmph_sdbm_state_t));
+	sdbm_state_t *state = (sdbm_state_t *)malloc(sizeof(sdbm_state_t));
 	state->hashfunc = CMPH_HASH_SDBM;
 	return state;
 }
