@@ -82,7 +82,7 @@ Using cmph is quite simple. Take a look.
  
  //Find key
  const char *key = "sample key";
- unsigned int id = cmph_search(hash, key);
+ unsigned int id = cmph_search(hash, key, strlen(key));
  
  //Destroy hash
  cmph_destroy(hash);
@@ -107,7 +107,7 @@ Using cmph is quite simple. Take a look.
  
  //Find key
  const char *key = "sample key";
- unsigned int id = cmph_search(hash, key);
+ unsigned int id = cmph_search(hash, key, strlen(key));
  
  //Destroy hash
  cmph_destroy(hash);
