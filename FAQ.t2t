@@ -1,0 +1,27 @@
+CMPH FAQ
+
+
+
+- How do I define the ids of the keys?
+	- You don't. The ids will be assigned by the algorithm creating the minimal
+	  perfect hash function. If the algorithm creates an **ordered** minimal
+	  perfect hash function, the ids will be the indices of the keys in the 
+	  input. Otherwise, you have no guarantee of the distribution of the ids.
+
+- Why I always get the error "Unable to create minimum perfect hashing function"?
+	- The algorithms do not guarantee that a minimal perfect hash function can
+	  be created. In practice, it will always work if your input
+	  is big enough (>100 keys). 
+	  The error is probably because you have duplicated
+	  keys in the input. You must guarantee that the keys are unique in the 
+	  input. If you are using a UN*X based OS, try doing 
+``` 	#sort input.txt | uniq > input_uniq.txt
+	  and run cmph with input_uniq.txt
+
+----------------------------------------
+[Home index.html]
+----------------------------------------
+
+Davi de Castro Reis
+
+Fabiano Cupertino Botelho

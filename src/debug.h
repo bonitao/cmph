@@ -14,7 +14,7 @@
 #endif
 #endif
 
-#ifdef WIN32
+#ifndef __GNUC__
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 #include <stdarg.h>
@@ -39,13 +39,13 @@ static void dummyprintf(const char *format, ...)
 #endif
 
 #ifdef DEBUG
-#ifdef WIN32
+#ifndef __GNUC__
 #define DEBUGP debugprintf
 #else
 #define DEBUGP(args...) do { fprintf(stderr, "%s:%d ", __FILE__, __LINE__); fprintf(stderr, ## args); } while(0)
 #endif
 #else
-#ifdef WIN32
+#ifndef __GNUC__
 #define DEBUGP dummyprintf
 #else
 #define DEBUGP(args...)

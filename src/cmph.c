@@ -98,12 +98,38 @@ cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source)
 	mph = __config_new(key_source);
 	assert(mph);
 	mph->algo = CMPH_CHM; // default value
+	mph->data = chm_config_new();
 	return mph;
 }
 
 void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 {
-        mph->algo = algo;
+	if (algo != mph->algo)
+	{
+		switch (mph->algo)
+		{
+			case CMPH_CHM:
+			chm_config_destroy(mph->data);
+			break;
+			case CMPH_BMZ:
+			bmz_config_destroy(mph->data);
+			break;
+			default:
+			assert(0);
+		}
+		switch(algo)
+		{
+			case CMPH_CHM:
+			mph->data = chm_config_new();
+			break;
+			case CMPH_BMZ:
+			mph->data = bmz_config_new();
+			break;
+			default:
+			assert(0);
+		}
+	}
+	mph->algo = algo;
 }
 
 void cmph_config_destroy(cmph_config_t *mph)
@@ -115,7 +141,7 @@ void cmph_config_destroy(cmph_config_t *mph)
 			chm_config_destroy(mph);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
-		        bmz_config_destroy(mph);
+	        bmz_config_destroy(mph);
 			break;
 		default:
 			assert(0);
@@ -159,13 +185,11 @@ cmph_t *cmph_new(cmph_config_t *mph)
 	{
 		case CMPH_CHM:
 			DEBUGP("Creating chm hash\n");
-			mph->data = chm_config_new(mph->key_source);
 			if (c == 0) c = 2.09;
 			mphf = chm_new(mph, c);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
-			mph->data = bmz_config_new(mph->key_source);
 			if (c == 0) c = 1.15;
 			mphf = bmz_new(mph, c);
 			break;
@@ -205,8 +229,8 @@ cmph_t *cmph_load(FILE *f)
 			chm_load(f, mphf);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
-		        DEBUGP("Loading bmz algorithm dependent parts\n");
-		        bmz_load(f, mphf);
+			DEBUGP("Loading bmz algorithm dependent parts\n");
+			bmz_load(f, mphf);
 			break;
 		default:
 			assert(0);

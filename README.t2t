@@ -159,6 +159,10 @@ utility.
    keysfile       line separated file with keys
 ```
 
+**Additional Documentation**
+
+[FAQ faq.html]
+
 **Downloads**
 
 Use the project page at sourceforge: http://sf.net/projects/cmph
@@ -171,9 +175,9 @@ Code is under the LGPL.
 
 Enjoy!
 
-Davi de Castro Reis
+Davi de Castro Reis davi@users.sourceforge.net
 
-Fabiano Cupertino Botelho
+Fabiano Cupertino Botelho fc_botelho@users.sourceforge.net
 
 %!include(html): ''LOGO.html''
 Last Updated: %%date(%c)
