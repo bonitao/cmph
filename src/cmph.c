@@ -80,7 +80,7 @@ mphf_t *mph_create(mph_t *mph)
 			break;
 		case MPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
-			mphf = bmz_mph_create(mph, 1.10);
+			mphf = bmz_mph_create(mph, 1.15);
 			break;
 		default:
 			assert(0);
