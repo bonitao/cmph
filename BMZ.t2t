@@ -135,8 +135,9 @@ If we still find a loop after this, we generate another pair [figs/img89.png].
 When a multiple edge occurs we abort and generate a new pair [figs/img89.png]. 
 Although the function above causes [collisions concepts.html] with probability //1/t//,
 in [cmph library index.html] we use faster hash 
-functions ([DJB2 hash http://], [FNV hash http://], [Jenkins hash http://] 
-and [SDBM hash http://]) in which we do not need to impose any upper bound [figs/img79.png] on the lengths of the keys in [figs/img20.png].
+functions ([DJB2 hash http://www.cs.yorku.ca/~oz/hash.html], [FNV hash http://www.isthe.com/chongo/tech/comp/fnv/],
+ [Jenkins hash http://burtleburtle.net/bob/hash/doobs.html] and [SDBM hash http://www.cs.yorku.ca/~oz/hash.html]) 
+ in which we do not need to impose any upper bound [figs/img79.png] on the lengths of the keys in [figs/img20.png].
 
 As mentioned before, for us to find  the labelling [figs/img72.png] of the 
 vertices of [figs/img59.png] in linear time,
