@@ -279,7 +279,7 @@ cmph_uint32 chm_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	cmph_uint32 h1 = hash(chm->hashes[0], key, keylen) % chm->n;
 	cmph_uint32 h2 = hash(chm->hashes[1], key, keylen) % chm->n;
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
-	if (h1 == h2 && ++h2 > chm->n) h2 = 0;
+	if (h1 == h2 && ++h2 >= chm->n) h2 = 0;
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, chm->g[h1], chm->g[h2], chm->m);
 	return (chm->g[h1] + chm->g[h2]) % chm->m;
 }
