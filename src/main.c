@@ -12,7 +12,7 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-g [-c value][-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
@@ -20,6 +20,7 @@ void usage_long(const char *prg)
 	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k] [-g [-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
+	fprintf(stderr, "  -c\t c value that determines the number of vertices in the graph\n");
 	fprintf(stderr, "  -a\t algorithm - valid values are\n");
 	for (i = 0; i < MPH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", mph_names[i]);
 	fprintf(stderr, "  -f\t hash function (may be used multiple times) - valid values are\n");
@@ -98,6 +99,7 @@ int main(int argc, char **argv)
 	uint32 nhashes = 0;
 	uint32 i;
 	MPH_ALGO mph_algo = MPH_CZECH;
+	float c = 2.09;
 	mph_t *mph = NULL;
 	mphf_t *mphf = NULL;
 
@@ -105,9 +107,9 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		char c = getopt(argc, argv, "hVvk:a:f:gm:s:");
-		if (c == -1) break;
-		switch (c)
+		char ch = getopt(argc, argv, "hVvgc:k:a:f:m:s:");
+		if (ch == -1) break;
+		switch (ch)
 		{
 			case 's':
 				{
@@ -115,6 +117,16 @@ int main(int argc, char **argv)
 					seed = strtoul(optarg, &cptr, 10);
 					if(*cptr != 0) {
 						fprintf(stderr, "Invalid seed %s\n", optarg);
+						exit(1);
+					}
+				}
+				break;
+			case 'c':
+				{
+					char *endptr;
+					c = strtod(optarg, &endptr);
+					if(*endptr != 0) {
+						fprintf(stderr, "Invalid c value %s\n", optarg);
 						exit(1);
 					}
 				}
@@ -229,7 +241,8 @@ int main(int argc, char **argv)
 		mph = mph_new(mph_algo, &source);
 		if (nhashes) mph_set_hashfuncs(mph, hashes);
 		mph_set_verbosity(mph, verbosity);
-		mphf = mph_create(mph);
+		if(mph_algo == MPH_BMZ && c >= 2.0) c=1.15;
+		mphf = mph_create(mph, c);
 
 		if (mphf == NULL)
 		{
