@@ -1,6 +1,8 @@
 CMPH - C Minimal Perfect Hashing Library
 
 
+%!includeconf: CONFIG.t2t
+
 ----------------------------------------
 
 **Description**
@@ -9,7 +11,7 @@ C Minimal Perfect Hashing Library is a portable LGPLed library to create and
 to work with minimal perfect hashing functions. The cmph library encapsulates the newest
 and more efficient algorithms (available in the literature) in an easy-to-use, 
 production-quality and fast API. The library is designed to work with big entries that 
-can not be fit in the main memory. It has been used successfully for constructing minimal perfect
+can not fit in the main memory. It has been used successfully for constructing minimal perfect
 hashing functions for sets with more than 100 million of keys. 
 Although there is a lack of similar libraries
 in the free software world, we can point out some of the distinguishable 
@@ -31,15 +33,19 @@ features of cmph:
 
 **Supported Algorithms**
 
-- [BMZ Algorithm BMZ.html]. A very fast algorithm based on cyclic random graphs to construct minimal
+ 
+%html% - [BMZ Algorithm bmz.html].
+%txt% - BMZ Algorithm.
+  A very fast algorithm based on cyclic random graphs to construct minimal
   perfect hash functions in linear time. The resulting functions are not order preserving and
   can be stored in only 4cn bytes, where c is between 0.93 and 1.15.  
-
-- [CZECH Algorithm CZECH.html]. An algorithm based on acyclic random graphs to construct minimal
+%html% - [CHM Algorithm chm.html].
+%txt% - CHM Algorithm.
+  An algorithm based on acyclic random graphs to construct minimal
   perfect hash functions in linear time. The resulting functions are order preserving and
   are stored in 4cn bytes, where c is greater than 2.
 
-[Click Here COMPARISON.html] to see a comparison of the supported algorithms. 
+%html% [Click Here comparison.html] to see a comparison of the supported algorithms. 
 
 
 ----------------------------------------
@@ -48,7 +54,7 @@ features of cmph:
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
   24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
-  [click here BMZ.html] for details.
+  [click here bmz.html] for details.
 
 
 ----------------------------------------
@@ -68,7 +74,7 @@ Using cmph is quite simple. Take a look.
  //Fill vector
  //...
  
- //Create minimal perfect hashing function using the default(czech) algorithm.
+ //Create minimal perfect hashing function using the default(chm) algorithm.
  cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
  cmph_t *hash = cmph_new(config);
  cmph_config_destroy(config);
@@ -117,7 +123,7 @@ comes with a number of flags, but it is very simple to create and to query
 minimal perfect hashing functions:
 
 ```
- $ # Using the czech algorithm (default one) for constructing a mphf for keys in file keys_file
+ $ # Using the chm algorithm (default one) for constructing a mphf for keys in file keys_file
  $ ./cmph -g keys_file
  $ # Query id of keys in the file keys_query
  $ ./cmph -m keys_file.mph keys_query
@@ -136,7 +142,7 @@ utility.
    -c     c value that determines the number of vertices in the graph
    -a     algorithm - valid values are
            * bmz
-           * czech
+           * chm
    -f     hash function (may be used multiple times) - valid values are
            * djb2
            * fnv
@@ -169,7 +175,5 @@ Davi de Castro Reis
 
 Fabiano Cupertino Botelho
 
-
-%preproc(html): '^%html% ' ''
-%html% <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=96251&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
+%!include(html): ''LOGO.html''
 Last Updated: %%date(%c)
