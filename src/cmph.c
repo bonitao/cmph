@@ -69,18 +69,18 @@ void mph_set_hashfuncs(mph_t *mph, CMPH_HASH *hashfuncs)
 	return;
 }
 
-mphf_t *mph_create(mph_t *mph)
+mphf_t *mph_create(mph_t *mph, float c)
 {
 	mphf_t *mphf = NULL;
 	switch (mph->algo)	
 	{
 		case MPH_CZECH:
 			DEBUGP("Creating czech hash\n");
-			mphf = czech_mph_create(mph, 2.09);
+			mphf = czech_mph_create(mph, c);
 			break;
 		case MPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
-			mphf = bmz_mph_create(mph, 1.15);
+			mphf = bmz_mph_create(mph, c);
 			break;
 		default:
 			assert(0);
