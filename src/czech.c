@@ -119,6 +119,13 @@ mphf_t *czech_mph_create(mph_t *mph, float c)
 	free(czech->g);
 	czech->g = malloc(czech->n * sizeof(uint32));
 	assert(czech->g);
+	if (!czech->g)
+	{
+		fprintf(stderr, "out of memory");
+		free(visited);
+		graph_destroy(czech->graph);
+		return NULL;
+	}
 	for (i = 0; i < czech->n; ++i)
 	{
 		if (!visited[i])
@@ -289,11 +296,13 @@ void czech_mphf_load(FILE *f, mphf_t *mphf)
 	czech->g = (uint32 *)malloc(sizeof(uint32)*czech->n);
 	fread(czech->g, czech->n*sizeof(uint32), 1, f);
 	for (i = 0; i < czech->n; ++i) czech->g[i] = ntohl(czech->g[i]);
+	/*
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < czech->n; ++i) fprintf(stderr, "%u ", czech->g[i]);
 	fprintf(stderr, "\n");
 	#endif
+	*/
 	return;
 }
 		
