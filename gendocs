@@ -4,6 +4,7 @@ txt2tags -t html -i CHM.t2t -o chm.html
 txt2tags -t html -i COMPARISON.t2t -o comparison.html
 txt2tags -t html -i GPERF.t2t -o gperf.html
 txt2tags -t html -i FAQ.t2t -o faq.html
+txt2tags -t html -i CONCEPTS.t2t -o concepts.html
 
 txt2tags -t txt --mask-email -i README.t2t -o README
 txt2tags -t txt -i BMZ.t2t -o BMZ
@@ -11,3 +12,4 @@ txt2tags -t txt -i CHM.t2t -o CHM
 txt2tags -t txt -i COMPARISON.t2t -o COMPARISON
 txt2tags -t txt -i GPERF.t2t -o GPERF
 txt2tags -t txt -i FAQ.t2t -o FAQ
+txt2tags -t txt -i CONCEPTS.t2t -o CONCEPTS

@@ -2,14 +2,17 @@ CMPH - C Minimal Perfect Hashing Library
 
 -------------------------------------------------------------------
 
-Description
+
+	Description
+	===========
 
 C Minimal Perfect Hashing Library is a portable LGPLed library to create and
-to work with minimal perfect hashing functions. The cmph library encapsulates the newest
+to work with minimal perfect hash functions (concepts.html). 
+The cmph library encapsulates the newest
 and more efficient algorithms (available in the literature) in an easy-to-use, 
 production-quality and fast API. The library is designed to work with big entries that 
 can not fit in the main memory. It has been used successfully for constructing minimal perfect
-hashing functions for sets with more than 100 million of keys. 
+hash functions for sets with more than 100 million of keys. 
 Although there is a lack of similar libraries
 in the free software world (gperf is a bit different (gperf.html)), we can point out some 
 of the distinguishable features of cmph:
@@ -27,7 +30,9 @@ of the distinguishable features of cmph:
 
 ----------------------------------------
 
-Supported Algorithms
+
+	Supported Algorithms
+	====================
 
 - BMZ Algorithm.
   A very fast algorithm based on cyclic random graphs to construct minimal
@@ -40,15 +45,18 @@ Supported Algorithms
 
 ----------------------------------------
 
-News for version 0.3
+
+	News for version 0.3
+	====================
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
-  24.61*n + O(1) bytes. The resulting function can be stored in 3.72*n bytes.
-  click here (bmz.html) for details.
+  24.80n + O(1) bytes. The resulting function can be stored in 3.72n bytes.
 
 ----------------------------------------
 
-Examples
+
+	Examples
+	========
 
 Using cmph is quite simple. Take a look.
 
@@ -62,14 +70,14 @@ Using cmph is quite simple. Take a look.
    //Fill vector
    //...
    
-   //Create minimal perfect hashing function using the default(chm) algorithm.
+   //Create minimal perfect hash function using the default(chm) algorithm.
    cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
    cmph_t *hash = cmph_new(config);
    cmph_config_destroy(config);
    
    //Find key
    const char *key = "sample key";
-   unsigned int id = cmph_search(hash, key);
+   unsigned int id = cmph_search(hash, key, strlen(key));
    
    //Destroy hash
    cmph_destroy(hash);
@@ -94,21 +102,23 @@ Using cmph is quite simple. Take a look.
    
    //Find key
    const char *key = "sample key";
-   unsigned int id = cmph_search(hash, key);
+   unsigned int id = cmph_search(hash, key, strlen(key));
    
    //Destroy hash
    cmph_destroy(hash);
 
 --------------------------------------
 
-The cmph application
+
+	The cmph application
+	====================
 
 cmph is the name of both the library and the utility
 application that comes with this package. You can use the cmph
-application for constructing minimal perfect hashing functions from the command line. 
+application for constructing minimal perfect hash functions from the command line. 
 The cmph utility
 comes with a number of flags, but it is very simple to create and to query 
-minimal perfect hashing functions:
+minimal perfect hash functions:
 
 
    $ # Using the chm algorithm (default one) for constructing a mphf for keys in file keys_file
@@ -133,9 +143,7 @@ utility.
      -f     hash function (may be used multiple times) - valid values are
              * djb2
              * fnv
-             * glib
              * jenkins
-             * pjw
              * sdbm
      -V     print version number and exit
      -v     increase verbosity (may be used multiple times)
@@ -146,15 +154,21 @@ utility.
      keysfile       line separated file with keys
 
 
-Additional Documentation
+
+	Additional Documentation
+	========================
 
 FAQ (faq.html)
 
-Downloads
+
+	Downloads
+	=========
 
 Use the project page at sourceforge: http://sf.net/projects/cmph
 
-License Stuff
+
+	License Stuff
+	=============
 
 Code is under the LGPL. 
 
@@ -162,11 +176,11 @@ Code is under the LGPL.
 
 Enjoy!
 
-Davi de Castro Reis <davi (a) users sourceforge net>
+Davi de Castro Reis (davi@users.sourceforge.net)
 
-Fabiano Cupertino Botelho <fc_botelho (a) users sourceforge net>
+Fabiano Cupertino Botelho (fc_botelho@users.sourceforge.net)
 
-Last Updated: Thu Jan 27 10:54:36 2005
+Last Updated: Thu Feb 17 13:09:55 2005
 
 
 
