@@ -2,6 +2,7 @@ bin_PROGRAMS = cmph
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h
 libcmph_la_SOURCES = debug.h\
+				  bitbool.h bitbool.c\
 				  cmph_types.h\
 				  hash.h hash_state.h hash.c\
 				  jenkins_hash.h jenkins_hash.c\
