@@ -1,6 +1,6 @@
 #include "cmph.h"
 #include "cmph_structs.h"
-#include "czech.h"
+#include "chm.h"
 #include "bmz.h"
 //#include "bmz.h" /* included -- Fabiano */
 
@@ -10,7 +10,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_names[] = { "bmz", "czech", NULL }; /* included -- Fabiano */
+const char *cmph_names[] = { "bmz", "chm", NULL }; /* included -- Fabiano */
 
 static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 {
@@ -97,7 +97,7 @@ cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source)
 	cmph_config_t *mph = NULL;
 	mph = __config_new(key_source);
 	assert(mph);
-	mph->algo = CMPH_CZECH; // default value
+	mph->algo = CMPH_CHM; // default value
 	return mph;
 }
 
@@ -111,8 +111,8 @@ void cmph_config_destroy(cmph_config_t *mph)
 	DEBUGP("Destroying mph with algo %s\n", cmph_names[mph->algo]);
 	switch (mph->algo)
 	{
-		case CMPH_CZECH:
-			czech_config_destroy(mph);
+		case CMPH_CHM:
+			chm_config_destroy(mph);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        bmz_config_destroy(mph);
@@ -132,8 +132,8 @@ void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 {
 	switch (mph->algo)
 	{
-		case CMPH_CZECH:
-			czech_config_set_hashfuncs(mph, hashfuncs);
+		case CMPH_CHM:
+			chm_config_set_hashfuncs(mph, hashfuncs);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			bmz_config_set_hashfuncs(mph, hashfuncs);
@@ -157,11 +157,11 @@ cmph_t *cmph_new(cmph_config_t *mph)
 	DEBUGP("Creating mph with algorithm %s\n", cmph_names[mph->algo]);
 	switch (mph->algo)	
 	{
-		case CMPH_CZECH:
-			DEBUGP("Creating czech hash\n");
-			mph->data = czech_config_new(mph->key_source);
+		case CMPH_CHM:
+			DEBUGP("Creating chm hash\n");
+			mph->data = chm_config_new(mph->key_source);
 			if (c == 0) c = 2.09;
-			mphf = czech_new(mph, c);
+			mphf = chm_new(mph, c);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
@@ -179,8 +179,8 @@ int cmph_dump(cmph_t *mphf, FILE *f)
 {
 	switch (mphf->algo)
 	{
-		case CMPH_CZECH:
-			return czech_dump(mphf, f);
+		case CMPH_CHM:
+			return chm_dump(mphf, f);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        return bmz_dump(mphf, f);
@@ -201,8 +201,8 @@ cmph_t *cmph_load(FILE *f)
 
 	switch (mphf->algo)
 	{
-		case CMPH_CZECH:
-			czech_load(f, mphf);
+		case CMPH_CHM:
+			chm_load(f, mphf);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        DEBUGP("Loading bmz algorithm dependent parts\n");
@@ -221,8 +221,8 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
       	DEBUGP("mphf algorithm: %u \n", mphf->algo);
 	switch(mphf->algo)
 	{
-		case CMPH_CZECH:
-			return czech_search(mphf, key, keylen);
+		case CMPH_CHM:
+			return chm_search(mphf, key, keylen);
 		case CMPH_BMZ: /* included -- Fabiano */
 		        DEBUGP("bmz algorithm search\n");		         
 		        return bmz_search(mphf, key, keylen);
@@ -242,8 +242,8 @@ void cmph_destroy(cmph_t *mphf)
 {
 	switch(mphf->algo)
 	{
-		case CMPH_CZECH:
-			czech_destroy(mphf);
+		case CMPH_CHM:
+			chm_destroy(mphf);
 			return;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        bmz_destroy(mphf);

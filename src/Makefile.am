@@ -14,7 +14,7 @@ libcmph_la_SOURCES = debug.h\
 				  graph.h graph.c\
 				  cmph.h cmph.c\
 				  cmph_structs.h cmph_structs.c\
-				  czech.h czech_structs.h czech.c\
+				  chm.h chm_structs.h chm.c\
 				  bmz.h bmz_structs.h bmz.c
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
