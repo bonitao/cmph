@@ -10,6 +10,7 @@ struct __mph_t
 	MPH_ALGO algo;
 	key_source_t *key_source;
 	uint32 verbosity;
+	float c;
 	void *data; //algorithm dependent data
 };
 

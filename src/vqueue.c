@@ -1,6 +1,7 @@
 #include "vqueue.h"
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 struct __vqueue_t
 {
   uint32 * values;

@@ -10,7 +10,7 @@
 //#define DEBUG
 #include "debug.h"
 
-static uint8 bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+static const uint8 bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
 #define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8])
 #define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8])
 #define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8])))
@@ -52,7 +52,7 @@ graph_t *graph_new(uint32 nnodes, uint32 nedges)
 
 void graph_destroy(graph_t *graph)
 {
-        DEBUGP("Destroying graph\n");
+	DEBUGP("Destroying graph\n");
 	free(graph->edges);
 	free(graph->first);
 	free(graph->next);
@@ -103,7 +103,7 @@ void graph_add_edge(graph_t *g, uint32 v1, uint32 v2)
 
 static int check_edge(graph_t *g, uint32 e, uint32 v1, uint32 v2)
 {
-        DEBUGP("Checking edge %u %u looking for %u %u\n", g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)], v1, v2);
+	DEBUGP("Checking edge %u %u looking for %u %u\n", g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)], v1, v2);
 	if (g->edges[abs_edge(e, 0)] == v1 && g->edges[abs_edge(e, 1)] == v2) return 1;
 	if (g->edges[abs_edge(e, 0)] == v2 && g->edges[abs_edge(e, 1)] == v1) return 1;
 	return 0;
@@ -207,7 +207,7 @@ static void cyclic_del_edge(graph_t *g, uint32 v, char *deleted)
 	if (!degree1) return;
 	while(1) 
 	{
-	        DEBUGP("Deleting edge %u (%u->%u)\n", e, g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)]);
+		DEBUGP("Deleting edge %u (%u->%u)\n", e, g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)]);
 		SETBIT(deleted, abs_edge(e, 0));
 		
 		v2 = g->edges[abs_edge(e, 0)];
@@ -217,7 +217,7 @@ static void cyclic_del_edge(graph_t *g, uint32 v, char *deleted)
 		degree1 = find_degree1_edge(g, v2, deleted, &e);
 		if (degree1) 
 		{
-		        DEBUGP("Inspecting vertex %u\n", v2);
+			DEBUGP("Inspecting vertex %u\n", v2);
 			v1 = v2;
 		}
 		else break;
@@ -240,7 +240,7 @@ int graph_is_cyclic(graph_t *g)
 	{
 		if (!(GETBIT(deleted, i))) 
 		{
-		        DEBUGP("Edge %u %u->%u was not deleted\n", i, g->edges[i], g->edges[i + g->nedges]);
+			DEBUGP("Edge %u %u->%u was not deleted\n", i, g->edges[i], g->edges[i + g->nedges]);
 			free(deleted);
 			return 1;
 		}
@@ -261,7 +261,7 @@ void graph_obtain_critical_nodes(graph_t *g) /* included -- Fabiano*/
 	char *deleted = (char *)malloc((g->nedges*sizeof(char))/8+1);
 	memset(deleted, 0, g->nedges/8 + 1);
 	free(g->critical_nodes);
-        g->critical_nodes = (uint8 *)malloc((g->nnodes*sizeof(uint8))/8 + 1);
+	g->critical_nodes = (uint8 *)malloc((g->nnodes*sizeof(uint8))/8 + 1);
 	g->ncritical_nodes = 0;
 	memset(g->critical_nodes, 0, (g->nnodes*sizeof(uint8))/8 + 1);
 	DEBUGP("Looking for the 2-core in graph with %u vertices and %u edges\n", g->nnodes, g->nedges);

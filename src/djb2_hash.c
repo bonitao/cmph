@@ -15,9 +15,9 @@ void djb2_state_destroy(djb2_state_t *state)
 
 uint32 djb2_hash(djb2_state_t *state, const char *k, uint32 keylen)
 {
-	register unsigned int hash = 5381;
+	register uint32 hash = 5381;
 	const unsigned char *ptr = k;
-	int i = 0;
+	uint32 i = 0;
 	while (i < keylen) 
 	{
 		hash = hash*33 ^ *ptr;

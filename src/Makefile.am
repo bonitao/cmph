@@ -18,5 +18,5 @@ libcmph_la_SOURCES = debug.h\
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 
-cmph_SOURCES = 	main.c
+cmph_SOURCES = 	main.c ../wingetopt.h ../wingetopt.c
 cmph_LDADD = libcmph.la

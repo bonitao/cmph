@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <netinet/in.h>
 
 //#define DEBUG
 #include "debug.h"
@@ -68,7 +67,7 @@ mphf_t *czech_mph_create(mph_t *mph, float c)
 	char *visited = NULL;
 	czech_mph_data_t *czech = (czech_mph_data_t *)mph->data;
 	czech->m = mph->key_source->nkeys;	
-	czech->n = ceil(c * mph->key_source->nkeys);	
+	czech->n = (uint32)ceil(c * mph->key_source->nkeys);	
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", czech->m, czech->n, c);
 	czech->graph = graph_new(czech->n, czech->m);
 	DEBUGP("Created graph\n");
@@ -197,7 +196,7 @@ static int czech_gen_edges(mph_t *mph)
 		if (h1 == h2) if (++h2 >= czech->n) h2 = 0;
 		if (h1 == h2) 
 		{
-			if (mph->verbosity) fprintf(stderr, "Self loop for key %e\n", e);
+			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
 			return 0;
 		}
@@ -216,39 +215,29 @@ int czech_mphf_dump(mphf_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	uint32 buflen;
-	uint32 nbuflen;
-	uint32 i;
-	uint32 two = htonl(2); //number of hash functions
+	uint32 two = 2; //number of hash functions
 	czech_mphf_data_t *data = (czech_mphf_data_t *)mphf->data;
-	uint32 nn, nm;
 	__mphf_dump(mphf, fd);
 
 	fwrite(&two, sizeof(uint32), 1, fd);
 
 	hash_state_dump(data->hashes[0], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	nbuflen = htonl(buflen);
-	fwrite(&nbuflen, sizeof(uint32), 1, fd);
+	fwrite(&buflen, sizeof(uint32), 1, fd);
 	fwrite(buf, buflen, 1, fd);
 	free(buf);
 
 	hash_state_dump(data->hashes[1], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	nbuflen = htonl(buflen);
-	fwrite(&nbuflen, sizeof(uint32), 1, fd);
+	fwrite(&buflen, sizeof(uint32), 1, fd);
 	fwrite(buf, buflen, 1, fd);
 	free(buf);
 
-	nn = htonl(data->n);
-	fwrite(&nn, sizeof(uint32), 1, fd);
-	nm = htonl(data->m);
-	fwrite(&nm, sizeof(uint32), 1, fd);
+	fwrite(&(data->n), sizeof(uint32), 1, fd);
+	fwrite(&(data->m), sizeof(uint32), 1, fd);
 	
-	for (i = 0; i < data->n; ++i)
-	{
-		uint32 ng = htonl(data->g[i]);
-		fwrite(&ng, sizeof(uint32), 1, fd);
-	}
+	fwrite(data->g, sizeof(uint32)*data->n, 1, fd);
+	
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < data->n; ++i) fprintf(stderr, "%u ", data->g[i]);
@@ -260,17 +249,14 @@ int czech_mphf_dump(mphf_t *mphf, FILE *fd)
 void czech_mphf_load(FILE *f, mphf_t *mphf)
 {
 	uint32 nhashes;
-	char fbuf[BUFSIZ];
 	char *buf = NULL;
 	uint32 buflen;
 	uint32 i;
-	hash_state_t *state;
 	czech_mphf_data_t *czech = (czech_mphf_data_t *)malloc(sizeof(czech_mphf_data_t));
 
 	DEBUGP("Loading czech mphf\n");
 	mphf->data = czech;
 	fread(&nhashes, sizeof(uint32), 1, f);
-	nhashes = ntohl(nhashes);
 	czech->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
 	czech->hashes[nhashes] = NULL;
 	DEBUGP("Reading %u hashes\n", nhashes);
@@ -278,7 +264,6 @@ void czech_mphf_load(FILE *f, mphf_t *mphf)
 	{
 		hash_state_t *state = NULL;
 		fread(&buflen, sizeof(uint32), 1, f);
-		buflen = ntohl(buflen);
 		DEBUGP("Hash state has %u bytes\n", buflen);
 		buf = (char *)malloc(buflen);
 		fread(buf, buflen, 1, f);
@@ -289,13 +274,10 @@ void czech_mphf_load(FILE *f, mphf_t *mphf)
 
 	DEBUGP("Reading m and n\n");
 	fread(&(czech->n), sizeof(uint32), 1, f);	
-	czech->n = ntohl(czech->n);
 	fread(&(czech->m), sizeof(uint32), 1, f);	
-	czech->m = ntohl(czech->m);
-
+	
 	czech->g = (uint32 *)malloc(sizeof(uint32)*czech->n);
 	fread(czech->g, czech->n*sizeof(uint32), 1, f);
-	for (i = 0; i < czech->n; ++i) czech->g[i] = ntohl(czech->g[i]);
 	/*
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
