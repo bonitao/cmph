@@ -1,3 +1,32 @@
+2005-01-21 19:14  davi
+
+	* README.t2t, wingetopt.c, src/cmph.h, tests/graph_tests.c: Fixed
+	wingetopt.c
+
+2005-01-21 18:44  fc_botelho
+
+	* src/Makefile.am: included files bitbool.h and bitbool.c
+
+2005-01-21 18:42  fc_botelho
+
+	* src/: bmz.c, bmz.h, bmz_structs.h, cmph.c, cmph.h,
+	cmph_structs.c, cmph_structs.h, czech.c, czech.h, czech_structs.h,
+	djb2_hash.c, djb2_hash.h, fnv_hash.c, fnv_hash.h, graph.c, graph.h,
+	hash.c, hash.h, hash_state.h, jenkins_hash.c, jenkins_hash.h,
+	main.c, sdbm_hash.c, sdbm_hash.h, vqueue.c, vqueue.h, vstack.c,
+	vstack.h: Only public symbols were prefixed with cmph, and the API
+	was changed to agree with the initial txt2html documentation
+
+2005-01-21 18:30  fc_botelho
+
+	* src/: bitbool.c, bitbool.h: mask to represent a boolean value
+	using only 1 bit
+
+2005-01-20 10:28  davi
+
+	* ChangeLog, README, README.t2t, wingetopt.h, src/main.c: Added
+	initial txt2tags documentation.
+
 2005-01-19 10:40  davi
 
 	* acinclude.m4, configure.ac: Added macros for large file support.
