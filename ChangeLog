@@ -1,159 +1,69 @@
-2004-11-24 12:42  davi
+2005-01-18 10:18  davi
 
-	* src/czech.c: Fixed some leaks.
+	* COPYING, INSTALL, src/Makefile.am, src/bmz.c, src/bmz.h,
+	src/cmph.c, src/cmph.h, src/cmph_structs.c, src/cmph_structs.h,
+	src/czech.c, src/czech.h, src/debug.h, src/djb2_hash.c,
+	src/graph.c, src/graph.h, src/hash.c, src/jenkins_hash.c,
+	src/main.c, src/sdbm_hash.c, src/vqueue.c: Fixed a lot of warnings.
+	Added visual studio project. Make needed changes to work with
+	windows.
 
-2004-11-24 11:34  davi
+2005-01-17 16:01  fc_botelho
 
-	* src/: Makefile.am, cmph.h, cmph_types.h, czech.h, graph.h,
-	hash.h, jenkins_hash.h, types.h, vstack.h: Better header layout.
+	* src/main.c: stable version
 
-2004-11-23 15:15  davi
+2005-01-17 15:58  fc_botelho
 
-	* src/jenkins_hash.c: Fixed trivial bug.
+	* src/: bmz.c, cmph.c, cmph.h, graph.c: stable version
 
-2004-11-04 00:56  davi
+2005-01-13 21:56  davi
 
-	* src/: czech.c, graph.c: Forgot.
+	* src/czech.c: Better error handling in czech.c.
 
-2004-11-04 00:09  davi
+2005-01-05 18:45  fc_botelho
 
-	* src/: cmph.c, cmph.h, czech.c, czech.h, graph.c, main.c: Fixed
-	small bug due to fgets trick.
+	* src/cmph_structs.c: included option -k to specify the number of
+	keys to use
 
-2004-11-03 23:15  davi
+2005-01-05 17:48  fc_botelho
 
-	* src/: cmph.c, cmph.h, cmph_structs.c, cmph_structs.h, czech.c,
-	main.c: Added verbosity option
+	* src/: cmph.c, main.c: included option -k to specify the number of
+	keys to use
 
-2004-11-03 22:42  davi
+2005-01-03 19:38  fc_botelho
 
-	* src/czech.c: [no log message]
+	* src/bmz.c: using less memory
 
-2004-11-03 20:57  davi
+2005-01-03 18:47  fc_botelho
 
-	* src/: Makefile.am, fnv_hash.c, fnv_hash.h, hash.c, hash_state.h:
-	Added fnv hash function.
+	* src/: bmz.c, graph.c: using less space to store the used_edges
+	and critical_nodes arrays
 
-2004-11-03 18:10  davi
+2004-12-23 11:16  davi
 
-	* src/: Makefile.am, cmph.c, cmph.h, czech.c, czech.h, djb2_hash.c,
-	hash.c, hash_state.h, jenkins_hash.c, main.c, sdbm_hash.c,
-	sdbm_hash.h: Added sdbm hash function.
+	* INSTALL, COPYING, AUTHORS, ChangeLog, Makefile.am, NEWS, README,
+	cmph.spec, configure.ac, src/graph.c, tests/Makefile.am,
+	tests/graph_tests.c, src/bmz.c, src/cmph_types.h,
+	src/czech_structs.h, src/hash_state.h, src/jenkins_hash.c,
+	src/bmz_structs.h, src/cmph.c, src/cmph.h, src/cmph_structs.h,
+	src/czech.c, src/debug.h, src/djb2_hash.c, src/djb2_hash.h,
+	src/fnv_hash.c, src/fnv_hash.h, src/graph.h, src/hash.c,
+	src/hash.h, src/jenkins_hash.h, src/sdbm_hash.c, src/vstack.h,
+	src/Makefile.am, src/bmz.h, src/cmph_structs.c, src/czech.h,
+	src/main.c, src/sdbm_hash.h, src/vqueue.c, src/vqueue.h,
+	src/vstack.c: Initial release.
 
-2004-11-03 15:53  davi
+2004-12-23 11:16  davi
 
-	* src/cmph.c, src/cmph.h, src/cmph_structs.c, src/cmph_structs.h,
-	src/czech.c, src/czech.h, src/czech_structs.h, src/main.c,
-	tests/Makefile.am, tests/czech_tests.c: Added callback structure to
-	retrieve keys in disk.
-
-2004-10-31 22:57  davi
-
-	* src/: Makefile.am, djb2_hash.c, djb2_hash.h, hash.c, hash.h,
-	hash_funcs.h, jenkins_hash.h: Added new hash function.
-
-2004-10-31 20:53  davi
-
-	* src/main.c: Added random seed.
-
-2004-10-31 20:48  davi
-
-	* src/main.c, tests/czech_tests.c: Better getopt code.
-
-2004-10-31 19:27  davi
-
-	* src/: cmph.c, cmph.h, cmph_structs.c, cmph_structs.h, czech.c,
-	czech.h, czech_structs.h, hash.c, hash.h, jenkins_hash.c,
-	jenkins_hash.h, main.c: Everything working flawlessly.
-
-2004-10-30 20:12  davi
-
-	* src/cmph_structs.c: Added missing file.
-
-2004-10-30 20:09  davi
-
-	* src/main.c: forgot.
-
-2004-10-29 19:02  davi
-
-	* src/: Makefile.am, cmph.c, cmph.h, cmph_structs.h, czech.c,
-	czech.h, czech_structs.h, graph.c, hash.c, hash.h, jenkins_hash.c,
-	jenkins_hash.h, main.c: Cleaned some warnings.
-
-2004-10-29 16:14  davi
-
-	* src/: hash.c, hash_state.h: Missing file.
-
-2004-10-29 14:18  davi
-
-	* src/: Makefile.am, cmph.c, cmph.h, czech.c, graph.c, hash.h,
-	jenkins_hash.c, jenkins_hash.h, jenkinshash.c, jenkinshash.h:
-	Working nice. Serialization almost there.
-
-2004-10-28 11:21  davi
-
-	* Makefile.am, src/cmph.c, src/cmph_structs.h, src/czech.c,
-	src/czech_structs.h, src/jenkinshash.c: Hash generation seems to be
-	working fine.
-
-2004-10-27 15:19  davi
-
-	* src/hash.h: Added hash header.
-
-2004-10-27 15:06  davi
-
-	* COPYING, INSTALL, Makefile.am, src/czech.c, src/czech_structs.h,
-	src/graph.c, src/graph.h, src/vstack.c, tests/Makefile.am,
-	tests/czech_tests.c, tests/graph_tests.c: Cool. Now it is
-	serialization time.
-
-2004-10-27 13:06  davi
-
-	* tests/: czech_tests.c, keys: Added missing files.
-
-2004-10-26 21:23  davi
-
-	* src/graph.c, tests/Makefile.am: Still working on f*cking graph
-	implementation.
-
-2004-10-25 20:05  davi
-
-	* src/: cmph.c, cmph.h, cmph_structs.h, czech.c, czech.h,
-	czech_structs.h, graph.c, graph.h, jenkinshash.c, jenkinshash.h,
-	vstack.c: Added some new files.
-
-2004-10-25 00:27  davi
-
-	* src/: czech.c, czech.h, graph.c, graph.h, jenkinshash.c: Some
-	random code.
-
-2004-10-24 23:07  davi
-
-	* src/: Makefile.am, debug.h, graph.c, main.c, vstack.c, vstack.h:
-	Added stack implementation.
-
-2004-10-24 21:57  davi
-
-	* src/list.h: Added missing file.
-
-2004-10-24 21:50  davi
-
-	* src/types.h: Added missing file.
-
-2004-10-22 20:30  davi
-
-	* src/: Makefile.am, cmph.h, czech.c, czech.h, graph.c, graph.h,
-	jenkinshash.c, jenkinshash.h: Added a lot of files.
-
-2004-10-19 17:08  davi
-
-	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
-	cmph.spec, configure.ac, src/Makefile.am, src/cmph.c, src/cmph.h,
-	src/main.c, tests/Makefile.am: Initial revision
-
-2004-10-19 17:08  davi
-
-	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
-	cmph.spec, configure.ac, src/Makefile.am, src/cmph.c, src/cmph.h,
-	src/main.c, tests/Makefile.am: Minimum perfect hashing library
+	* INSTALL, COPYING, AUTHORS, ChangeLog, Makefile.am, NEWS, README,
+	cmph.spec, configure.ac, src/graph.c, tests/Makefile.am,
+	tests/graph_tests.c, src/bmz.c, src/cmph_types.h,
+	src/czech_structs.h, src/hash_state.h, src/jenkins_hash.c,
+	src/bmz_structs.h, src/cmph.c, src/cmph.h, src/cmph_structs.h,
+	src/czech.c, src/debug.h, src/djb2_hash.c, src/djb2_hash.h,
+	src/fnv_hash.c, src/fnv_hash.h, src/graph.h, src/hash.c,
+	src/hash.h, src/jenkins_hash.h, src/sdbm_hash.c, src/vstack.h,
+	src/Makefile.am, src/bmz.h, src/cmph_structs.c, src/czech.h,
+	src/main.c, src/sdbm_hash.h, src/vqueue.c, src/vqueue.h,
+	src/vstack.c: Initial revision
 
