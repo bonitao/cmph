@@ -8,11 +8,11 @@ CMPH - C Minimal Perfect Hashing Library
 **Description**
 
 C Minimal Perfect Hashing Library is a portable LGPLed library to create and
-to work with minimal perfect hashing functions. The cmph library encapsulates the newest
+to work with minimal perfect hash functions. The cmph library encapsulates the newest
 and more efficient algorithms (available in the literature) in an easy-to-use, 
 production-quality and fast API. The library is designed to work with big entries that 
 can not fit in the main memory. It has been used successfully for constructing minimal perfect
-hashing functions for sets with more than 100 million of keys. 
+hash functions for sets with more than 100 million of keys. 
 Although there is a lack of similar libraries
 in the free software world ([gperf is a bit different gperf.html]), we can point out some 
 of the distinguishable features of cmph:
@@ -27,6 +27,7 @@ of the distinguishable features of cmph:
 - Easily extensible.
 - Well encapsulated API aiming binary compatibility through releases.
 - Free Software.
+
 
 ----------------------------------------
 
@@ -73,7 +74,7 @@ Using cmph is quite simple. Take a look.
  //Fill vector
  //...
  
- //Create minimal perfect hashing function using the default(chm) algorithm.
+ //Create minimal perfect hash function using the default(chm) algorithm.
  cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
  cmph_t *hash = cmph_new(config);
  cmph_config_destroy(config);
@@ -116,10 +117,10 @@ Using cmph is quite simple. Take a look.
 
 cmph is the name of both the library and the utility
 application that comes with this package. You can use the cmph
-application for constructing minimal perfect hashing functions from the command line. 
+application for constructing minimal perfect hash functions from the command line. 
 The cmph utility
 comes with a number of flags, but it is very simple to create and to query 
-minimal perfect hashing functions:
+minimal perfect hash functions:
 
 ```
  $ # Using the chm algorithm (default one) for constructing a mphf for keys in file keys_file
