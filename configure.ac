@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(cmph, 0.2)
+AM_INIT_AUTOMAKE(cmph, 0.3)
 AM_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
