@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 
 mph_t *__mph_new(MPH_ALGO algo, key_source_t *key_source)
