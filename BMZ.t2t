@@ -4,14 +4,47 @@ BMZ Algorithm
 %!includeconf: CONFIG.t2t
 
 ----------------------------------------
-
 **History**
 
+At the end of 2003, professor [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] was
+finishing the second edition of his book.
+During the book writing, professor Nivio studied the problem of generating minimal perfect hash
+functions (if you are not familiarized with this problem, see [1][2]). 
+Professor Nivio coded a modified version of the [CHM algorithm chm.html], which was proposed by
+Czech, Havas and Majewski and put it in his book.
+The [CHM algorithm chm.html] is based on acyclic random graphs to generate order preserving 
+minimal perfect hash functions in linear time. Professor Nivio argued himself, why must the random graph 
+be acyclic? In the modified version availalbe in his book he got rid of such restriction.
+
+The modification presented a problem, it was impossible to generate minimal perfect hash functions
+for sets with more than 1000 keys.
+At the same time, [Fabiano C. Botelho http://www.dcc.ufmg.br/~fbotelho],
+a master degree student at [Departament of Computer Science http://www.dcc.ufmg.br] in 
+[Federal University of Minas Gerais http://www.ufmg.br],
+started to be advised by Nivio who presented the problem to Fabiano.
+
+During the master, Fabiano and Nivio faced lots of problems.
+Talking with a friend of mine (David Menoti) about our problems, many ideas 
+appeared and after of implementing them, we got a very fast algorithm to generate
+minimal perfect hash functions that does not preserve order.
+We refer the algorithm to as **BMZ**, because it was conceived by Fabiano C. **B**otelho
+David **M**enoti and Nivio **Z**iviani. The algorithm is described in [1].
+To analyse BMZ algorithm we needed some results from the random graph theory, so 
+we invite professor [Yoshiharu Kohayakawa http://www.ime.usp.br/~yoshi] to help us.
+The final description and analysis of BMZ algorithm is presented in [2].
+
+
+ 
 **The Algorithm**
 
 **The Heuristic**
 
 **Papers**
+
++ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], D. Menoti, [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A New algorithm for constructing minimal perfect hash functions papers/bmz_tr004_04.ps], Technical Report TR004/04, Department of Computer Science, Federal University of Minas Gerais, 2004.
+
++ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], Y. Kohayakawa, and [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A Practical Minimal Perfect Hashing Method papers/bmz_wea2005.ps], 4th International Workshop on Efficient and Experimental Algorithms (WEA), 2005.(submitted) 
+
 
 ----------------------------------------
 [Home index.html]
