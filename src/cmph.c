@@ -61,25 +61,33 @@ void mph_set_hashfuncs(mph_t *mph, CMPH_HASH *hashfuncs)
 			czech_mph_set_hashfuncs(mph, hashfuncs);
 			break;
 		case MPH_BMZ: /* included -- Fabiano */
-		        bmz_mph_set_hashfuncs(mph, hashfuncs);
+			bmz_mph_set_hashfuncs(mph, hashfuncs);
 			break;
 		default:
 			break;
 	}
 	return;
 }
+void mph_set_graphsize(mph_t *mph, float c)
+{
+	mph->c = c;
+	return;
+}
 
-mphf_t *mph_create(mph_t *mph, float c)
+mphf_t *mph_create(mph_t *mph)
 {
 	mphf_t *mphf = NULL;
+	float c = mph->c;
 	switch (mph->algo)	
 	{
 		case MPH_CZECH:
 			DEBUGP("Creating czech hash\n");
+			if (c == 0) c = 2.09;
 			mphf = czech_mph_create(mph, c);
 			break;
 		case MPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
+			if (c == 0) c = 1.15;
 			mphf = bmz_mph_create(mph, c);
 			break;
 		default:
@@ -143,7 +151,7 @@ uint32 mphf_search(mphf_t *mphf, const char *key, uint32 keylen)
 			assert(0);
 	}
 	assert(0);
-	return;
+	return 0;
 }
 
 uint32 mphf_size(mphf_t *mphf)

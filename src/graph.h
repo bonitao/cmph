@@ -20,9 +20,10 @@ graph_t *graph_new(uint32 nnodes, uint32 nedges);
 void graph_destroy(graph_t *graph);
 
 void graph_add_edge(graph_t *g, uint32 v1, uint32 v2);
-//void graph_del_edge(graph_t *g, uint32 v1, uint32 v2);
+void graph_del_edge(graph_t *g, uint32 v1, uint32 v2);
 void graph_clear_edges(graph_t *g);
 uint32 graph_edge_id(graph_t *g, uint32 v1, uint32 v2);
+uint8 graph_contains_edge(graph_t *g, uint32 v1, uint32 v2);
 
 graph_iterator_t graph_neighbors_it(graph_t *g, uint32 v);
 uint32 graph_next_neighbor(graph_t *g, graph_iterator_t* it);

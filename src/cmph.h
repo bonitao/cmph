@@ -27,8 +27,9 @@ typedef struct
 mph_t *mph_new(MPH_ALGO algo, key_source_t *key_source);
 void mph_set_hashfuncs(mph_t *mph, CMPH_HASH *hashfuncs);
 void mph_set_verbosity(mph_t *mph, uint32 verbosity);
+void mph_set_graphsize(mph_t *mph, float c);
 void mph_destroy(mph_t *mph);
-mphf_t *mph_create(mph_t *mph, float c);
+mphf_t *mph_create(mph_t *mph);
 
 /** Hash querying API **/
 mphf_t *mphf_load(FILE *f);

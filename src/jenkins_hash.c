@@ -1,9 +1,11 @@
 #include "jenkins_hash.h"
 #include <stdlib.h>
+#ifdef WIN32
+#define _USE_MATH_DEFINES //For M_LOG2E
+#endif
 #include <math.h>
 #include <limits.h>
 #include <string.h>
-#include <netinet/in.h>
 
 //#define DEBUG
 #include "debug.h"
@@ -87,7 +89,7 @@ jenkins_state_t *jenkins_state_new(uint32 size) //size of hash table
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
 	DEBUGP("Initializing jenkins hash\n");
 	state->seed = rand() % size;
-	state->nbits = ceil(log(size)/M_LOG2E);
+	state->nbits = (uint32)ceil(log(size)/M_LOG2E);
 	state->size = size;
 	DEBUGP("Initialized jenkins with size %u, nbits %u and seed %u\n", size, state->nbits, state->seed);
 	return state;
@@ -162,9 +164,6 @@ uint32 jenkins_hash(jenkins_state_t *state, const char *k, uint32 keylen)
 
 void jenkins_state_dump(jenkins_state_t *state, char **buf, uint32 *buflen)
 {
-	uint32 nseed = htonl(state->seed);
-	uint32 nnbits = htonl(state->nbits);
-	uint32 nsize = htonl(state->size);
 	*buflen = sizeof(uint32)*3;
 	*buf = malloc(*buflen);
 	if (!*buf) 
@@ -172,9 +171,9 @@ void jenkins_state_dump(jenkins_state_t *state, char **buf, uint32 *buflen)
 		*buflen = UINT_MAX;
 		return;
 	}
-	memcpy(*buf, &nseed, sizeof(uint32));
-	memcpy(*buf + sizeof(uint32), &nnbits, sizeof(uint32));
-	memcpy(*buf + sizeof(uint32)*2, &nsize, sizeof(uint32));
+	memcpy(*buf, &(state->seed), sizeof(uint32));
+	memcpy(*buf + sizeof(uint32), &(state->nbits), sizeof(uint32));
+	memcpy(*buf + sizeof(uint32)*2, &(state->size), sizeof(uint32));
 	DEBUGP("Dumped jenkins state with seed %u\n", state->seed);
 
 	return;
@@ -182,9 +181,9 @@ void jenkins_state_dump(jenkins_state_t *state, char **buf, uint32 *buflen)
 jenkins_state_t *jenkins_state_load(const char *buf, uint32 buflen)
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
-	state->seed = ntohl(*(uint32 *)buf);
-	state->nbits = ntohl(*(((uint32 *)buf) + 1));
-	state->size = ntohl(*(((uint32 *)buf) + 2));
+	state->seed = *(uint32 *)buf;
+	state->nbits = *(((uint32 *)buf) + 1);
+	state->size = *(((uint32 *)buf) + 2);
 	state->hashfunc = HASH_JENKINS;
 	DEBUGP("Loaded jenkins state with seed %u\n", state->seed);
 	return state;

@@ -8,7 +8,14 @@
 #include <assert.h>
 #include "cmph.h"
 #include "hash.h"
-#include "../config.h"
+#include "../wingetopt.h"
+
+#ifdef WIN32
+#define VERSION "0.2"
+#else
+#include "config.h"
+#endif
+
 
 void usage(const char *prg)
 {
@@ -47,7 +54,7 @@ static int key_read(void *data, char **key, uint32 *keylen)
 		if (feof(fd)) return -1;
 		*key = (char *)realloc(*key, *keylen + strlen(buf) + 1);
 		memcpy(*key + *keylen, buf, strlen(buf));
-		*keylen += strlen(buf);
+		*keylen += (uint32)strlen(buf);
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		break;
 	}
@@ -76,7 +83,7 @@ static uint32 count_keys(FILE *fd)
 	while(1)
 	{
 		char buf[BUFSIZ];
-		char *c = fgets(buf, BUFSIZ, fd); 
+		fgets(buf, BUFSIZ, fd); 
 		if (feof(fd)) break;
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		++count;
@@ -209,7 +216,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	keys_file = argv[optind];
-	if (seed == UINT_MAX) seed = time(NULL);
+	if (seed == UINT_MAX) seed = (uint32)time(NULL);
 	srand(seed);
 
 	if (mphf_file == NULL)
@@ -219,7 +226,7 @@ int main(int argc, char **argv)
 		memcpy(mphf_file + strlen(keys_file), ".mph\0", 5);
 	}	
 
-	keys_fd = fopen64(keys_file, "r");
+	keys_fd = fopen(keys_file, "r");
 	if (keys_fd == NULL)
 	{
 		fprintf(stderr, "Unable to open file %s: %s\n", keys_file, strerror(errno));
@@ -227,7 +234,7 @@ int main(int argc, char **argv)
 	}
 
 	source.data = (void *)keys_fd;
-	if (seed == UINT_MAX) seed = time(NULL);
+	if (seed == UINT_MAX) seed = (uint32)time(NULL);
 	if(nkeys == UINT_MAX) source.nkeys = count_keys(keys_fd);
 	else source.nkeys = nkeys;
 	source.read = key_read;
@@ -242,7 +249,8 @@ int main(int argc, char **argv)
 		if (nhashes) mph_set_hashfuncs(mph, hashes);
 		mph_set_verbosity(mph, verbosity);
 		if(mph_algo == MPH_BMZ && c >= 2.0) c=1.15;
-		mphf = mph_create(mph, c);
+		if (c != 0) mph_set_graphsize(mph, c);
+		mphf = mph_create(mph);
 
 		if (mphf == NULL)
 		{
@@ -265,7 +273,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-	        uint8 * hashtable = NULL;
+	    uint8 * hashtable = NULL;
 		mphf_fd = fopen(mphf_file, "r");
 		if (mphf_fd == NULL)
 		{

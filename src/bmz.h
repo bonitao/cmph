@@ -14,5 +14,6 @@ mphf_t *bmz_mph_create(mph_t *mph, float bmz_c);
 
 void bmz_mphf_load(FILE *f, mphf_t *mphf);
 int bmz_mphf_dump(mphf_t *mphf, FILE *f);
+void bmz_mphf_destroy(mphf_t *mphf);
 uint32 bmz_mphf_search(mphf_t *mphf, const char *key, uint32 keylen);
 #endif

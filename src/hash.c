@@ -81,7 +81,7 @@ void hash_state_dump(hash_state_t *state, char **buf, uint32 *buflen)
 	memcpy(*buf, hash_names[state->hashfunc], strlen(hash_names[state->hashfunc]) + 1);
 	DEBUGP("Algobuf is %u\n", *(uint32 *)algobuf);
 	memcpy(*buf + strlen(hash_names[state->hashfunc]) + 1, algobuf, *buflen);
-	*buflen  = strlen(hash_names[state->hashfunc]) + 1 + *buflen;
+	*buflen  = (uint32)strlen(hash_names[state->hashfunc]) + 1 + *buflen;
 	free(algobuf);
 	return;
 }
@@ -100,7 +100,7 @@ hash_state_t *hash_state_load(const char *buf, uint32 buflen)
 		}
 	}
 	if (hashfunc == HASH_COUNT) return NULL;
-	offset = strlen(hash_names[hashfunc]) + 1;
+	offset = (uint32)strlen(hash_names[hashfunc]) + 1;
 	switch (hashfunc)
 	{
 		case HASH_JENKINS:

@@ -13,6 +13,7 @@ mph_t *__mph_new(MPH_ALGO algo, key_source_t *key_source)
 	mph->algo = algo;
 	mph->key_source = key_source;
 	mph->verbosity = 0;
+	float c = 0;
 	return mph;
 }
 
@@ -24,7 +25,7 @@ void __mph_destroy(mph_t *mph)
 void __mphf_dump(mphf_t *mphf, FILE *fd)
 {
 	uint32 nsize = htonl(mphf->size);
-	fwrite(mph_names[mphf->algo], strlen(mph_names[mphf->algo]) + 1, 1, fd);
+	fwrite(mph_names[mphf->algo], (uint32)(strlen(mph_names[mphf->algo]) + 1), 1, fd);
 	fwrite(&nsize, sizeof(mphf->size), 1, fd);
 }
 mphf_t *__mphf_load(FILE *f) 

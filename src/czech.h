@@ -14,5 +14,6 @@ mphf_t *czech_mph_create(mph_t *mph, float c);
 
 void czech_mphf_load(FILE *f, mphf_t *mphf);
 int czech_mphf_dump(mphf_t *mphf, FILE *f);
+void czech_mphf_destroy(mphf_t *mphf);
 uint32 czech_mphf_search(mphf_t *mphf, const char *key, uint32 keylen);
 #endif
