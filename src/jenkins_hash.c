@@ -84,9 +84,9 @@ Use for hash table lookup, or anything where one collision in 2^^32 is
 acceptable.  Do NOT use for cryptographic purposes.
 --------------------------------------------------------------------
  */
-cmph_jenkins_state_t *cmph_jenkins_state_new(cmph_uint32 size) //size of hash table
+jenkins_state_t *jenkins_state_new(cmph_uint32 size) //size of hash table
 {
-	cmph_jenkins_state_t *state = (cmph_jenkins_state_t *)malloc(sizeof(cmph_jenkins_state_t));
+	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
 	DEBUGP("Initializing jenkins hash\n");
 	state->seed = rand() % size;
 	state->nbits = (cmph_uint32)ceil(log(size)/M_LOG2E);
@@ -94,12 +94,12 @@ cmph_jenkins_state_t *cmph_jenkins_state_new(cmph_uint32 size) //size of hash ta
 	DEBUGP("Initialized jenkins with size %u, nbits %u and seed %u\n", size, state->nbits, state->seed);
 	return state;
 }
-void cmph_jenkins_state_destroy(cmph_jenkins_state_t *state)
+void jenkins_state_destroy(jenkins_state_t *state)
 {
 	free(state);
 }
 
-cmph_uint32 cmph_jenkins_hash(cmph_jenkins_state_t *state, const char *k, cmph_uint32 keylen)
+cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keylen)
 {
 	cmph_uint32 a, b, c;
 	cmph_uint32 len, length;
@@ -162,7 +162,7 @@ cmph_uint32 cmph_jenkins_hash(cmph_jenkins_state_t *state, const char *k, cmph_u
 	return c;
 }
 
-void cmph_jenkins_state_dump(cmph_jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
+void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buflen = sizeof(cmph_uint32)*3;
 	*buf = malloc(*buflen);
@@ -178,9 +178,9 @@ void cmph_jenkins_state_dump(cmph_jenkins_state_t *state, char **buf, cmph_uint3
 
 	return;
 }
-cmph_jenkins_state_t *cmph_jenkins_state_load(const char *buf, cmph_uint32 buflen)
+jenkins_state_t *jenkins_state_load(const char *buf, cmph_uint32 buflen)
 {
-	cmph_jenkins_state_t *state = (cmph_jenkins_state_t *)malloc(sizeof(cmph_jenkins_state_t));
+	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
 	state->seed = *(cmph_uint32 *)buf;
 	state->nbits = *(((cmph_uint32 *)buf) + 1);
 	state->size = *(((cmph_uint32 *)buf) + 2);

@@ -5,7 +5,7 @@
 
 /** Hash generation algorithm data
   */
-struct cmph__mph_t
+struct __config_t
 {
 	CMPH_ALGO algo;
 	cmph_key_source_t *key_source;
@@ -16,7 +16,7 @@ struct cmph__mph_t
 
 /** Hash querying algorithm data
   */
-struct cmph__mphf_t
+struct __cmph_t
 {
 	CMPH_ALGO algo;
 	cmph_uint32 size;
@@ -24,10 +24,10 @@ struct cmph__mphf_t
 	void *data; //algorithm dependent data
 };
 
-cmph_mph_t *cmph__mph_new(CMPH_ALGO algo, cmph_key_source_t *key_source);
-void cmph__mph_destroy();
-void cmph__mphf_dump(cmph_mphf_t *mphf, FILE *);
-cmph_mphf_t *cmph__mphf_load(FILE *f);
+cmph_config_t *__config_new(cmph_key_source_t *key_source);
+void __config_destroy();
+void __cmph_dump(cmph_t *mphf, FILE *);
+cmph_t *__cmph_load(FILE *f);
 
 
 #endif

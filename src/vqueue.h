@@ -2,17 +2,17 @@
 #define __CMPH_VQUEUE_H__
 
 #include "cmph_types.h"
-typedef struct cmph__vqueue_t cmph_vqueue_t;
+typedef struct __vqueue_t vqueue_t;
 
-cmph_vqueue_t * cmph_vqueue_new(cmph_uint32 capacity);
+vqueue_t * vqueue_new(cmph_uint32 capacity);
 
-cmph_uint8 cmph_vqueue_is_empty(cmph_vqueue_t * q);
+cmph_uint8 vqueue_is_empty(vqueue_t * q);
 
-void cmph_vqueue_insert(cmph_vqueue_t * q, cmph_uint32 val);
+void vqueue_insert(vqueue_t * q, cmph_uint32 val);
 
-cmph_uint32 cmph_vqueue_remove(cmph_vqueue_t * q);
+cmph_uint32 vqueue_remove(vqueue_t * q);
 
-void cmph_vqueue_print(cmph_vqueue_t * q);
+void vqueue_print(vqueue_t * q);
 
-void cmph_vqueue_destroy(cmph_vqueue_t * q);
+void vqueue_destroy(vqueue_t * q);
 #endif

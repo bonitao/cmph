@@ -1,19 +1,18 @@
-#ifndef __BMZ_H__
-#define __BMZ_H__
+#ifndef __CMPH_BMZ_H__
+#define __CMPH_BMZ_H__
 
-#include "graph.h"
 #include "cmph.h"
 
-typedef struct cmph__bmz_mphf_data_t cmph_bmz_mphf_data_t;
-typedef struct cmph__bmz_mph_data_t cmph_bmz_mph_data_t;
+typedef struct __bmz_data_t bmz_data_t;
+typedef struct __bmz_config_data_t bmz_config_data_t;
 
-cmph_mph_t *cmph_bmz_mph_new(cmph_key_source_t *key_source);
-void cmph_bmz_mph_set_hashfuncs(cmph_mph_t *mph, CMPH_HASH *hashfuncs);
-void cmph_bmz_mph_destroy(cmph_mph_t *mph);
-cmph_mphf_t *cmph_bmz_mph_create(cmph_mph_t *mph, float bmz_c);
+bmz_config_data_t *bmz_config_new(cmph_key_source_t *key_source);
+void bmz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
+void bmz_config_destroy(cmph_config_t *mph);
+cmph_t *bmz_new(cmph_config_t *mph, float c);
 
-void cmph_bmz_mphf_load(FILE *f, cmph_mphf_t *mphf);
-int cmph_bmz_mphf_dump(cmph_mphf_t *mphf, FILE *f);
-void cmph_bmz_mphf_destroy(cmph_mphf_t *mphf);
-cmph_uint32 cmph_bmz_mphf_search(cmph_mphf_t *mphf, const char *key, cmph_uint32 keylen);
+void bmz_load(FILE *f, cmph_t *mphf);
+int bmz_dump(cmph_t *mphf, FILE *f);
+void bmz_destroy(cmph_t *mphf);
+cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen);
 #endif

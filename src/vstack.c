@@ -6,16 +6,16 @@
 //#define DEBUG
 #include "debug.h"
 
-struct cmph__vstack_t
+struct __vstack_t
 {
 	cmph_uint32 pointer;
 	cmph_uint32 *values;
 	cmph_uint32 capacity;
 };
 
-cmph_vstack_t *cmph_vstack_new()
+vstack_t *vstack_new()
 {
-	cmph_vstack_t *stack = (cmph_vstack_t *)malloc(sizeof(cmph_vstack_t));
+	vstack_t *stack = (vstack_t *)malloc(sizeof(vstack_t));
 	assert(stack);
 	stack->pointer = 0;
 	stack->values = NULL;
@@ -23,43 +23,43 @@ cmph_vstack_t *cmph_vstack_new()
 	return stack;
 }
 
-void cmph_vstack_destroy(cmph_vstack_t *stack)
+void vstack_destroy(vstack_t *stack)
 {
 	assert(stack);
 	free(stack->values);
 	free(stack);
 }
 
-void cmph_vstack_push(cmph_vstack_t *stack, cmph_uint32 val)
+void vstack_push(vstack_t *stack, cmph_uint32 val)
 {
 	assert(stack);
-	cmph_vstack_reserve(stack, stack->pointer + 1);
+	vstack_reserve(stack, stack->pointer + 1);
 	stack->values[stack->pointer] = val;
 	++(stack->pointer);
 }
-void cmph_vstack_pop(cmph_vstack_t *stack)
+void vstack_pop(vstack_t *stack)
 {
 	assert(stack);
 	assert(stack->pointer > 0);
 	--(stack->pointer);
 }
 
-cmph_uint32 cmph_vstack_top(cmph_vstack_t *stack)
+cmph_uint32 vstack_top(vstack_t *stack)
 {
 	assert(stack);
 	assert(stack->pointer > 0);
 	return stack->values[(stack->pointer - 1)];
 }
-int cmph_vstack_empty(cmph_vstack_t *stack)
+int vstack_empty(vstack_t *stack)
 {
 	assert(stack);
 	return stack->pointer == 0;
 }
-cmph_uint32 cmph_vstack_size(cmph_vstack_t *stack)
+cmph_uint32 vstack_size(vstack_t *stack)
 {
 	return stack->pointer;
 }
-void cmph_vstack_reserve(cmph_vstack_t *stack, cmph_uint32 size)
+void vstack_reserve(vstack_t *stack, cmph_uint32 size)
 {
 	assert(stack);
 	if (stack->capacity < size)

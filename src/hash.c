@@ -7,26 +7,26 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_hash_names[] = { "jenkins", "djb2", "sdbm", "fnv", "glib", "pjw", NULL };
+const char *cmph_hash_names[] = { "djb2", "fnv", "glib", "jenkins", "pjw", "sdbm", NULL };
 
-cmph_hash_state_t *cmph_hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
+hash_state_t *hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
 {
-	cmph_hash_state_t *state = NULL;
+	hash_state_t *state = NULL;
 	switch (hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
 	  		DEBUGP("Jenkins function - %u\n", hashsize);
-			state = (cmph_hash_state_t *)cmph_jenkins_state_new(hashsize);
+			state = (hash_state_t *)jenkins_state_new(hashsize);
 	  		DEBUGP("Jenkins function created\n");
 			break;
 		case CMPH_HASH_DJB2:
-			state = (cmph_hash_state_t *)cmph_djb2_state_new();
+			state = (hash_state_t *)djb2_state_new();
 			break;
 		case CMPH_HASH_SDBM:
-			state = (cmph_hash_state_t *)cmph_sdbm_state_new();
+			state = (hash_state_t *)sdbm_state_new();
 			break;
 		case CMPH_HASH_FNV:
-			state = (cmph_hash_state_t *)cmph_fnv_state_new();
+			state = (hash_state_t *)fnv_state_new();
 			break;
 		default:
 			assert(0);
@@ -34,18 +34,18 @@ cmph_hash_state_t *cmph_hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
 	state->hashfunc = hashfunc;
 	return state;
 }
-cmph_uint32 cmph_hash(cmph_hash_state_t *state, const char *key, cmph_uint32 keylen)
+cmph_uint32 hash(hash_state_t *state, const char *key, cmph_uint32 keylen)
 {
 	switch (state->hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			return cmph_jenkins_hash((cmph_jenkins_state_t *)state, key, keylen);
+			return jenkins_hash((jenkins_state_t *)state, key, keylen);
 		case CMPH_HASH_DJB2:
-			return cmph_djb2_hash((cmph_djb2_state_t *)state, key, keylen);
+			return djb2_hash((djb2_state_t *)state, key, keylen);
 		case CMPH_HASH_SDBM:
-			return cmph_sdbm_hash((cmph_sdbm_state_t *)state, key, keylen);
+			return sdbm_hash((sdbm_state_t *)state, key, keylen);
 		case CMPH_HASH_FNV:
-			return cmph_fnv_hash((cmph_fnv_state_t *)state, key, keylen);
+			return fnv_hash((fnv_state_t *)state, key, keylen);
 		default:
 			assert(0);
 	}
@@ -53,25 +53,25 @@ cmph_uint32 cmph_hash(cmph_hash_state_t *state, const char *key, cmph_uint32 key
 	return 0;
 }
 
-void cmph_hash_state_dump(cmph_hash_state_t *state, char **buf, cmph_uint32 *buflen)
+void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	char *algobuf;
 	switch (state->hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			cmph_jenkins_state_dump((cmph_jenkins_state_t *)state, &algobuf, buflen);
+			jenkins_state_dump((jenkins_state_t *)state, &algobuf, buflen);
 			if (*buflen == UINT_MAX) return;
 			break;
 		case CMPH_HASH_DJB2:
-			cmph_djb2_state_dump((cmph_djb2_state_t *)state, &algobuf, buflen);
+			djb2_state_dump((djb2_state_t *)state, &algobuf, buflen);
 			if (*buflen == UINT_MAX) return;
 			break;
 		case CMPH_HASH_SDBM:
-			cmph_sdbm_state_dump((cmph_sdbm_state_t *)state, &algobuf, buflen);
+			sdbm_state_dump((sdbm_state_t *)state, &algobuf, buflen);
 			if (*buflen == UINT_MAX) return;
 			break;
 		case CMPH_HASH_FNV:
-			cmph_fnv_state_dump((cmph_fnv_state_t *)state, &algobuf, buflen);
+			fnv_state_dump((fnv_state_t *)state, &algobuf, buflen);
 			if (*buflen == UINT_MAX) return;
 			break;
 		default:
@@ -86,7 +86,7 @@ void cmph_hash_state_dump(cmph_hash_state_t *state, char **buf, cmph_uint32 *buf
 	return;
 }
 
-cmph_hash_state_t *cmph_hash_state_load(const char *buf, cmph_uint32 buflen)
+hash_state_t *hash_state_load(const char *buf, cmph_uint32 buflen)
 {
 	cmph_uint32 i;
 	cmph_uint32 offset;
@@ -104,33 +104,33 @@ cmph_hash_state_t *cmph_hash_state_load(const char *buf, cmph_uint32 buflen)
 	switch (hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			return (cmph_hash_state_t *)cmph_jenkins_state_load(buf + offset, buflen - offset);
+			return (hash_state_t *)jenkins_state_load(buf + offset, buflen - offset);
 		case CMPH_HASH_DJB2:
-			return (cmph_hash_state_t *)cmph_djb2_state_load(buf + offset, buflen - offset);
+			return (hash_state_t *)djb2_state_load(buf + offset, buflen - offset);
 		case CMPH_HASH_SDBM:
-			return (cmph_hash_state_t *)cmph_sdbm_state_load(buf + offset, buflen - offset);
+			return (hash_state_t *)sdbm_state_load(buf + offset, buflen - offset);
 		case CMPH_HASH_FNV:
-			return (cmph_hash_state_t *)cmph_fnv_state_load(buf + offset, buflen - offset);
+			return (hash_state_t *)fnv_state_load(buf + offset, buflen - offset);
 		default:
 			return NULL;
 	}
 	return NULL;
 }
-void cmph_hash_state_destroy(cmph_hash_state_t *state)
+void hash_state_destroy(hash_state_t *state)
 {
 	switch (state->hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			cmph_jenkins_state_destroy((cmph_jenkins_state_t *)state);
+			jenkins_state_destroy((jenkins_state_t *)state);
 			break;
 		case CMPH_HASH_DJB2:
-			cmph_djb2_state_destroy((cmph_djb2_state_t *)state);
+			djb2_state_destroy((djb2_state_t *)state);
 			break;
 		case CMPH_HASH_SDBM:
-			cmph_sdbm_state_destroy((cmph_sdbm_state_t *)state);
+			sdbm_state_destroy((sdbm_state_t *)state);
 			break;
 		case CMPH_HASH_FNV:
-			cmph_fnv_state_destroy((cmph_fnv_state_t *)state);
+			fnv_state_destroy((fnv_state_t *)state);
 			break;
 		default:
 			assert(0);

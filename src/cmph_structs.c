@@ -5,32 +5,31 @@
 //#define DEBUG
 #include "debug.h"
 
-cmph_mph_t *cmph__mph_new(CMPH_ALGO algo, cmph_key_source_t *key_source)
+cmph_config_t *__config_new(cmph_key_source_t *key_source)
 {
-	cmph_mph_t *mph = (cmph_mph_t *)malloc(sizeof(cmph_mph_t));
+	cmph_config_t *mph = (cmph_config_t *)malloc(sizeof(cmph_config_t));
 	DEBUGP("Creating mph with algorithm %s\n", cmph_names[algo]);
 	if (mph == NULL) return NULL;
-	mph->algo = algo;
 	mph->key_source = key_source;
 	mph->verbosity = 0;
 	float c = 0;
 	return mph;
 }
 
-void cmph__mph_destroy(cmph_mph_t *mph)
+void __config_destroy(cmph_config_t *mph)
 {
 	free(mph);
 }
 
-void cmph__mphf_dump(cmph_mphf_t *mphf, FILE *fd)
+void __cmph_dump(cmph_t *mphf, FILE *fd)
 {
 	cmph_uint32 nsize = htonl(mphf->size);
 	fwrite(cmph_names[mphf->algo], (cmph_uint32)(strlen(cmph_names[mphf->algo]) + 1), 1, fd);
 	fwrite(&nsize, sizeof(mphf->size), 1, fd);
 }
-cmph_mphf_t *cmph__mphf_load(FILE *f) 
+cmph_t *__cmph_load(FILE *f) 
 {
-	cmph_mphf_t *mphf = NULL;
+	cmph_t *mphf = NULL;
 	cmph_uint32 i;
 	char algo_name[BUFSIZ];
 	char *ptr = algo_name;
@@ -56,7 +55,7 @@ cmph_mphf_t *cmph__mphf_load(FILE *f)
 		DEBUGP("Algorithm %s not found\n", algo_name);
 		return NULL;
 	}
-	mphf = (cmph_mphf_t *)malloc(sizeof(cmph_mphf_t));
+	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = algo;
 	fread(&(mphf->size), sizeof(mphf->size), 1, f);
 	mphf->size = ntohl(mphf->size);
