@@ -7,7 +7,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_hash_names[] = { "djb2", "fnv", "glib", "jenkins", "pjw", "sdbm", NULL };
+const char *cmph_hash_names[] = { "djb2", "fnv", "jenkins", "sdbm", NULL };
 
 hash_state_t *hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
 {
