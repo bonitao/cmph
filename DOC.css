@@ -1,0 +1,33 @@
+/* implement both fixed-size and relative sizes */
+SMALL.XTINY		{  }
+SMALL.TINY		{  }
+SMALL.SCRIPTSIZE	{  }
+BODY                    { font-size: 13 }
+TD                      { font-size: 13 }
+SMALL.FOOTNOTESIZE	{ font-size: 13 } 
+SMALL.SMALL		{  }
+BIG.LARGE		{  }
+BIG.XLARGE		{  }
+BIG.XXLARGE		{  }
+BIG.HUGE		{  }
+BIG.XHUGE		{  }
+
+/* heading styles */
+H1		{  }
+H2		{  }
+H3		{  }
+H4		{  }
+H5		{  }
+
+
+/* mathematics styles */
+DIV.displaymath		{ }	/* math displays */
+TD.eqno			{ }	/* equation-number cells */
+
+
+/* document-specific styles come next */
+DIV.navigation		{   }
+DIV.center		{   }
+SPAN.textit		{ font-style: italic  }
+SPAN.arabic		{   }
+SPAN.eqn-number		{   }

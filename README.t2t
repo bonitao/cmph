@@ -8,7 +8,8 @@ CMPH - C Minimal Perfect Hashing Library
 ==Description==
 
 C Minimal Perfect Hashing Library is a portable LGPLed library to create and
-to work with minimal perfect hash functions. The cmph library encapsulates the newest
+to work with [minimal perfect hash functions concepts.html]. 
+The cmph library encapsulates the newest
 and more efficient algorithms (available in the literature) in an easy-to-use, 
 production-quality and fast API. The library is designed to work with big entries that 
 can not fit in the main memory. It has been used successfully for constructing minimal perfect
@@ -54,7 +55,7 @@ of the distinguishable features of cmph:
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
   //24.6n + O(1)// bytes. The resulting function can be stored in //3.72n// bytes.
-%html% [click here bmz.html] for details.
+%html% [click here bmz.html#heuristic] for details.
 
 
 ----------------------------------------
@@ -173,5 +174,5 @@ Code is under the LGPL.
 
 %!include: FOOTER.t2t
 
-%!include(html): ''LOGO.html''
+%!include(html): ''LOGO.t2t''
 Last Updated: %%date(%c)

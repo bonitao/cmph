@@ -1,6 +1,7 @@
 CMPH FAQ
 
 
+%!includeconf: CONFIG.t2t
 
 - How do I define the ids of the keys?
 	- You don't. The ids will be assigned by the algorithm creating the minimal
@@ -26,7 +27,7 @@ one is executed?
 
 
 ----------------------------------------
-[Home index.html]
+ | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
 ----------------------------------------
 
 %!include: FOOTER.t2t
