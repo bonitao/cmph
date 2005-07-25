@@ -3,26 +3,35 @@ CMPH - C Minimal Perfect Hashing Library
 -------------------------------------------------------------------
 
 
+	Motivation
+	==========
+
+A perfect hash function maps a static set of n keys into a set of m integer numbers without collisions, where m is greater than or equal to n. If m is equal to n, the function is called minimal.
+
+Minimal perfect hash functions (concepts.html) are widely used for memory efficient storage and fast retrieval of items from static sets, such as words in natural languages, reserved words in programming languages or interactive systems, universal resource locations (URLs) in Web search engines, or item sets in data mining techniques. Therefore, there are applications for minimal perfect hash functions in information retrieval systems, database systems, language translation systems, electronic commerce systems, compilers, operating systems, among others.
+
+The use of minimal perfect hash functions is, until now, restricted to scenarios where the set of keys being hashed is small, because of the limitations of current algorithms. But in many cases, to deal with huge set of keys is crucial. So, this project gives to the free software community an API that will work with sets in the order of billion of keys.
+
+Probably, the most interesting application for minimal perfect hash functions is its use as an indexing structure for databases. The most popular data structure used as an indexing structure in databases is the B+ tree. In fact, the B+ tree is very used for dynamic applications with frequent insertions and deletions of records. However, for applications with sporadic modifications and a huge number of queries the B+ tree is not the best option, because practical deployments of this structure are extremely complex, and perform poorly with very large sets of keys such as those required for the new frontiers database applications (http://acmqueue.com/modules.php?name=Content&pa=showpage&pid=299).
+
+For example, in the information retrieval field, the work with huge collections is a daily task. The simple assignment of ids to web pages of a collection can be a challenging task. While traditional databases simply cannot handle more traffic once the working set of web page urls does not fit in main memory anymore, minimal perfect hash functions can easily scale to hundred of millions of entries, using stock hardware.
+
+As there are lots of applications for minimal perfect hash functions, it is important to implement memory and time efficient algorithms for constructing such functions. The lack of similar libraries in the free software world has been the main motivation to create the C Minimal Perfect Hashing Library (gperf is a bit different (gperf.html), since it was conceived to create very fast perfect hash functions for small sets of keys and CMPH Library was conceived to create minimal perfect hash functions for very large sets of keys). C Minimal Perfect Hashing Library is a portable LGPLed library to generate and to work with very efficient minimal perfect hash functions.
+
+-------------------------------------------------------------------
+
+
 	Description
 	===========
 
-C Minimal Perfect Hashing Library is a portable LGPLed library to create and
-to work with minimal perfect hash functions (concepts.html). 
-The cmph library encapsulates the newest
-and more efficient algorithms (available in the literature) in an easy-to-use, 
-production-quality and fast API. The library is designed to work with big entries that 
-can not fit in the main memory. It has been used successfully for constructing minimal perfect
-hash functions for sets with more than 100 million of keys. 
-Although there is a lack of similar libraries
-in the free software world (gperf is a bit different (gperf.html)), we can point out some 
-of the distinguishable features of cmph:
+The CMPH Library encapsulates the newest and more efficient algorithms in an easy-to-use, production-quality, fast API. The library was designed to work with big entries that cannot fit in the main memory. It has been used successfully for constructing minimal perfect hash functions for sets with more than 100 million of keys, and we intend to expand this number to the order of billion of keys. Although there is a lack of similar libraries, we can point out some of the distinguishable features of the CMPH Library:
 
 - Fast.
 - Space-efficient with main memory usage carefully documented.
 - The best modern algorithms are available (or at least scheduled for implementation :-)).
 - Works with in-disk key sets through of using the adapter pattern.
 - Serialization of hash functions.
-- Portable C code (currently works on GNU/Linux and WIN32).
+- Portable C code (currently works on GNU/Linux and WIN32 and is reported to work in OpenBSD and Solaris).
 - Object oriented implementation.
 - Easily extensible.
 - Well encapsulated API aiming binary compatibility through releases.
@@ -61,51 +70,72 @@ of the distinguishable features of cmph:
 Using cmph is quite simple. Take a look.
 
 
-   // Create minimal perfect hash function from in-memory vector
-   #include <cmph.h>
-   ...
-   
-   const char **vector;
-   unsigned int nkeys;
-   //Fill vector
-   //...
-   
-   //Create minimal perfect hash function using the default(chm) algorithm.
-   cmph_config_t *config = cmph_config_new(cmph_io_vector_adapter(vector, nkeys));
-   cmph_t *hash = cmph_new(config);
-   cmph_config_destroy(config);
-   
-   //Find key
-   const char *key = "sample key";
-   unsigned int id = cmph_search(hash, key, strlen(key));
-   
-   //Destroy hash
-   cmph_destroy(hash);
+  #include <cmph.h>
+  
+  // Create minimal perfect hash function from in-memory vector
+  int main(int argc, char **argv)
+  {   
+  	// Creating a filled vector
+  	const char *vector[] = {"aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee", 
+  				"ffffffffff", "gggggggggg", "hhhhhhhhhh", "iiiiiiiiii", "jjjjjjjjjj"};
+  	unsigned int nkeys = 10;
+  	// Source of keys
+  	cmph_io_adapter_t *source = cmph_io_vector_adapter(vector, nkeys);
+  
+  	//Create minimal perfect hash function using the default (chm) algorithm.
+  	cmph_config_t *config = cmph_config_new(source);
+  	cmph_t *hash = cmph_new(config);
+  	cmph_config_destroy(config);
+     
+  	//Find key
+  	const char *key = "jjjjjjjjjj";
+  	unsigned int id = cmph_search(hash, key, strlen(key));
+  	fprintf(stderr, "Id:%u\n", id);
+  	//Destroy hash
+  	cmph_destroy(hash);
+  	free(source);   
+  	return 0;
+  }
+
+Download vector_adapter_ex1.c (examples/vector_adapter_ex1.c). This example does not work in version 0.3. You need to update the sources from CVS to make it works.
 
 -------------------------------
 
 
-   // Create minimal perfect hash function from in-disk keys using BMZ algorithm
-   #include <cmph.h>
-   ...
-   
-   //Open file with newline separated list of keys
-   FILE *fd = fopen("keysfile_newline_separated", "r");
-   //check for errors
-   //...
-   
-   cmph_config_t *config = cmph_config_new(cmph_io_nlfile_adapter(fd));
-   cmph_config_set_algo(config, CMPH_BMZ);
-   cmph_t *hash = cmph_new(config);
-   cmph_config_destroy(config);
-   fclose(fd);
-   
-   //Find key
-   const char *key = "sample key";
-   unsigned int id = cmph_search(hash, key, strlen(key));
-   
-   //Destroy hash
-   cmph_destroy(hash);
+  #include <cmph.h>
+  #include <stdio.h>
+  
+  // Create minimal perfect hash function from in-disk keys using BMZ algorithm
+  int main(int argc, char **argv)
+  {   
+  	 //Open file with newline separated list of keys
+  	FILE * keys_fd = fopen("keys.txt", "r");
+  	cmph_t *hash = NULL;
+  	if (keys_fd == NULL) 
+  	{
+  	  fprintf(stderr, "File \"keys.txt\" not found\n");
+  	  exit(1);
+  	}	
+  	// Source of keys
+  	cmph_io_adapter_t *source = cmph_io_nlfile_adapter(keys_fd);
+  
+  	cmph_config_t *config = cmph_config_new(source);
+  	cmph_config_set_algo(config, CMPH_BMZ);
+  	hash = cmph_new(config);
+  	cmph_config_destroy(config);
+     
+  	//Find key
+  	const char *key = "jjjjjjjjjj";
+  	unsigned int id = cmph_search(hash, key, strlen(key));
+  	fprintf(stderr, "Id:%u\n", id);
+  	//Destroy hash
+  	cmph_destroy(hash);
+  	free(source);   
+  	fclose(keys_fd);
+  	return 0;
+  }
+
+Download file_adapter_ex2.c (examples/file_adapter_ex2.c) and keys.txt (examples/keys.txt)
 
 --------------------------------------
 
@@ -180,7 +210,7 @@ Davi de Castro Reis (davi@users.sourceforge.net)
 
 Fabiano Cupertino Botelho (fc_botelho@users.sourceforge.net)
 
-Last Updated: Thu Feb 17 13:09:55 2005
+Last Updated: Mon Jul 25 19:14:42 2005
 
 
 
