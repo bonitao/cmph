@@ -27,7 +27,7 @@ typedef struct
 /* please call free() in the created adapters */
 cmph_io_adapter_t *cmph_io_nlfile_adapter(FILE * keys_fd);
 cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys);
-/*cmph_io_adapter_t *cmph_io_vector_adapter(const char ** vector, cmph_uint32 nkeys);*/
+cmph_io_adapter_t *cmph_io_vector_adapter(const char ** vector, cmph_uint32 nkeys);
 
 /** Hash configuration API **/
 cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source);
