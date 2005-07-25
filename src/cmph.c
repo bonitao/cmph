@@ -12,6 +12,8 @@
 
 const char *cmph_names[] = { "bmz", "chm", NULL }; /* included -- Fabiano */
 
+static cmph_uint32 position; // access position when data is a vector	
+
 static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 {
 	FILE *fd = (FILE *)data;
@@ -37,14 +39,32 @@ static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 	return *keylen;
 }
 
+static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
+{
+	char **keys = (char **)data;
+	if (keys + position == NULL) return -1;
+	*keylen = strlen(*(keys + position));
+	*key = (char *)malloc(*keylen);
+	strcpy(*key, *(keys + position));
+	position ++;
+	return *keylen;
+}
+
+
 static void key_nlfile_dispose(void *data, char *key, cmph_uint32 keylen)
 {
 	free(key);
 }
+
 static void key_nlfile_rewind(void *data)
 {
 	FILE *fd = (FILE *)data;
 	rewind(fd);
+}
+
+static void key_vector_rewind(void *data)
+{
+	position = 0;
 }
 
 static cmph_uint32 count_nlfile_keys(FILE *fd)
@@ -89,7 +109,14 @@ cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys)
 
 cmph_io_adapter_t *cmph_io_vector_adapter(const char ** vector, cmph_uint32 nkeys)
 {
-  return NULL;
+  cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
+  assert(key_source);
+  key_source->data = (void *)vector;
+  key_source->nkeys = nkeys;
+  key_source->read = key_vector_read;
+  key_source->dispose = key_nlfile_dispose;
+  key_source->rewind = key_vector_rewind;
+  return key_source;
 }
 
 cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source)

@@ -35,4 +35,4 @@ dnl Checks for library functions.
 
 AC_CHECK_SPOON
 dnl AC_OUTPUT(Makefile tests/Makefile samples/Makefile)
-AC_OUTPUT(Makefile src/Makefile tests/Makefile)
+AC_OUTPUT(Makefile src/Makefile tests/Makefile examples/Makefile)
