@@ -2,7 +2,7 @@
 #include "cmph_structs.h"
 #include "chm.h"
 #include "bmz.h"
-//#include "bmz.h" /* included -- Fabiano */
+#include "brz.h" /* included -- Fabiano */
 
 #include <stdlib.h>
 #include <assert.h>
@@ -10,7 +10,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_names[] = { "bmz", "chm", NULL }; /* included -- Fabiano */
+const char *cmph_names[] = { "bmz", "chm", "brz", NULL }; /* included -- Fabiano */
 
 static cmph_uint32 position; // access position when data is a vector	
 
@@ -107,7 +107,7 @@ cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys)
   return key_source;
 }
 
-cmph_io_adapter_t *cmph_io_vector_adapter(const char ** vector, cmph_uint32 nkeys)
+cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys)
 {
   cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
   assert(key_source);
@@ -136,24 +136,30 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 		switch (mph->algo)
 		{
 			case CMPH_CHM:
-			chm_config_destroy(mph->data);
-			break;
+				chm_config_destroy(mph->data);
+				break;
 			case CMPH_BMZ:
-			bmz_config_destroy(mph->data);
-			break;
+				bmz_config_destroy(mph->data);
+				break;
+			case CMPH_BRZ:
+				brz_config_destroy(mph->data);
+				break;
 			default:
-			assert(0);
+				assert(0);
 		}
 		switch(algo)
 		{
 			case CMPH_CHM:
-			mph->data = chm_config_new();
-			break;
+				mph->data = chm_config_new();
+				break;
 			case CMPH_BMZ:
-			mph->data = bmz_config_new();
-			break;
+				mph->data = bmz_config_new();
+				break;
+			case CMPH_BRZ:
+				mph->data = brz_config_new();
+				break;
 			default:
-			assert(0);
+				assert(0);
 		}
 	}
 	mph->algo = algo;
@@ -168,7 +174,10 @@ void cmph_config_destroy(cmph_config_t *mph)
 			chm_config_destroy(mph);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
-	        bmz_config_destroy(mph);
+			bmz_config_destroy(mph);
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+	        	brz_config_destroy(mph);
 			break;
 		default:
 			assert(0);
@@ -190,6 +199,9 @@ void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			bmz_config_set_hashfuncs(mph, hashfuncs);
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_config_set_hashfuncs(mph, hashfuncs);
 			break;
 		default:
 			break;
@@ -220,6 +232,11 @@ cmph_t *cmph_new(cmph_config_t *mph)
 			if (c == 0) c = 1.15;
 			mphf = bmz_new(mph, c);
 			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			DEBUGP("Creating brz hash\n");
+			if (c == 0) c = 1.15;
+			mphf = brz_new(mph, c);
+			break;
 		default:
 			assert(0);
 	}
@@ -235,6 +252,9 @@ int cmph_dump(cmph_t *mphf, FILE *f)
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        return bmz_dump(mphf, f);
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+		        return brz_dump(mphf, f);
 			break;
 		default:
 			assert(0);
@@ -259,6 +279,10 @@ cmph_t *cmph_load(FILE *f)
 			DEBUGP("Loading bmz algorithm dependent parts\n");
 			bmz_load(f, mphf);
 			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			DEBUGP("Loading brz algorithm dependent parts\n");
+			brz_load(f, mphf);
+			break;
 		default:
 			assert(0);
 	}
@@ -277,6 +301,9 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 		case CMPH_BMZ: /* included -- Fabiano */
 		        DEBUGP("bmz algorithm search\n");		         
 		        return bmz_search(mphf, key, keylen);
+		case CMPH_BRZ: /* included -- Fabiano */
+		        DEBUGP("brz algorithm search\n");		         
+		        return brz_search(mphf, key, keylen);
 		default:
 			assert(0);
 	}
@@ -298,6 +325,9 @@ void cmph_destroy(cmph_t *mphf)
 			return;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        bmz_destroy(mphf);
+			return;
+		case CMPH_BRZ: /* included -- Fabiano */
+		        brz_destroy(mphf);
 			return;
 		default: 
 			assert(0);
