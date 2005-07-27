@@ -175,7 +175,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	if (iterations_map == 0) return NULL;
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
-	bmzf = (bmz_data_t *)malloc(sizeof(bmz_config_data_t));
+	bmzf = (bmz_data_t *)malloc(sizeof(bmz_data_t));
 	bmzf->g = bmz->g;
 	bmz->g = NULL; //transfer memory ownership
 	bmzf->hashes = bmz->hashes;

@@ -11,6 +11,7 @@ struct __bmz_data_t
 	hash_state_t **hashes;
 };
 
+
 struct __bmz_config_data_t
 {
 	CMPH_HASH hashfuncs[2];

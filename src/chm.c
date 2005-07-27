@@ -124,7 +124,7 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
-	chmf = (chm_data_t *)malloc(sizeof(chm_config_data_t));
+	chmf = (chm_data_t *)malloc(sizeof(chm_data_t));
 	chmf->g = chm->g;
 	chm->g = NULL; //transfer memory ownership
 	chmf->hashes = chm->hashes;
