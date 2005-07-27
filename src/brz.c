@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <string.h>
 
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 
 static int brz_before_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmph_uint32 * diskoffset);
@@ -75,7 +75,6 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	char ** keys_vd = NULL;
 	
 	FILE * graphs_fd = NULL;
-	
 	DEBUGP("c: %f\n", c);
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
 	brz->m = mph->key_source->nkeys;	
@@ -144,7 +143,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brz_gen_graphs(mph, disksize, diskoffset, graphs_fd);
 	free(disksize);
 	free(diskoffset);
-	
+	DEBUGP("Graphs generated\n");
 	// codigo do algoritmo... 
 	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
 	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
