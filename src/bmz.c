@@ -99,7 +99,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 		bmz->hashes[0] = hash_state_new(bmz->hashfuncs[0], bmz->n);
 		DEBUGP("hash function 2\n");
 		bmz->hashes[1] = hash_state_new(bmz->hashfuncs[1], bmz->n);
-		DEBUGP("Generating edges\n");
+		DEBUGP("Generating edges\n");		
 		ok = bmz_gen_edges(mph);
 		if (!ok)
 		{
@@ -413,7 +413,6 @@ static int bmz_gen_edges(cmph_config_t *mph)
 	cmph_uint32 e;
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
 	cmph_uint8 multiple_edges = 0;
-
 	DEBUGP("Generating edges for %u vertices\n", bmz->n);
 	graph_clear_edges(bmz->graph);	
 	mph->key_source->rewind(mph->key_source->data);
@@ -421,8 +420,10 @@ static int bmz_gen_edges(cmph_config_t *mph)
 	{
 		cmph_uint32 h1, h2;
 		cmph_uint32 keylen;
-		char *key;
+		char *key = NULL;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
+		
+//		if (key == NULL)fprintf(stderr, "key = %s -- read BMZ\n", key);
 		h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 		h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
 		if (h1 == h2) if (++h2 >= bmz->n) h2 = 0;
@@ -434,6 +435,7 @@ static int bmz_gen_edges(cmph_config_t *mph)
 		}
 		DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
+//		fprintf(stderr, "key = %s -- dispose BMZ\n", key);
 		multiple_edges = graph_contains_edge(bmz->graph, h1, h2);
 		if (mph->verbosity && multiple_edges) fprintf(stderr, "A non simple graph was generated\n");
 		if (multiple_edges) return 0; // checking multiple edge restriction.
