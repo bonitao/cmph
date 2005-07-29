@@ -178,6 +178,17 @@ void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 
 	return;
 }
+
+jenkins_state_t *jenkins_state_copy(jenkins_state_t *src_state)
+{
+	jenkins_state_t *dest_state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
+	dest_state->hashfunc = src_state->hashfunc;
+	dest_state->seed = src_state->seed;
+	dest_state->nbits = src_state->nbits;
+	dest_state->size = src_state->size;
+	return dest_state;
+}
+
 jenkins_state_t *jenkins_state_load(const char *buf, cmph_uint32 buflen)
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));

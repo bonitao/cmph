@@ -86,6 +86,30 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 	return;
 }
 
+hash_state_t * hash_state_copy(hash_state_t *src_state)
+{
+	hash_state_t *dest_state = NULL;
+	switch (src_state->hashfunc)
+	{
+		case CMPH_HASH_JENKINS:
+			dest_state = (hash_state_t *)jenkins_state_copy((jenkins_state_t *)src_state);
+			break;
+		case CMPH_HASH_DJB2:
+			dest_state = (hash_state_t *)djb2_state_copy((djb2_state_t *)src_state);
+			break;
+		case CMPH_HASH_SDBM:
+			dest_state = (hash_state_t *)sdbm_state_copy((sdbm_state_t *)src_state);
+			break;
+		case CMPH_HASH_FNV:
+			dest_state = (hash_state_t *)fnv_state_copy((fnv_state_t *)src_state);
+			break;
+		default:
+			assert(0);
+	}
+	dest_state->hashfunc = src_state->hashfunc;
+	return dest_state;
+}
+
 hash_state_t *hash_state_load(const char *buf, cmph_uint32 buflen)
 {
 	cmph_uint32 i;

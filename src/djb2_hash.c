@@ -34,6 +34,13 @@ void djb2_state_dump(djb2_state_t *state, char **buf, cmph_uint32 *buflen)
 	return;
 }
 
+djb2_state_t *djb2_state_copy(djb2_state_t *src_state)
+{
+	djb2_state_t *dest_state = (djb2_state_t *)malloc(sizeof(djb2_state_t));
+	dest_state->hashfunc = src_state->hashfunc;
+	return dest_state;
+}
+
 djb2_state_t *djb2_state_load(const char *buf, cmph_uint32 buflen)
 {
 	djb2_state_t *state = (djb2_state_t *)malloc(sizeof(djb2_state_t));
