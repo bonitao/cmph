@@ -41,17 +41,29 @@ static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 
 static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
-	char **keys = (char **)data;
-	if (keys + position == NULL) return -1;
-	*keylen = strlen(*(keys + position));
-	*key = (char *)malloc(*keylen);
-	strcpy(*key, *(keys + position));
+	char **keys_vd = (char **)data;
+	if (keys_vd + position == NULL) return -1;
+	*keylen = strlen(*(keys_vd + position));
+	*key = (char *)malloc(*keylen + 1);
+	strcpy(*key, *(keys_vd + position));
 	position ++;
+	
+/*	char **keys_vd = (char **)data;
+	if (keys_vd[position] == NULL) return -1;
+	*keylen = strlen(keys_vd[position]);
+	*key = (char *)malloc(*keylen + 1);
+	strcpy(*key, keys_vd[position]);
+	position ++;*/
 	return *keylen;
 }
 
 
 static void key_nlfile_dispose(void *data, char *key, cmph_uint32 keylen)
+{
+	free(key);
+}
+
+static void key_vector_dispose(void *data, char *key, cmph_uint32 keylen)
 {
 	free(key);
 }
@@ -66,6 +78,7 @@ static void key_vector_rewind(void *data)
 {
 	position = 0;
 }
+
 
 static cmph_uint32 count_nlfile_keys(FILE *fd)
 {
@@ -114,7 +127,7 @@ cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys)
   key_source->data = (void *)vector;
   key_source->nkeys = nkeys;
   key_source->read = key_vector_read;
-  key_source->dispose = key_nlfile_dispose;
+  key_source->dispose = key_vector_dispose;
   key_source->rewind = key_vector_rewind;
   return key_source;
 }
@@ -136,13 +149,13 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 		switch (mph->algo)
 		{
 			case CMPH_CHM:
-				chm_config_destroy(mph->data);
+				chm_config_destroy(mph);
 				break;
 			case CMPH_BMZ:
-				bmz_config_destroy(mph->data);
+				bmz_config_destroy(mph);
 				break;
 			case CMPH_BRZ:
-				brz_config_destroy(mph->data);
+				brz_config_destroy(mph);
 				break;
 			default:
 				assert(0);
