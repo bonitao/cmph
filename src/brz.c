@@ -196,7 +196,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	}
 
 //	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "wb");
-	graphs_fd = fopen("cmph.tmp", "wb");
+/*	graphs_fd = fopen("cmph.tmp", "wb");*/
+	graphs_fd = fopen("/var/tmp/cmph.tmp", "wb");
 	if (graphs_fd == NULL)
 	{
 		free(brz->size);
@@ -213,7 +214,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	DEBUGP("Graphs generated\n");
 	fclose(graphs_fd);
 //	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "rb");
-	graphs_fd = fopen("cmph.tmp", "rb");
+/*	graphs_fd = fopen("cmph.tmp", "rb");*/
+	graphs_fd = fopen("/var/tmp/cmph.tmp", "rb");
 	// codigo do algoritmo... 
 	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
 	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
