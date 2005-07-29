@@ -19,7 +19,7 @@
 
 static int brz_before_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmph_uint32 * diskoffset);
 static void brz_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmph_uint32 * diskoffset, FILE * graphs_fd);
-static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys, cmph_uint32 h3);
+static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys);
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
 static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz_data_t * bmzf, cmph_uint32 index);
 
@@ -128,7 +128,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		return NULL;
 	}
 
-	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "wb");
+//	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "wb");
+	graphs_fd = fopen("cmph.tmp", "wb");
 	if (graphs_fd == NULL)
 	{
 		free(brz->size);
@@ -144,7 +145,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	free(diskoffset);
 	DEBUGP("Graphs generated\n");
 	fclose(graphs_fd);
-	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "rb");
+//	graphs_fd = fopen("/colecao/fbotelho/cmph.tmp", "rb");
+	graphs_fd = fopen("cmph.tmp", "rb");
 	// codigo do algoritmo... 
 	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
 	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
@@ -155,7 +157,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		cmph_uint32 j;
 		bmz_data_t * bmzf = NULL;
 		if (brz->size[i] == 0) continue;
-		keys_vd = brz_read_keys_vd(graphs_fd, brz->size[i], i);
+		keys_vd = brz_read_keys_vd(graphs_fd, brz->size[i]);
 		// Source of keys
 		source = cmph_io_vector_adapter(keys_vd, (cmph_uint32)brz->size[i]);
 		config = cmph_config_new(source);
@@ -214,11 +216,11 @@ static int brz_before_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmp
 		char *key;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
 		h3 = hash(brz->h3, key, keylen) % brz->k;
-		if(h3 == 6) 
-		{
-			DEBUGP("key = %s\n", key);
-			DEBUGP("keylen = %u\n", keylen + 1);
-		}
+// 		if(h3 == 6) 
+// 		{
+// 			DEBUGP("key = %s\n", key);
+// 			DEBUGP("keylen = %u\n", keylen + 1);
+// 		}
 
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 		if (brz->size[h3] == 255) return 0;
@@ -230,13 +232,13 @@ static int brz_before_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmp
 // 		}
 
 	}
-	fprintf(stderr, "size:%u offset: %u\n", brz->size[0], brz->offset[0]);
+//	DEBUGP("size:%u offset: %u\n", brz->size[0], brz->offset[0]);
 	for (e = 1; e < brz->k; ++e)
 	{
 		brz->offset[e] = brz->size[e-1] + brz->offset[e-1];
 		diskoffset[e]  = disksize[e-1]  +  diskoffset[e-1];
-		DEBUGP("disksize[%u]=%u diskoffset[%u]: %u\n", e, disksize[e], e, diskoffset[e]);
-		DEBUGP("size[%u]=%u offset[%u]: %u\n", e, brz->size[e], e, brz->offset[e]);
+/*		DEBUGP("disksize[%u]=%u diskoffset[%u]: %u\n", e, disksize[e], e, diskoffset[e]);
+		DEBUGP("size[%u]=%u offset[%u]: %u\n", e, brz->size[e], e, brz->offset[e]);*/
 	}
 	return 1;
 }
@@ -255,23 +257,23 @@ static void brz_gen_graphs(cmph_config_t *mph, cmph_uint32 * disksize, cmph_uint
 		char *key;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
 		h3 = hash(brz->h3, key, keylen) % brz->k;
-		if(h3 == 6) 
+/*		if(h3 == 6) 
 		{
 			DEBUGP("key = %s\n", key);
 			DEBUGP("keylen = %u\n", keylen + 1);
-		}
+		}*/
 		fseek(graphs_fd, diskoffset[h3], SEEK_SET);
 		fwrite(key, sizeof(char), keylen + 1, graphs_fd);
-		if(h3 == 6) 
+/*		if(h3 == 6) 
 		{
 			DEBUGP("diskoffset[%u]=%u \n", h3, diskoffset[h3]);
-		}
+		}*/
 		diskoffset[h3] = diskoffset[h3] + keylen + 1;
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 	}
 }
 
-static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys, cmph_uint32 h3)
+static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys)
 {
 	char ** keys_vd = (char **)malloc(sizeof(char *)*nkeys);
 	cmph_uint8 i;	
@@ -291,7 +293,6 @@ static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys, cmph_uint32 
 		}		
 		keys_vd[i] = (char *)malloc(strlen(buf) + 1);
 		strcpy(keys_vd[i], buf);
-		if(h3 == 6) DEBUGP("key = %s\n", keys_vd[i]);
 		free(buf);		
 	}	
 	return keys_vd;
@@ -311,8 +312,8 @@ static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz_data_t * bmzf, cmp
 	{
 		brz->g[index][i] = (cmph_uint8) bmzf->g[i];
 	}	
-	brz->h1[index] = bmzf->hashes[0];
-	brz->h2[index] = bmzf->hashes[1];
+	brz->h1[index] = hash_state_copy(bmzf->hashes[0]);
+	brz->h2[index] = hash_state_copy(bmzf->hashes[1]);
 }
 
 int brz_dump(cmph_t *mphf, FILE *fd)
@@ -411,19 +412,13 @@ void brz_destroy(cmph_t *mphf)
 {
 	cmph_uint32 i;
 	brz_data_t *data = (brz_data_t *)mphf->data;
-	fprintf(stderr, "MERDAAAAAA %u\n", data->h3->hashfunc);
 	for(i = 0; i < data->k; i++)
 	{
 		free(data->g[i]);
-		fprintf(stderr, "MERDAAAAAA1 %u\n", data->h3->hashfunc);
 		hash_state_destroy(data->h1[i]);
-		fprintf(stderr, "MERDAAAAAA2 %u\n", data->h3->hashfunc);
 		hash_state_destroy(data->h2[i]);
-		fprintf(stderr, "MERDAAAAAA3 %u\n", data->h3->hashfunc);
 	}
-	fprintf(stderr, "MERDAAAAAA %u\n", data->h3->hashfunc);
 	hash_state_destroy(data->h3);
-	fprintf(stderr, "MERDAAAAAA1FAB\n");
 	free(data->g);	
 	free(data->h1);
 	free(data->h2);
