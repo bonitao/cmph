@@ -4,6 +4,7 @@
 typedef unsigned char cmph_uint8;
 typedef unsigned short cmph_uint16;
 typedef unsigned int cmph_uint32;
+typedef float cmph_float32;
 
 typedef enum { CMPH_HASH_DJB2, CMPH_HASH_FNV, CMPH_HASH_JENKINS, 
 	       CMPH_HASH_SDBM, CMPH_HASH_COUNT } CMPH_HASH;
