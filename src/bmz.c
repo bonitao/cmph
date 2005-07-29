@@ -368,12 +368,15 @@ static void bmz_traverse(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_u
 {
 	graph_iterator_t it = graph_neighbors_it(bmz->graph, v);
 	cmph_uint32 neighbor = 0;
+	cmph_uint32 gvalue;
 	while((neighbor = graph_next_neighbor(bmz->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
      	        if(GETBIT(visited,neighbor)) continue;
 		DEBUGP("Visiting neighbor %u\n", neighbor);
 		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index);
-		bmz->g[neighbor] = *unused_edge_index - bmz->g[v];
+		if(*unused_edge_index < bmz->g[v]) gvalue = *unused_edge_index + bmz->m; 
+		else gvalue = *unused_edge_index; 
+		bmz->g[neighbor] = gvalue - bmz->g[v];
 		SETBIT(visited, neighbor);
 		(*unused_edge_index)++;
 		bmz_traverse(bmz, used_edges, neighbor, unused_edge_index, visited);
@@ -530,7 +533,7 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
-	return bmz->g[h1] + bmz->g[h2];
+	return ((bmz->g[h1] + bmz->g[h2]) % bmz->m);
 }
 void bmz_destroy(cmph_t *mphf)
 {
