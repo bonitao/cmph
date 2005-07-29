@@ -34,6 +34,13 @@ void sdbm_state_dump(sdbm_state_t *state, char **buf, cmph_uint32 *buflen)
 	return;
 }
 
+sdbm_state_t *sdbm_state_copy(sdbm_state_t *src_state)
+{
+	sdbm_state_t *dest_state = (sdbm_state_t *)malloc(sizeof(sdbm_state_t));
+	dest_state->hashfunc = src_state->hashfunc;
+	return dest_state;
+}
+
 sdbm_state_t *sdbm_state_load(const char *buf, cmph_uint32 buflen)
 {
 	sdbm_state_t *state = (sdbm_state_t *)malloc(sizeof(sdbm_state_t));
