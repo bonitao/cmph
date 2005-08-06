@@ -248,6 +248,7 @@ int main(int argc, char **argv)
 			cmph_uint32 buflen = 0;
 			source->read(source->data, &buf, &buflen);
 			h = cmph_search(mphf, buf, buflen);
+			assert(h < source->nkeys);
 			if(hashtable[h])fprintf(stderr, "collision: %u\n",h);
 			assert(hashtable[h]==0);
 			hashtable[h] = 1;
