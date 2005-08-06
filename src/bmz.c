@@ -87,7 +87,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	  // Mapping step
 	  cmph_uint32 biggest_g_value = 0;
 	  cmph_uint32 biggest_edge_value = 1;	
-	  iterations = 20;
+	  iterations = 100;
 	  if (mph->verbosity)
 	  {
 		fprintf(stderr, "Entering mapping step for mph creation of %u keys with graph sized %u\n", bmz->m, bmz->n);
@@ -143,7 +143,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	  used_edges = (cmph_uint8 *)malloc(bmz->m/8 + 1);
 	  memset(used_edges, 0, bmz->m/8 + 1);
 	  free(bmz->g);
-	  bmz->g = malloc(bmz->n * sizeof(cmph_uint32));
+	  bmz->g = calloc(bmz->n, sizeof(cmph_uint32));
 	  assert(bmz->g);
 	  for (i = 0; i < bmz->n; ++i) // critical nodes
 	  {
@@ -172,7 +172,10 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
         }while(restart_mapping && iterations_map > 0);
 	graph_destroy(bmz->graph);	
 	bmz->graph = NULL;
-	if (iterations_map == 0) return NULL;
+	if (iterations_map == 0) 
+	{
+		return NULL;
+	}
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
 	bmzf = (bmz_data_t *)malloc(sizeof(bmz_data_t));
@@ -368,15 +371,13 @@ static void bmz_traverse(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_u
 {
 	graph_iterator_t it = graph_neighbors_it(bmz->graph, v);
 	cmph_uint32 neighbor = 0;
-	cmph_uint32 gvalue;
 	while((neighbor = graph_next_neighbor(bmz->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
      	        if(GETBIT(visited,neighbor)) continue;
 		DEBUGP("Visiting neighbor %u\n", neighbor);
 		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index);
-		if(*unused_edge_index < bmz->g[v]) gvalue = *unused_edge_index + bmz->m; 
-		else gvalue = *unused_edge_index; 
-		bmz->g[neighbor] = gvalue - bmz->g[v];
+		bmz->g[neighbor] = *unused_edge_index - bmz->g[v];
+		if (bmz->g[neighbor] >= bmz->m) bmz->g[neighbor] += bmz->m;
 		SETBIT(visited, neighbor);
 		(*unused_edge_index)++;
 		bmz_traverse(bmz, used_edges, neighbor, unused_edge_index, visited);
