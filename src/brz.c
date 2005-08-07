@@ -226,7 +226,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 #pragma pack(1)
 	cmph_uint32 i, e;
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
-	cmph_uint32 memory_availability = 10485760; //10MB 209715200;//200MB //104857600;//100MB  //524288000; // 500MB //209715200; // 200 MB
+	cmph_uint32 memory_availability = 209715200;//200MB //104857600;//100MB  //524288000; // 500MB //209715200; // 200 MB
 	cmph_uint32 memory_usage = 0;
 	cmph_uint32 nkeys_in_buffer = 0;
 	cmph_uint8 *buffer = (cmph_uint8 *)malloc(memory_availability);
@@ -284,7 +284,8 @@ static int brz_gen_graphs(cmph_config_t *mph)
 				buckets_size[h3]++;
 				memory_usage = memory_usage + keylen1 + 1;
 			}
-			sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+//			sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+			sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",nflushes);
 /*			sprintf(filename, "%u.cmph",nflushes);*/
 			tmp_fd = fopen(filename, "wb");
 			for(i = 0; i < nkeys_in_buffer; i++)
@@ -343,7 +344,8 @@ static int brz_gen_graphs(cmph_config_t *mph)
 			buckets_size[h3]++;
 			memory_usage = memory_usage + keylen1 + 1;
 		}
-		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+//		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+		sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",nflushes);
 /*		sprintf(filename, "%u.cmph",nflushes);*/
 		tmp_fd = fopen(filename, "wb");
 		for(i = 0; i < nkeys_in_buffer; i++)
@@ -373,7 +375,8 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	
 	for(i = 0; i < nflushes; i++)
 	{
-		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",i);
+//		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",i);
+                sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",i);
 /*		sprintf(filename, "%u.cmph",i);*/
 		tmp_fds[i] = fopen(filename, "rb");
 		key = brz_read_key(tmp_fds[i]);
