@@ -14,11 +14,11 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-
+#define MAX_BUCKET_SIZE 255
 //#define DEBUG
 #include "debug.h"
 
-static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd);
+static int brz_gen_graphs(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
 static void flush_buffer(cmph_uint8 *buffer, cmph_uint32 *memory_usage, FILE * graphs_fd);
 static void save_in_disk(cmph_uint8 *buffer, cmph_uint8 * key, cmph_uint32 keylen, cmph_uint32 *memory_usage, cmph_uint32 memory_availability, FILE * graphs_fd);
@@ -137,19 +137,11 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brz_data_t *brzf = NULL;
 	cmph_uint32 i;
 	cmph_uint32 iterations = 20;
-/*	cmph_uint32 * disksize = NULL;
-	cmph_uint32 * diskoffset = NULL;*/
-	
-	cmph_io_adapter_t *source = NULL;
-	cmph_config_t *config = NULL;
-	cmph_t *mphf_tmp = NULL;
-	char ** keys_vd = NULL;
-	
-	FILE * graphs_fd = NULL;
-	DEBUGP("c: %f\n", c);
+
+	DEBUGP("c: %f\n");
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
-	brz->c = c;	
-	brz->m = mph->key_source->nkeys;	
+	brz->c = c;
+	brz->m = mph->key_source->nkeys;
 	DEBUGP("m: %u\n", brz->m);
 	brz->k = ceil(brz->m/170);
 	DEBUGP("k: %u\n", brz->k);
@@ -160,13 +152,10 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	{
 		fprintf(stderr, "Partioning the set of keys.\n");	
 	}
-	graphs_fd = fopen("/mnt/hd4/fbotelho/cmph.tmp", "wb");
-	if (graphs_fd == NULL)
-	{
-		free(brz->size);
-		fprintf(stderr, "Unable to open file %s\n", "/mnt/hd4/fbotelho/cmph.tmp");
-		return NULL;
-	}
+	
+	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
+	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
+	brz->g  = (cmph_uint8 **)  malloc(sizeof(cmph_uint8 *)  *brz->k);
 	
 	while(1)
 	{
@@ -174,7 +163,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		DEBUGP("hash function 3\n");
 		brz->h3 = hash_state_new(brz->hashfuncs[2], brz->k);
 		DEBUGP("Generating graphs\n");
-		ok = brz_gen_graphs(mph, graphs_fd);
+		ok = brz_gen_graphs(mph);
 		if (!ok)
 		{
 			--iterations;
@@ -189,7 +178,6 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		} 
 		else break;	
 	}
-	fclose(graphs_fd);
 	if (iterations == 0) 
 	{
 		DEBUGP("Graphs with more than 255 keys were created in all 20 iterations\n");
@@ -204,44 +192,6 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		brz->offset[i] = brz->size[i-1] + brz->offset[i-1];
 	}
 
-	// codigo do algoritmo... 
-	graphs_fd = fopen("/mnt/hd4/fbotelho/cmph.tmp", "rb");
-	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
-	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
-	brz->g  = (cmph_uint8 **)  malloc(sizeof(cmph_uint8 *)  *brz->k);
-	if (mph->verbosity)
-	{
-		fprintf(stderr, "\nGenerating mphf.\n");
-	}
-	DEBUGP("Generating mphf\n");
-	for(i = 0; i < brz->k; i++)
-	{
-		if (mph->verbosity) fprintf(stderr, "\tMPHF %u in %u was generated.\n", i+1, brz->k);
-		cmph_uint32 j;
-		bmz_data_t * bmzf = NULL;
-		cmph_uint8 nkeys = brz->size[i];
-		if (nkeys == 0) continue;
-		keys_vd = brz_read_keys_vd(graphs_fd, nkeys);
-		
-		// Source of keys
-		source = cmph_io_vector_adapter(keys_vd, (cmph_uint32)nkeys);
-		config = cmph_config_new(source);
-		cmph_config_set_algo(config, CMPH_BMZ);
-		cmph_config_set_graphsize(config, c);
-		//cmph_config_set_verbosity(config, 1);
-		mphf_tmp = cmph_new(config);
-		bmzf = (bmz_data_t *)mphf_tmp->data;		
-		//assert(brz_verify_mphf(mphf_tmp, source));
-		brz_copy_partial_mphf(brz, bmzf, i, source);
-		cmph_config_destroy(config);
-		brz_destroy_keys_vd(keys_vd, nkeys);		
-		free(keys_vd);
-		cmph_destroy(mphf_tmp);
-		free(source);
-	}
-	
-	fclose(graphs_fd);	
-	
 	// Generating a mphf
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
@@ -271,12 +221,12 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	return mphf;
 }
 
-static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
+static int brz_gen_graphs(cmph_config_t *mph)
 {
 #pragma pack(1)
 	cmph_uint32 i, e;
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
-	cmph_uint32 memory_availability = 209715200;//200MB //104857600;//100MB  //524288000; // 500MB //209715200; // 200 MB
+	cmph_uint32 memory_availability = 10485760; //10MB 209715200;//200MB //104857600;//100MB  //524288000; // 500MB //209715200; // 200 MB
 	cmph_uint32 memory_usage = 0;
 	cmph_uint32 nkeys_in_buffer = 0;
 	cmph_uint8 *buffer = (cmph_uint8 *)malloc(memory_availability);
@@ -292,6 +242,11 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 	char *key = NULL;
 	cmph_uint32 keylen;
 	
+	cmph_uint32 cur_bucket = 0;
+	cmph_uint8 nkeys_vd = 0;
+	char ** keys_vd = NULL;
+	
+	
 	mph->key_source->rewind(mph->key_source->data);
 	DEBUGP("Generating graphs from %u keys\n", brz->m);
 	// Partitioning
@@ -299,10 +254,13 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 	{
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
 			
-		/* Buffers management */		
+		/* Buffers management */
 		if (memory_usage + keylen + 1 > memory_availability) // flush buffers 
 		{ 
-			fprintf(stderr, "Flushing  %u\n", nkeys_in_buffer);
+			if(mph->verbosity)
+			{
+				fprintf(stderr, "Flushing  %u\n", nkeys_in_buffer);
+			}
 			cmph_uint32 value = buckets_size[0];
 			cmph_uint32 sum = 0;
 
@@ -327,6 +285,7 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 				memory_usage = memory_usage + keylen1 + 1;
 			}
 			sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+/*			sprintf(filename, "%u.cmph",nflushes);*/
 			tmp_fd = fopen(filename, "wb");
 			for(i = 0; i < nkeys_in_buffer; i++)
 			{
@@ -339,13 +298,12 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 			nflushes++;
 			free(keys_index);
 			fclose(tmp_fd);
-			fprintf(stderr, "Flushing is over\n");
 		}
 		//fprintf(stderr, "Storing read Key\n");
 		memcpy(buffer + memory_usage, key, keylen + 1);
 		memory_usage = memory_usage + keylen + 1;
 		h3 = hash(brz->h3, key, keylen) % brz->k;
-		if (brz->size[h3] == 255) 
+		if (brz->size[h3] == MAX_BUCKET_SIZE) 
 		{
 			free(buffer);
 			free(buckets_size);
@@ -360,7 +318,10 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 
 	if (memory_usage != 0) // flush buffers 
 	{ 
-		fprintf(stderr, "Flushing  %u\n", nkeys_in_buffer);
+		if(mph->verbosity)
+		{
+			fprintf(stderr, "Flushing  %u\n", nkeys_in_buffer);
+		}
 		cmph_uint32 value = buckets_size[0];
 		cmph_uint32 sum = 0;
 		cmph_uint32 keylen1 = 0;
@@ -383,6 +344,7 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 			memory_usage = memory_usage + keylen1 + 1;
 		}
 		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
+/*		sprintf(filename, "%u.cmph",nflushes);*/
 		tmp_fd = fopen(filename, "wb");
 		for(i = 0; i < nkeys_in_buffer; i++)
 		{
@@ -395,14 +357,16 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 		nflushes++;
 		free(keys_index);
 		fclose(tmp_fd);
-		fprintf(stderr, "Flushing is over\n");
 	}
 	free(buffer);
 	free(buckets_size);
 	if(nflushes > 1024) return 0; // Too many files generated.
 	
-	// Merging
-	fprintf(stderr, "\nMerging files\n");
+	// mphf generation
+	if(mph->verbosity)
+	{
+		fprintf(stderr, "\nMPHF generation \n");
+	}
 	tmp_fds = (FILE **)calloc(nflushes, sizeof(FILE *));
 	buffer_merge = (cmph_uint8 **)calloc(nflushes, sizeof(cmph_uint8 *));
 	buffer_h3    = (cmph_uint32 *)calloc(nflushes, sizeof(cmph_uint32));
@@ -410,6 +374,7 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 	for(i = 0; i < nflushes; i++)
 	{
 		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",i);
+/*		sprintf(filename, "%u.cmph",i);*/
 		tmp_fds[i] = fopen(filename, "rb");
 		key = brz_read_key(tmp_fds[i]);
 		keylen = strlen(key);
@@ -419,11 +384,15 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 		memcpy(buffer_merge[i], key, keylen + 1);
 		free(key);
 	}
+	
 	e = 0;
-	buffer = (cmph_uint8 *)malloc(memory_availability);
+	keys_vd = (char **)calloc(MAX_BUCKET_SIZE, sizeof(char *));
+	nkeys_vd = 0;
+	//buffer = (cmph_uint8 *)malloc(memory_availability);
 	while(e < brz->m)
 	{
 		i = brz_min_index(buffer_h3, nflushes);
+		cur_bucket = buffer_h3[i];
 		key = brz_read_key(tmp_fds[i]);
 		if(key)
 		{
@@ -431,20 +400,26 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 			{
 				keylen = strlen(key);
 				h3 = hash(brz->h3, key, keylen) % brz->k;
+				
 				if (h3 != buffer_h3[i]) break;
-				save_in_disk(buffer, key, keylen, &memory_usage, memory_availability, graphs_fd);
+				
+				keys_vd[nkeys_vd++] = key;
+				
+				//save_in_disk(buffer, key, keylen, &memory_usage, memory_availability, graphs_fd);
 				//fwrite(key, 1, keylen + 1, graphs_fd);
 				e++;
-				free(key);
+				//free(key);
 				key = brz_read_key(tmp_fds[i]);
 			}
 			if (key)
 			{
-				save_in_disk(buffer, buffer_merge[i], strlen(buffer_merge[i]), &memory_usage, memory_availability, graphs_fd);
+				//save_in_disk(buffer, buffer_merge[i], strlen(buffer_merge[i]), &memory_usage, memory_availability, graphs_fd);
+				assert(nkeys_vd < brz->size[cur_bucket]);
+				keys_vd[nkeys_vd++] = buffer_merge[i];
 				//fwrite(buffer_merge[i], 1, strlen(buffer_merge[i]) + 1, graphs_fd);
 				e++;
 				buffer_h3[i] = h3;
-				free(buffer_merge[i]);
+				//free(buffer_merge[i]);
 				buffer_merge[i] = (cmph_uint8 *)calloc(keylen + 1, sizeof(cmph_uint8));
 				memcpy(buffer_merge[i], key, keylen + 1);
 				free(key);
@@ -453,18 +428,43 @@ static int brz_gen_graphs(cmph_config_t *mph, FILE * graphs_fd)
 /*		fprintf(stderr, "BOSTA %u  %u  e: %u\n", i, buffer_h3[i], e);*/
 		if(!key)
 		{
-			save_in_disk(buffer, buffer_merge[i], strlen(buffer_merge[i]), &memory_usage, memory_availability, graphs_fd);
+			assert(nkeys_vd < brz->size[cur_bucket]);
+			keys_vd[nkeys_vd++] = buffer_merge[i];
+			//save_in_disk(buffer, buffer_merge[i], strlen(buffer_merge[i]), &memory_usage, memory_availability, graphs_fd);
 			//fwrite(buffer_merge[i], 1, strlen(buffer_merge[i]) + 1, graphs_fd);
 			e++;
 			buffer_h3[i] = UINT_MAX;
-			free(buffer_merge[i]);
+			//free(buffer_merge[i]);
 			buffer_merge[i] = NULL;
+		}
+		
+		if(nkeys_vd == brz->size[cur_bucket]) // Generating mphf.
+		{
+			cmph_io_adapter_t *source = NULL;
+			cmph_config_t *config = NULL;
+			cmph_t *mphf_tmp = NULL;
+			bmz_data_t * bmzf = NULL;
+			// Source of keys
+			//fprintf(stderr, "Generating mphf %u in %u \n",cur_bucket + 1, brz->k);
+			source = cmph_io_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
+			config = cmph_config_new(source);
+			cmph_config_set_algo(config, CMPH_BMZ);
+			cmph_config_set_graphsize(config, brz->c);
+			mphf_tmp = cmph_new(config);
+			bmzf = (bmz_data_t *)mphf_tmp->data;
+			//assert(brz_verify_mphf(mphf_tmp, source));
+			brz_copy_partial_mphf(brz, bmzf, cur_bucket, source);
+			cmph_config_destroy(config);
+			brz_destroy_keys_vd(keys_vd, nkeys_vd);
+			cmph_destroy(mphf_tmp);
+			free(source);
+			nkeys_vd = 0;
 		}
 	}
 	for(i = 0; i < nflushes; i++) fclose(tmp_fds[i]);
-	flush_buffer(buffer, &memory_usage, graphs_fd);
+	//flush_buffer(buffer, &memory_usage, graphs_fd);
 	free(tmp_fds);
-	free(buffer);
+	free(keys_vd);
 	free(buffer_merge);
 	free(buffer_h3);
 	return 1;
