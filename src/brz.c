@@ -262,7 +262,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	char *filename = NULL;
 	char *key = NULL;
 	cmph_uint32 keylen;
-	
+	cmph_uint32 max_size = 0;
 	cmph_uint32 cur_bucket = 0;
 	cmph_uint8 nkeys_vd = 0;
 	char ** keys_vd = NULL;
@@ -478,6 +478,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 			bmz_data_t * bmzf = NULL;
 			// Source of keys
 			//fprintf(stderr, "Generating mphf %u in %u \n",cur_bucket + 1, brz->k);
+			if(nkeys_vd > max_size) max_size = nkeys_vd;
 			source = cmph_io_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
 			config = cmph_config_new(source);
 			cmph_config_set_algo(config, CMPH_BMZ);
@@ -499,6 +500,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	free(keys_vd);
 	free(buffer_merge);
 	free(buffer_h3);
+	fprintf(stderr, "Maximal Size: %u\n", max_size);
 	return 1;
 #pragma pack()
 }
