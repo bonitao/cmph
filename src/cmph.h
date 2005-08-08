@@ -35,6 +35,7 @@ void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
 void cmph_config_set_verbosity(cmph_config_t *mph, cmph_uint32 verbosity);
 void cmph_config_set_graphsize(cmph_config_t *mph, float c);
 void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo);
+void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir);
 void cmph_config_destroy(cmph_config_t *mph);
 
 /** Hash API **/

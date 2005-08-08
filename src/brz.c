@@ -20,10 +20,7 @@
 
 static int brz_gen_graphs(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
-static void flush_buffer(cmph_uint8 *buffer, cmph_uint32 *memory_usage, FILE * graphs_fd);
-static void save_in_disk(cmph_uint8 *buffer, cmph_uint8 * key, cmph_uint32 keylen, cmph_uint32 *memory_usage, cmph_uint32 memory_availability, FILE * graphs_fd);
 static char * brz_read_key(FILE * fd);
-static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys);
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
 static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz_data_t * bmzf, cmph_uint32 index, cmph_io_adapter_t *source);
 
@@ -40,6 +37,8 @@ brz_config_data_t *brz_config_new()
 	brz->h1 = NULL;
 	brz->h2 = NULL;
 	brz->h3 = NULL;
+	brz->tmp_dir = (cmph_uint8 *)calloc(10, sizeof(cmph_uint8));
+	strcpy(brz->tmp_dir, "/var/tmp/\0"); 
 	assert(brz);
 	return brz;
 }
@@ -48,6 +47,7 @@ void brz_config_destroy(cmph_config_t *mph)
 {
 	brz_config_data_t *data = (brz_config_data_t *)mph->data;
 	DEBUGP("Destroying algorithm dependent data\n");
+	free(data->tmp_dir);
 	free(data);
 }
 
@@ -63,73 +63,94 @@ void brz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 		++i, ++hashptr;
 	}
 }
-static cmph_uint8 brz_verify_mphf(cmph_t * mphf, cmph_io_adapter_t *source)
+
+void brz_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 {
-	cmph_uint8 * hashtable = NULL;
-	cmph_uint32 i;
-	hashtable = (cmph_uint8*)malloc(source->nkeys*sizeof(cmph_uint8));
-	source->rewind(source->data);
-	memset(hashtable, 0, source->nkeys);
-	//check all keys
-	for (i = 0; i < source->nkeys; ++i)
+	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
+	if(tmp_dir)
 	{
-		cmph_uint32 h;
-		char *buf;
-		cmph_uint32 buflen = 0;
-		source->read(source->data, &buf, &buflen);		
-		h = cmph_search(mphf, buf, buflen);
-		if(hashtable[h])
+		cmph_uint32 len = strlen(tmp_dir);
+		free(brz->tmp_dir);
+		if(tmp_dir[len-1] != '/')
 		{
-			fprintf(stderr, "collision: %u\n",h);
-			return 0;
+			brz->tmp_dir = calloc(len+2, sizeof(cmph_uint8));
+			sprintf(brz->tmp_dir, "%s/\0", tmp_dir); 
 		}
-		//assert(hashtable[h]==0);
-		hashtable[h] = 1;
-		source->dispose(source->data, buf, buflen);
-	}
-	fprintf(stderr, "\n===============================================================================\n");
-	free(hashtable);
-	return 1;
-}
-
-static cmph_uint8 brz_verify_mphf1(hash_state_t *h1, hash_state_t *h2, cmph_uint8 * g, cmph_uint32 n, cmph_io_adapter_t *source)
-{
-	cmph_uint8 * hashtable = NULL;
-	cmph_uint32 i;
-	hashtable = (cmph_uint8*)calloc(source->nkeys, sizeof(cmph_uint8));
-	source->rewind(source->data);
-	//memset(hashtable, 0, source->nkeys);
-	//check all keys
-	for (i = 0; i < source->nkeys; ++i)
-	{		
-		cmph_uint32 h1_v;
-		cmph_uint32 h2_v;
-		cmph_uint32 h;
-		char *buf;
-		cmph_uint32 buflen = 0;
-		source->read(source->data, &buf, &buflen);	
-			
-		h1_v = hash(h1, buf, buflen) % n;
-
-		h2_v = hash(h2, buf, buflen) % n;
-
-		if (h1_v == h2_v && ++h2_v >= n) h2_v = 0;
+		else
+		{
+			brz->tmp_dir = calloc(len+1, sizeof(cmph_uint8));
+			sprintf(brz->tmp_dir, "%s\0", tmp_dir); 
+		}
 		
-		h = ((cmph_uint32)g[h1_v] + (cmph_uint32)g[h2_v]) % source->nkeys;
-
-		if(hashtable[h])
-		{
-			fprintf(stderr, "collision: %u\n",h);
-			return 0;
-		}
-		//assert(hashtable[h]==0);
-		hashtable[h] = 1;
-		source->dispose(source->data, buf, buflen);
-
 	}
-	free(hashtable);
-	return 1;
 }
+// static cmph_uint8 brz_verify_mphf(cmph_t * mphf, cmph_io_adapter_t *source)
+// {
+// 	cmph_uint8 * hashtable = NULL;
+// 	cmph_uint32 i;
+// 	hashtable = (cmph_uint8*)malloc(source->nkeys*sizeof(cmph_uint8));
+// 	source->rewind(source->data);
+// 	memset(hashtable, 0, source->nkeys);
+// 	//check all keys
+// 	for (i = 0; i < source->nkeys; ++i)
+// 	{
+// 		cmph_uint32 h;
+// 		char *buf;
+// 		cmph_uint32 buflen = 0;
+// 		source->read(source->data, &buf, &buflen);		
+// 		h = cmph_search(mphf, buf, buflen);
+// 		if(hashtable[h])
+// 		{
+// 			fprintf(stderr, "collision: %u\n",h);
+// 			return 0;
+// 		}
+// 		//assert(hashtable[h]==0);
+// 		hashtable[h] = 1;
+// 		source->dispose(source->data, buf, buflen);
+// 	}
+// 	fprintf(stderr, "\n===============================================================================\n");
+// 	free(hashtable);
+// 	return 1;
+// }
+// 
+// static cmph_uint8 brz_verify_mphf1(hash_state_t *h1, hash_state_t *h2, cmph_uint8 * g, cmph_uint32 n, cmph_io_adapter_t *source)
+// {
+// 	cmph_uint8 * hashtable = NULL;
+// 	cmph_uint32 i;
+// 	hashtable = (cmph_uint8*)calloc(source->nkeys, sizeof(cmph_uint8));
+// 	source->rewind(source->data);
+// 	//memset(hashtable, 0, source->nkeys);
+// 	//check all keys
+// 	for (i = 0; i < source->nkeys; ++i)
+// 	{		
+// 		cmph_uint32 h1_v;
+// 		cmph_uint32 h2_v;
+// 		cmph_uint32 h;
+// 		char *buf;
+// 		cmph_uint32 buflen = 0;
+// 		source->read(source->data, &buf, &buflen);	
+// 			
+// 		h1_v = hash(h1, buf, buflen) % n;
+// 
+// 		h2_v = hash(h2, buf, buflen) % n;
+// 
+// 		if (h1_v == h2_v && ++h2_v >= n) h2_v = 0;
+// 		
+// 		h = ((cmph_uint32)g[h1_v] + (cmph_uint32)g[h2_v]) % source->nkeys;
+// 
+// 		if(hashtable[h])
+// 		{
+// 			fprintf(stderr, "collision: %u\n",h);
+// 			return 0;
+// 		}
+// 		//assert(hashtable[h]==0);
+// 		hashtable[h] = 1;
+// 		source->dispose(source->data, buf, buflen);
+// 
+// 	}
+// 	free(hashtable);
+// 	return 1;
+// }
 
 cmph_t *brz_new(cmph_config_t *mph, float c)
 {
@@ -238,7 +259,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	cmph_uint32 h3;
 	FILE *  tmp_fd = NULL;
 	FILE ** tmp_fds = NULL;
-	char filename[100];
+	char *filename = NULL;
 	char *key = NULL;
 	cmph_uint32 keylen;
 	
@@ -285,9 +306,11 @@ static int brz_gen_graphs(cmph_config_t *mph)
 				memory_usage = memory_usage + keylen1 + 1;
 			}
 //			sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
-			sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",nflushes);
-/*			sprintf(filename, "%u.cmph",nflushes);*/
+			filename = (char *)calloc(strlen(brz->tmp_dir) + 11, sizeof(char));
+			sprintf(filename, "%s%u.cmph",brz->tmp_dir, nflushes);
 			tmp_fd = fopen(filename, "wb");
+			free(filename);
+			filename = NULL;
 			for(i = 0; i < nkeys_in_buffer; i++)
 			{
 				keylen1 = strlen(buffer + keys_index[i]) + 1;
@@ -345,9 +368,12 @@ static int brz_gen_graphs(cmph_config_t *mph)
 			memory_usage = memory_usage + keylen1 + 1;
 		}
 //		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",nflushes);
-		sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",nflushes);
-/*		sprintf(filename, "%u.cmph",nflushes);*/
+//		sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",nflushes);
+		filename = (char *)calloc(strlen(brz->tmp_dir) + 11, sizeof(char));
+		sprintf(filename, "%s%u.cmph",brz->tmp_dir, nflushes);
 		tmp_fd = fopen(filename, "wb");
+		free(filename);
+		filename = NULL;
 		for(i = 0; i < nkeys_in_buffer; i++)
 		{
 			keylen1 = strlen(buffer + keys_index[i]) + 1;
@@ -376,9 +402,12 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	for(i = 0; i < nflushes; i++)
 	{
 //		sprintf(filename, "/mnt/hd4/fbotelho/%u.cmph",i);
-                sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",i);
-/*		sprintf(filename, "%u.cmph",i);*/
+//              sprintf(filename, "/mnt/sd2/fbotelho/dados/%u.cmph",i);
+		filename = (char *)calloc(strlen(brz->tmp_dir) + 11, sizeof(char));
+		sprintf(filename, "%s%u.cmph",brz->tmp_dir, i);
 		tmp_fds[i] = fopen(filename, "rb");
+		free(filename);
+		filename = NULL;
 		key = brz_read_key(tmp_fds[i]);
 		keylen = strlen(key);
 		h3 = hash(brz->h3, key, keylen) % brz->k;
@@ -474,23 +503,6 @@ static int brz_gen_graphs(cmph_config_t *mph)
 #pragma pack()
 }
 
-static void flush_buffer(cmph_uint8 *buffer, cmph_uint32 *memory_usage, FILE * graphs_fd)
-{
-	fwrite(buffer, 1, *memory_usage, graphs_fd);
-	*memory_usage = 0;
-}
-			 
-static void save_in_disk(cmph_uint8 *buffer, cmph_uint8 * key, cmph_uint32 keylen, cmph_uint32 * memory_usage, 
-			 cmph_uint32 memory_availability, FILE * graphs_fd)
-{
-	if(*memory_usage + keylen + 1 > memory_availability)
-	{
-		flush_buffer(buffer, memory_usage, graphs_fd);
-	}
-	memcpy(buffer + *memory_usage, key, keylen + 1);
-	*memory_usage = *memory_usage + keylen + 1;
-}
-
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n)
 {
 	cmph_uint32 i, min_index = 0;
@@ -519,21 +531,6 @@ static char * brz_read_key(FILE * fd)
 		if(buf_pos % BUFSIZ == 0) buf = (char *)realloc(buf, buf_pos + BUFSIZ);
 	}
 	return buf;
-}
-
-static char ** brz_read_keys_vd(FILE * graphs_fd, cmph_uint8 nkeys)
-{
-	char ** keys_vd = (char **)malloc(sizeof(char *)*nkeys);
-	cmph_uint8 i;
-	
-	for(i = 0; i < nkeys; i++)
-	{
-		char * buf = brz_read_key(graphs_fd);
-		keys_vd[i] = (char *)malloc(strlen(buf) + 1);
-		strcpy(keys_vd[i], buf);
-		free(buf);
-	}
-	return keys_vd;
 }
 
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)

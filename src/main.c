@@ -22,12 +22,12 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
 	cmph_uint32 i;
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-m file.mph] [-a algorithm] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -c\t c value that determines the number of vertices in the graph\n");
@@ -41,6 +41,7 @@ void usage_long(const char *prg)
 	fprintf(stderr, "  -g\t generation mode\n");
 	fprintf(stderr, "  -s\t random seed\n");
 	fprintf(stderr, "  -m\t minimum perfect hash function file \n");
+	fprintf(stderr, "  -d\t temporary directory used in brz algorithm \n");
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
@@ -62,12 +63,12 @@ int main(int argc, char **argv)
 	float c = 2.09;
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
-
+	cmph_uint8 * tmp_dir = NULL;
 	cmph_io_adapter_t *source;
 
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvgc:k:a:f:m:s:");
+		char ch = getopt(argc, argv, "hVvgc:k:a:f:m:d:s:");
 		if (ch == -1) break;
 		switch (ch)
 		{
@@ -106,6 +107,9 @@ int main(int argc, char **argv)
 				break;
 			case 'm':
 				mphf_file = strdup(optarg);
+				break;
+			case 'd':
+				tmp_dir = strdup(optarg);
 				break;
 			case 'v':
 				++verbosity;
@@ -197,6 +201,7 @@ int main(int argc, char **argv)
 		cmph_config_set_algo(config, mph_algo);
 		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
 		cmph_config_set_verbosity(config, verbosity);
+		cmph_config_set_tmp_dir(config, tmp_dir);
 		if(mph_algo == CMPH_BMZ && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
 		mphf = cmph_new(config);
@@ -263,6 +268,7 @@ int main(int argc, char **argv)
 	}
 	fclose(keys_fd);
 	free(mphf_file);
+	free(tmp_dir);
 	free(source);
 	return 0;
 }
