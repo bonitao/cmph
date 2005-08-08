@@ -178,6 +178,23 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 	mph->algo = algo;
 }
 
+void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
+{
+	switch (mph->algo)
+	{
+		case CMPH_CHM:
+			break;
+		case CMPH_BMZ: /* included -- Fabiano */
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_config_set_tmp_dir(mph, tmp_dir);
+			break;
+		default:
+			assert(0);
+	}
+
+}
+
 void cmph_config_destroy(cmph_config_t *mph)
 {
 	DEBUGP("Destroying mph with algo %s\n", cmph_names[mph->algo]);
