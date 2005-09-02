@@ -29,8 +29,9 @@ static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 *
 
 bmz_config_data_t *bmz_config_new()
 {
-	bmz_config_data_t *bmz = NULL; 	
+	bmz_config_data_t *bmz;
 	bmz = (bmz_config_data_t *)malloc(sizeof(bmz_config_data_t));
+	memset(bmz, 0, sizeof(bmz_config_data_t));
 	bmz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	bmz->hashfuncs[1] = CMPH_HASH_JENKINS;
 	bmz->g = NULL;
@@ -71,8 +72,8 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	cmph_uint8 restart_mapping = 0;
 	cmph_uint8 * visited = NULL;
 	
-	DEBUGP("c: %f\n", c);
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
+	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;	
 	bmz->n = ceil(c * mph->key_source->nkeys);	
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", bmz->m, bmz->n, c);
