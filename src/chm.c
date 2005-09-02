@@ -19,14 +19,15 @@ static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint3
 
 chm_config_data_t *chm_config_new()
 {
-	chm_config_data_t *chm = NULL; 	
+	chm_config_data_t *chm;
 	chm = (chm_config_data_t *)malloc(sizeof(chm_config_data_t));
+	assert(chm);
+	memset(chm,0,sizeof(chm_config_data_t));
 	chm->hashfuncs[0] = CMPH_HASH_JENKINS;
 	chm->hashfuncs[1] = CMPH_HASH_JENKINS;
 	chm->g = NULL;
 	chm->graph = NULL;
 	chm->hashes = NULL;
-	assert(chm);
 	return chm;
 }
 void chm_config_destroy(cmph_config_t *mph)
