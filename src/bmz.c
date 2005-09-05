@@ -31,13 +31,13 @@ bmz_config_data_t *bmz_config_new()
 {
 	bmz_config_data_t *bmz;
 	bmz = (bmz_config_data_t *)malloc(sizeof(bmz_config_data_t));
+	assert(bmz);
 	memset(bmz, 0, sizeof(bmz_config_data_t));
 	bmz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	bmz->hashfuncs[1] = CMPH_HASH_JENKINS;
 	bmz->g = NULL;
 	bmz->graph = NULL;
 	bmz->hashes = NULL;
-	assert(bmz);
 	return bmz;
 }
 
@@ -378,7 +378,7 @@ static void bmz_traverse(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_u
 		DEBUGP("Visiting neighbor %u\n", neighbor);
 		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index);
 		bmz->g[neighbor] = *unused_edge_index - bmz->g[v];
-		if (bmz->g[neighbor] >= bmz->m) bmz->g[neighbor] += bmz->m;
+		//if (bmz->g[neighbor] >= bmz->m) bmz->g[neighbor] += bmz->m;
 		SETBIT(visited, neighbor);
 		(*unused_edge_index)++;
 		bmz_traverse(bmz, used_edges, neighbor, unused_edge_index, visited);
@@ -535,7 +535,7 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
-	return ((bmz->g[h1] + bmz->g[h2]) % bmz->m);
+	return (bmz->g[h1] + bmz->g[h2]);
 }
 void bmz_destroy(cmph_t *mphf)
 {
