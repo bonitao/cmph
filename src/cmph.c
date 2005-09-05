@@ -2,6 +2,7 @@
 #include "cmph_structs.h"
 #include "chm.h"
 #include "bmz.h"
+#include "bmz8.h" /* included -- Fabiano */
 #include "brz.h" /* included -- Fabiano */
 
 #include <stdlib.h>
@@ -10,7 +11,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_names[] = { "bmz", "chm", "brz", NULL }; /* included -- Fabiano */
+const char *cmph_names[] = { "bmz", "bmz8", "chm", "brz", NULL }; /* included -- Fabiano */
 
 static cmph_uint32 position; // access position when data is a vector	
 
@@ -154,6 +155,9 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 			case CMPH_BMZ:
 				bmz_config_destroy(mph);
 				break;
+			case CMPH_BMZ8:
+				bmz8_config_destroy(mph);
+				break;
 			case CMPH_BRZ:
 				brz_config_destroy(mph);
 				break;
@@ -168,9 +172,11 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 			case CMPH_BMZ:
 				mph->data = bmz_config_new();
 				break;
+			case CMPH_BMZ8:
+				mph->data = (void*)bmz8_config_new();
+				break;
 			case CMPH_BRZ:
 				mph->data = brz_config_new();
-				break;
 			default:
 				assert(0);
 		}
@@ -185,6 +191,8 @@ void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 		case CMPH_CHM:
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
 			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			brz_config_set_tmp_dir(mph, tmp_dir);
@@ -206,9 +214,11 @@ void cmph_config_destroy(cmph_config_t *mph)
 		case CMPH_BMZ: /* included -- Fabiano */
 			bmz_config_destroy(mph);
 			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+	        	bmz8_config_destroy(mph);
+			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 	        	brz_config_destroy(mph);
-			break;
 		default:
 			assert(0);
 	}
@@ -229,6 +239,9 @@ void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			bmz_config_set_hashfuncs(mph, hashfuncs);
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			bmz8_config_set_hashfuncs(mph, hashfuncs);
 			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			brz_config_set_hashfuncs(mph, hashfuncs);
@@ -262,6 +275,11 @@ cmph_t *cmph_new(cmph_config_t *mph)
 			if (c == 0) c = 1.15;
 			mphf = bmz_new(mph, c);
 			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			DEBUGP("Creating bmz8 hash\n");
+			if (c == 0) c = 1.15;
+			mphf = bmz8_new(mph, c);
+			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			DEBUGP("Creating brz hash\n");
 			if (c == 0) c = 1.15;
@@ -279,13 +297,12 @@ int cmph_dump(cmph_t *mphf, FILE *f)
 	{
 		case CMPH_CHM:
 			return chm_dump(mphf, f);
-			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        return bmz_dump(mphf, f);
-			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+		        return bmz8_dump(mphf, f);
 		case CMPH_BRZ: /* included -- Fabiano */
 		        return brz_dump(mphf, f);
-			break;
 		default:
 			assert(0);
 	}
@@ -309,6 +326,10 @@ cmph_t *cmph_load(FILE *f)
 			DEBUGP("Loading bmz algorithm dependent parts\n");
 			bmz_load(f, mphf);
 			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			DEBUGP("Loading bmz8 algorithm dependent parts\n");
+			bmz8_load(f, mphf);
+			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			DEBUGP("Loading brz algorithm dependent parts\n");
 			brz_load(f, mphf);
@@ -331,6 +352,9 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 		case CMPH_BMZ: /* included -- Fabiano */
 		        DEBUGP("bmz algorithm search\n");		         
 		        return bmz_search(mphf, key, keylen);
+		case CMPH_BMZ8: /* included -- Fabiano */
+		        DEBUGP("bmz8 algorithm search\n");		         
+		        return bmz8_search(mphf, key, keylen);
 		case CMPH_BRZ: /* included -- Fabiano */
 		        DEBUGP("brz algorithm search\n");		         
 		        return brz_search(mphf, key, keylen);
@@ -355,6 +379,9 @@ void cmph_destroy(cmph_t *mphf)
 			return;
 		case CMPH_BMZ: /* included -- Fabiano */
 		        bmz_destroy(mphf);
+			return;
+		case CMPH_BMZ8: /* included -- Fabiano */
+		        bmz8_destroy(mphf);
 			return;
 		case CMPH_BRZ: /* included -- Fabiano */
 		        brz_destroy(mphf);
