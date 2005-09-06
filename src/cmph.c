@@ -173,10 +173,11 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 				mph->data = bmz_config_new();
 				break;
 			case CMPH_BMZ8:
-				mph->data = (void*)bmz8_config_new();
+				mph->data = bmz8_config_new();
 				break;
 			case CMPH_BRZ:
 				mph->data = brz_config_new();
+				break;
 			default:
 				assert(0);
 		}
@@ -219,6 +220,7 @@ void cmph_config_destroy(cmph_config_t *mph)
 			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 	        	brz_config_destroy(mph);
+			break;
 		default:
 			assert(0);
 	}
