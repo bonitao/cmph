@@ -15,13 +15,6 @@
 //#define DEBUG
 #include "debug.h"
 
-//static cmph_uint32 UNDEFINED = UINT_MAX;
-
-/* static const char bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 }; */
-/* #define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8]) */
-/* #define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8]) */
-/* #define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8]))) */
-
 static int bmz_gen_edges(cmph_config_t *mph);
 static cmph_uint8 bmz_traverse_critical_nodes(bmz_config_data_t *bmz, cmph_uint32 v, cmph_uint32 * biggest_g_value, cmph_uint32 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
 static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, cmph_uint32 v, cmph_uint32 * biggest_g_value, cmph_uint32 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
@@ -535,7 +528,7 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
-	return (bmz->g[h1] + bmz->g[h2]);
+	return bmz->g[h1] + bmz->g[h2];
 }
 void bmz_destroy(cmph_t *mphf)
 {

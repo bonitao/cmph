@@ -28,6 +28,7 @@ struct __brz_config_data_t
 	hash_state_t **h1;
 	hash_state_t **h2;
 	hash_state_t * h3;    
+	cmph_uint32 memory_availability; 
 	cmph_uint8 * tmp_dir; // temporary directory 
 };
 
