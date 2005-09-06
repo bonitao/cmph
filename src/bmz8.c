@@ -87,7 +87,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 	{
 	  // Mapping step
 	  cmph_uint8 biggest_g_value = 0;
-	  cmph_uint8 biggest_edge_value = 1;	
+	  cmph_uint8 biggest_edge_value = 1;
 	  iterations = 100;
 	  if (mph->verbosity)
 	  {
@@ -100,7 +100,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 		bmz8->hashes[0] = hash_state_new(bmz8->hashfuncs[0], bmz8->n);
 		DEBUGP("hash function 2\n");
 		bmz8->hashes[1] = hash_state_new(bmz8->hashfuncs[1], bmz8->n);
-		DEBUGP("Generating edges\n");		
+		DEBUGP("Generating edges\n");
 		ok = bmz8_gen_edges(mph);
 		if (!ok)
 		{
@@ -120,7 +120,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 	  }
 	  if (iterations == 0)
 	  {
-		graph_destroy(bmz8->graph);	
+		graph_destroy(bmz8->graph);
 		return NULL;
 	  }
 
@@ -375,9 +375,10 @@ static void bmz8_traverse(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmp
 	while((neighbor = graph_next_neighbor(bmz8->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
      	        if(GETBIT(visited,neighbor)) continue;
-		DEBUGP("Visiting neighbor %u\n", neighbor);
+		//DEBUGP("Visiting neighbor %u\n", neighbor);
 		*unused_edge_index = next_unused_edge(bmz8, used_edges, *unused_edge_index);
 		bmz8->g[neighbor] = *unused_edge_index - bmz8->g[v];
+		//if (bmz8->g[neighbor] >= bmz8->m) bmz8->g[neighbor] += bmz8->m;
 		SETBIT(visited, neighbor);
 		(*unused_edge_index)++;
 		bmz8_traverse(bmz8, used_edges, neighbor, unused_edge_index, visited);
@@ -437,7 +438,7 @@ static int bmz8_gen_edges(cmph_config_t *mph)
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
 			return 0;
 		}
-		DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
+		//DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 //		fprintf(stderr, "key = %s -- dispose BMZ\n", key);
 		multiple_edges = graph_contains_edge(bmz8->graph, h1, h2);
