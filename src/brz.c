@@ -68,7 +68,7 @@ void brz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 void brz_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_availability)
 {
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
-	brz->memory_availability = memory_availability*1024*1024;
+	if(memory_availability > 0) brz->memory_availability = memory_availability*1024*1024;
 }
 
 void brz_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)

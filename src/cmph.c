@@ -204,6 +204,25 @@ void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 
 }
 
+void cmph_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_availability)
+{
+	switch (mph->algo)
+	{
+		case CMPH_CHM:
+			break;
+		case CMPH_BMZ: /* included -- Fabiano */
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_config_set_memory_availability(mph, memory_availability);
+			break;
+		default:
+			assert(0);
+	}
+
+}
+
 void cmph_config_destroy(cmph_config_t *mph)
 {
 	DEBUGP("Destroying mph with algo %s\n", cmph_names[mph->algo]);
