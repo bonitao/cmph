@@ -58,6 +58,15 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 0.4==
+
+- Vector Adapter has been added.
+- An optimized version of bmz (bmz8) for small set of keys (at most 256 keys) has been added.
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
 ==News for version 0.3==
 
 - New heuristic added to the bmz algorithm permits to generate a mphf with only
