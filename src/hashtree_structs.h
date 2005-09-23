@@ -17,6 +17,7 @@ struct __hashtree_data_t
 
 struct __hashtree_config_data_t
 {
+	CMPH_ALGO leaf_algo;
 	CMPH_HASH hashfuncs[3];
 	cmph_uint32 m; //edges (words) count
 	cmph_uint8 *size; //size[i] stores the number of edges represented by g[i]
