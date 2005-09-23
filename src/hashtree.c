@@ -1,7 +1,7 @@
 #include "graph.h"
-#include "chm.h"
+#include "hashtree.h"
 #include "cmph_structs.h"
-#include "chm_structs.h"
+#include "hastree_structs.h"
 #include "hash.h"
 #include "bitbool.h"
 
@@ -14,77 +14,73 @@
 //#define DEBUG
 #include "debug.h"
 
-static int chm_gen_edges(cmph_config_t *mph);
-static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint32 v);
-
-chm_config_data_t *chm_config_new()
+hashtree_config_data_t *hashtree_config_new()
 {
-	chm_config_data_t *chm;
-	chm = (chm_config_data_t *)malloc(sizeof(chm_config_data_t));
-	assert(chm);
-	memset(chm,0,sizeof(chm_config_data_t));
-	chm->hashfuncs[0] = CMPH_HASH_JENKINS;
-	chm->hashfuncs[1] = CMPH_HASH_JENKINS;
-	chm->g = NULL;
-	chm->graph = NULL;
-	chm->hashes = NULL;
-	return chm;
+	hashtree_config_data_t *hashtree;
+	hashtree = (hashtree_config_data_t *)malloc(sizeof(hashtree_config_data_t));
+	if (!hashtree) return NULL;
+	memset(hashtree, 0, sizeof(hashtree_config_data_t));
+	hashtree->hashfuncs[0] = CMPH_HASH_JENKINS;
+	hashtree->hashfuncs[1] = CMPH_HASH_JENKINS;
+	hashtree->hashfuncs[2] = CMPH_HASH_JENKINS;
+	hashtree->memory = 32 * 1024 * 1024;
+	return hashtree;
 }
-void chm_config_destroy(cmph_config_t *mph)
+void hashtree_config_destroy(cmph_config_t *mph)
 {
-	chm_config_data_t *data = (chm_config_data_t *)mph->data;
+	hashtree_config_data_t *data = (hashtree_config_data_t *)mph->data;
 	DEBUGP("Destroying algorithm dependent data\n");
 	free(data);
 }
 
-void chm_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
+void hashtree_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 {
-	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
+	hashtree_config_data_t *hashtree = (hashtree_config_data_t *)mph->data;
 	CMPH_HASH *hashptr = hashfuncs;
 	cmph_uint32 i = 0;
 	while(*hashptr != CMPH_HASH_COUNT)
 	{
-		if (i >= 2) break; //chm only uses two hash functions
-		chm->hashfuncs[i] = *hashptr;	
+		if (i >= 3) break; //hashtree only uses three hash functions
+		hashtree->hashfuncs[i] = *hashptr;	
 		++i, ++hashptr;
 	}
 }
 
-cmph_t *chm_new(cmph_config_t *mph, float c)
+cmph_t *hashtree_new(cmph_config_t *mph, float c)
 {
 	cmph_t *mphf = NULL;
-	chm_data_t *chmf = NULL;
+	hashtree_data_t *hashtreef = NULL;
 
 	cmph_uint32 i;
 	cmph_uint32 iterations = 20;
 	cmph_uint8 *visited = NULL;
-	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
-	chm->m = mph->key_source->nkeys;	
-	chm->n = ceil(c * mph->key_source->nkeys);	
-	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", chm->m, chm->n, c);
-	chm->graph = graph_new(chm->n, chm->m);
+	hashtree_config_data_t *hashtree = (hashtree_config_data_t *)mph->data;
+	hashtree->m = mph->key_source->nkeys;	
+	hashtree->n = ceil(c * mph->key_source->nkeys);	
+	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", hashtree->m, hashtree->n, c);
+	hashtree->graph = graph_new(hashtree->n, hashtree->m);
 	DEBUGP("Created graph\n");
 
-	chm->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*3);
-	for(i = 0; i < 3; ++i) chm->hashes[i] = NULL;
+	hashtree->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*3);
+	for(i = 0; i < 3; ++i) hashtree->hashes[i] = NULL;
 	//Mapping step
 	if (mph->verbosity)
 	{
-		fprintf(stderr, "Entering mapping step for mph creation of %u keys with graph sized %u\n", chm->m, chm->n);
+		fprintf(stderr, "Entering mapping step for mph creation of %u keys with graph sized %u\n", hashtree->m, hashtree->n);
 	}
 	while(1)
 	{
 		int ok;
-		chm->hashes[0] = hash_state_new(chm->hashfuncs[0], chm->n);
-		chm->hashes[1] = hash_state_new(chm->hashfuncs[1], chm->n);
-		ok = chm_gen_edges(mph);
+		hashtree->hashes[0] = hash_state_new(hashtree->hashfuncs[0], hashtree->n);
+		hashtree->hashes[1] = hash_state_new(hashtree->hashfuncs[1], hashtree->n);
+		ok = hashtree_gen_edges(mph);
 		if (!ok)
 		{
 			--iterations;
-			hash_state_destroy(chm->hashes[0]);
-			chm->hashes[0] = NULL;
-			hash_state_destroy(chm->hashes[1]);
-			chm->hashes[1] = NULL;
+			hash_state_destroy(hashtree->hashes[0]);
+			hashtree->hashes[0] = NULL;
+			hash_state_destroy(hashtree->hashes[1]);
+			hashtree->hashes[1] = NULL;
 			DEBUGP("%u iterations remaining\n", iterations);
 			if (mph->verbosity)
 			{
@@ -96,7 +92,7 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 	}
 	if (iterations == 0)
 	{
-		graph_destroy(chm->graph);	
+		graph_destroy(hashtree->graph);	
 		return NULL;
 	}
 
@@ -106,34 +102,34 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 		fprintf(stderr, "Starting assignment step\n");
 	}
 	DEBUGP("Assignment step\n");
- 	visited = (char *)malloc(chm->n/8 + 1);
-	memset(visited, 0, chm->n/8 + 1);
-	free(chm->g);
-	chm->g = malloc(chm->n * sizeof(cmph_uint32));
-	assert(chm->g);
-	for (i = 0; i < chm->n; ++i)
+ 	visited = (char *)malloc(hashtree->n/8 + 1);
+	memset(visited, 0, hashtree->n/8 + 1);
+	free(hashtree->g);
+	hashtree->g = malloc(hashtree->n * sizeof(cmph_uint32));
+	assert(hashtree->g);
+	for (i = 0; i < hashtree->n; ++i)
 	{
 	        if (!GETBIT(visited,i))
 		{
-			chm->g[i] = 0;
-			chm_traverse(chm, visited, i);
+			hashtree->g[i] = 0;
+			hashtree_traverse(hashtree, visited, i);
 		}
 	}
-	graph_destroy(chm->graph);	
+	graph_destroy(hashtree->graph);	
 	free(visited);
-	chm->graph = NULL;
+	hashtree->graph = NULL;
 
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
-	chmf = (chm_data_t *)malloc(sizeof(chm_data_t));
-	chmf->g = chm->g;
-	chm->g = NULL; //transfer memory ownership
-	chmf->hashes = chm->hashes;
-	chm->hashes = NULL; //transfer memory ownership
-	chmf->n = chm->n;
-	chmf->m = chm->m;
-	mphf->data = chmf;
-	mphf->size = chm->m;
+	hashtreef = (hashtree_data_t *)malloc(sizeof(hashtree_data_t));
+	hashtreef->g = hashtree->g;
+	hashtree->g = NULL; //transfer memory ownership
+	hashtreef->hashes = hashtree->hashes;
+	hashtree->hashes = NULL; //transfer memory ownership
+	hashtreef->n = hashtree->n;
+	hashtreef->m = hashtree->m;
+	mphf->data = hashtreef;
+	mphf->size = hashtree->m;
 	DEBUGP("Successfully generated minimal perfect hash\n");
 	if (mph->verbosity)
 	{
@@ -142,34 +138,34 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 	return mphf;
 }
 
-static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint32 v)
+static void hashtree_traverse(hashtree_config_data_t *hashtree, cmph_uint8 *visited, cmph_uint32 v)
 {
 
-	graph_iterator_t it = graph_neighbors_it(chm->graph, v);
+	graph_iterator_t it = graph_neighbors_it(hashtree->graph, v);
 	cmph_uint32 neighbor = 0;
 	SETBIT(visited,v);
 	
 	DEBUGP("Visiting vertex %u\n", v);
-	while((neighbor = graph_next_neighbor(chm->graph, &it)) != GRAPH_NO_NEIGHBOR)
+	while((neighbor = graph_next_neighbor(hashtree->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
 		DEBUGP("Visiting neighbor %u\n", neighbor);
 		if(GETBIT(visited,neighbor)) continue;
 		DEBUGP("Visiting neighbor %u\n", neighbor);
-		DEBUGP("Visiting edge %u->%u with id %u\n", v, neighbor, graph_edge_id(chm->graph, v, neighbor));
-		chm->g[neighbor] = graph_edge_id(chm->graph, v, neighbor) - chm->g[v];
-		DEBUGP("g is %u (%u - %u mod %u)\n", chm->g[neighbor], graph_edge_id(chm->graph, v, neighbor), chm->g[v], chm->m);
-		chm_traverse(chm, visited, neighbor);
+		DEBUGP("Visiting edge %u->%u with id %u\n", v, neighbor, graph_edge_id(hashtree->graph, v, neighbor));
+		hashtree->g[neighbor] = graph_edge_id(hashtree->graph, v, neighbor) - hashtree->g[v];
+		DEBUGP("g is %u (%u - %u mod %u)\n", hashtree->g[neighbor], graph_edge_id(hashtree->graph, v, neighbor), hashtree->g[v], hashtree->m);
+		hashtree_traverse(hashtree, visited, neighbor);
 	}
 }
 		
-static int chm_gen_edges(cmph_config_t *mph)
+static int hashtree_gen_edges(cmph_config_t *mph)
 {
 	cmph_uint32 e;
-	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
+	hashtree_config_data_t *hashtree = (hashtree_config_data_t *)mph->data;
 	int cycles = 0;
 
-	DEBUGP("Generating edges for %u vertices with hash functions %s and %s\n", chm->n, cmph_hash_names[chm->hashfuncs[0]], cmph_hash_names[chm->hashfuncs[1]]);
-	graph_clear_edges(chm->graph);	
+	DEBUGP("Generating edges for %u vertices with hash functions %s and %s\n", hashtree->n, cmph_hash_names[hashtree->hashfuncs[0]], cmph_hash_names[hashtree->hashfuncs[1]]);
+	graph_clear_edges(hashtree->graph);	
 	mph->key_source->rewind(mph->key_source->data);
 	for (e = 0; e < mph->key_source->nkeys; ++e)
 	{
@@ -177,9 +173,9 @@ static int chm_gen_edges(cmph_config_t *mph)
 		cmph_uint32 keylen;
 		char *key;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
-		h1 = hash(chm->hashes[0], key, keylen) % chm->n;
-		h2 = hash(chm->hashes[1], key, keylen) % chm->n;
-		if (h1 == h2) if (++h2 >= chm->n) h2 = 0;
+		h1 = hash(hashtree->hashes[0], key, keylen) % hashtree->n;
+		h2 = hash(hashtree->hashes[1], key, keylen) % hashtree->n;
+		if (h1 == h2) if (++h2 >= hashtree->n) h2 = 0;
 		if (h1 == h2) 
 		{
 			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
@@ -188,21 +184,21 @@ static int chm_gen_edges(cmph_config_t *mph)
 		}
 		DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
-		graph_add_edge(chm->graph, h1, h2);
+		graph_add_edge(hashtree->graph, h1, h2);
 	}
-	cycles = graph_is_cyclic(chm->graph);
+	cycles = graph_is_cyclic(hashtree->graph);
 	if (mph->verbosity && cycles) fprintf(stderr, "Cyclic graph generated\n");
 	DEBUGP("Looking for cycles: %u\n", cycles);
 
 	return ! cycles;
 }
 
-int chm_dump(cmph_t *mphf, FILE *fd)
+int hashtree_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 two = 2; //number of hash functions
-	chm_data_t *data = (chm_data_t *)mphf->data;
+	hashtree_data_t *data = (hashtree_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
 	fwrite(&two, sizeof(cmph_uint32), 1, fd);
@@ -230,19 +226,19 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 	return 1;
 }
 
-void chm_load(FILE *f, cmph_t *mphf)
+void hashtree_load(FILE *f, cmph_t *mphf)
 {
 	cmph_uint32 nhashes;
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 i;
-	chm_data_t *chm = (chm_data_t *)malloc(sizeof(chm_data_t));
+	hashtree_data_t *hashtree = (hashtree_data_t *)malloc(sizeof(hashtree_data_t));
 
-	DEBUGP("Loading chm mphf\n");
-	mphf->data = chm;
+	DEBUGP("Loading hashtree mphf\n");
+	mphf->data = hashtree;
 	fread(&nhashes, sizeof(cmph_uint32), 1, f);
-	chm->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
-	chm->hashes[nhashes] = NULL;
+	hashtree->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
+	hashtree->hashes[nhashes] = NULL;
 	DEBUGP("Reading %u hashes\n", nhashes);
 	for (i = 0; i < nhashes; ++i)
 	{
@@ -252,38 +248,38 @@ void chm_load(FILE *f, cmph_t *mphf)
 		buf = (char *)malloc(buflen);
 		fread(buf, buflen, 1, f);
 		state = hash_state_load(buf, buflen);
-		chm->hashes[i] = state;
+		hashtree->hashes[i] = state;
 		free(buf);
 	}
 
 	DEBUGP("Reading m and n\n");
-	fread(&(chm->n), sizeof(cmph_uint32), 1, f);	
-	fread(&(chm->m), sizeof(cmph_uint32), 1, f);	
+	fread(&(hashtree->n), sizeof(cmph_uint32), 1, f);	
+	fread(&(hashtree->m), sizeof(cmph_uint32), 1, f);	
 
-	chm->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*chm->n);
-	fread(chm->g, chm->n*sizeof(cmph_uint32), 1, f);
+	hashtree->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*hashtree->n);
+	fread(hashtree->g, hashtree->n*sizeof(cmph_uint32), 1, f);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
-	for (i = 0; i < chm->n; ++i) fprintf(stderr, "%u ", chm->g[i]);
+	for (i = 0; i < hashtree->n; ++i) fprintf(stderr, "%u ", hashtree->g[i]);
 	fprintf(stderr, "\n");
 	#endif
 	return;
 }
 		
 
-cmph_uint32 chm_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
+cmph_uint32 hashtree_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	chm_data_t *chm = mphf->data;
-	cmph_uint32 h1 = hash(chm->hashes[0], key, keylen) % chm->n;
-	cmph_uint32 h2 = hash(chm->hashes[1], key, keylen) % chm->n;
+	hashtree_data_t *hashtree = mphf->data;
+	cmph_uint32 h1 = hash(hashtree->hashes[0], key, keylen) % hashtree->n;
+	cmph_uint32 h2 = hash(hashtree->hashes[1], key, keylen) % hashtree->n;
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
-	if (h1 == h2 && ++h2 >= chm->n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, chm->g[h1], chm->g[h2], chm->m);
-	return (chm->g[h1] + chm->g[h2]) % chm->m;
+	if (h1 == h2 && ++h2 >= hashtree->n) h2 = 0;
+	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, hashtree->g[h1], hashtree->g[h2], hashtree->m);
+	return (hashtree->g[h1] + hashtree->g[h2]) % hashtree->m;
 }
-void chm_destroy(cmph_t *mphf)
+void hashtree_destroy(cmph_t *mphf)
 {
-	chm_data_t *data = (chm_data_t *)mphf->data;
+	hashtree_data_t *data = (hashtree_data_t *)mphf->data;
 	free(data->g);	
 	hash_state_destroy(data->hashes[0]);
 	hash_state_destroy(data->hashes[1]);
