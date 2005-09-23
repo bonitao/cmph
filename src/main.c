@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 						break;
 					}
 				}
-				if (!valid || mph_algo == CMPH_BRZ) 
+				if (!valid) 
 				{
 					fprintf(stderr, "Invalid mph algorithm: %s. It is not available in version %s\n", optarg, VERSION);
 					return -1;
