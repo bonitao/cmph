@@ -1,6 +1,6 @@
 %define name cmph
-%define version 0.2
-%define release 1
+%define version 0.4
+%define release 3
 
 Name: %{name}
 Version: %{version}
