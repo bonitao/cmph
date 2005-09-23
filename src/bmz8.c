@@ -453,10 +453,8 @@ int bmz8_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	cmph_uint8 i;
 	cmph_uint8 two = 2; //number of hash functions
 	bmz8_data_t *data = (bmz8_data_t *)mphf->data;
-	cmph_uint8 nn, nm;
 	__cmph_dump(mphf, fd);
 
 	fwrite(&two, sizeof(cmph_uint8), 1, fd);

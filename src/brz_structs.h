@@ -13,7 +13,8 @@ struct __brz_data_t
 	cmph_uint32 k;       // number of components
 	hash_state_t **h1;
 	hash_state_t **h2;
-	hash_state_t * h3;    
+	hash_state_t * h3;
+	cmph_uint8 * tmp_dir; // temporary directory    
 };
 
 struct __brz_config_data_t
