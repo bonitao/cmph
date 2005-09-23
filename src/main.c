@@ -187,6 +187,7 @@ int main(int argc, char **argv)
 	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	srand(seed);
 
+	int ret = 0;
 	if (mphf_file == NULL)
 	{
 		mphf_file = (char *)malloc(strlen(keys_file) + 5);
@@ -255,6 +256,7 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
+		cmph_uint32 siz = cmph_size(mphf);
 		hashtable = (cmph_uint8*)malloc(source->nkeys*sizeof(cmph_uint8));
 		memset(hashtable, 0, source->nkeys);
 		//check all keys
@@ -265,10 +267,16 @@ int main(int argc, char **argv)
 			cmph_uint32 buflen = 0;
 			source->read(source->data, &buf, &buflen);
 			h = cmph_search(mphf, buf, buflen);
-			assert(h < source->nkeys);
-			if(hashtable[h])fprintf(stderr, "collision: %u\n",h);
-			assert(hashtable[h]==0);
-			hashtable[h] = 1;
+			if (!(h < siz))
+			{
+				fprintf(stderr, "Unknown key %*s in the input.\n", buflen, buf);
+				ret = 1;
+			} else if(hashtable[h])
+			{
+				fprintf(stderr, "Duplicated or unknown key %*s in the input\n", buflen, buf);
+				ret = 1;
+			} else hashtable[h] = 1;
+
 			if (verbosity)
 			{
 				printf("%s -> %u\n", buf, h);
@@ -282,5 +290,5 @@ int main(int argc, char **argv)
 	free(mphf_file);
 	free(tmp_dir);
 	free(source);
-	return 0;
+	return ret;
 }
