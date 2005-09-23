@@ -182,7 +182,7 @@ static int chm_gen_edges(cmph_config_t *mph)
 		if (h1 == h2) if (++h2 >= chm->n) h2 = 0;
 		if (h1 == h2) 
 		{
-			if (mph->verbosity) fprintf(stderr, "Self loop for key %e\n", e);
+			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
 			return 0;
 		}
@@ -201,7 +201,6 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	cmph_uint32 i;
 	cmph_uint32 two = 2; //number of hash functions
 	chm_data_t *data = (chm_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
@@ -234,11 +233,9 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 void chm_load(FILE *f, cmph_t *mphf)
 {
 	cmph_uint32 nhashes;
-	char fbuf[BUFSIZ];
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 i;
-	hash_state_t *state;
 	chm_data_t *chm = (chm_data_t *)malloc(sizeof(chm_data_t));
 
 	DEBUGP("Loading chm mphf\n");

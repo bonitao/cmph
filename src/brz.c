@@ -1,4 +1,3 @@
-
 #include "graph.h"
 #include "bmz8.h"
 #include "bmz8_structs.h"
@@ -23,7 +22,7 @@ static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
 static char * brz_read_key(FILE * fd);
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
 static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index, cmph_io_adapter_t *source);
-
+static void brz_flush_g(brz_config_data_t *brz, cmph_uint32 *start_index, FILE * fd);
 brz_config_data_t *brz_config_new()
 {
 	brz_config_data_t *brz = NULL; 	
@@ -48,7 +47,6 @@ void brz_config_destroy(cmph_config_t *mph)
 {
 	brz_config_data_t *data = (brz_config_data_t *)mph->data;
 	DEBUGP("Destroying algorithm dependent data\n");
-	free(data->tmp_dir);
 	free(data);
 }
 
@@ -81,12 +79,12 @@ void brz_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 		if(tmp_dir[len-1] != '/')
 		{
 			brz->tmp_dir = calloc(len+2, sizeof(cmph_uint8));
-			sprintf(brz->tmp_dir, "%s/\0", tmp_dir); 
+			sprintf(brz->tmp_dir, "%s/", tmp_dir); 
 		}
 		else
 		{
 			brz->tmp_dir = calloc(len+1, sizeof(cmph_uint8));
-			sprintf(brz->tmp_dir, "%s\0", tmp_dir); 
+			sprintf(brz->tmp_dir, "%s", tmp_dir); 
 		}
 		
 	}
@@ -169,6 +167,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brz->size = NULL; //transfer memory ownership
 	brzf->offset = brz->offset;
 	brz->offset = NULL; //transfer memory ownership
+	brzf->tmp_dir = brz->tmp_dir;
+	brz->tmp_dir = NULL; //transfer memory ownership
 	brzf->k = brz->k;
 	brzf->c = brz->c;
 	brzf->m = brz->m;
@@ -204,6 +204,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	cmph_uint32 max_size = 0;
 	cmph_uint32 cur_bucket = 0;
 	cmph_uint8 nkeys_vd = 0;
+	cmph_uint32 start_index = 0;
 	char ** keys_vd = NULL;
 	
 	
@@ -333,7 +334,11 @@ static int brz_gen_graphs(cmph_config_t *mph)
 	tmp_fds = (FILE **)calloc(nflushes, sizeof(FILE *));
 	buffer_merge = (cmph_uint8 **)calloc(nflushes, sizeof(cmph_uint8 *));
 	buffer_h3    = (cmph_uint32 *)calloc(nflushes, sizeof(cmph_uint32));
-	
+	filename = (char *)calloc(strlen(brz->tmp_dir) + 11, sizeof(char));
+	sprintf(filename, "%stmpg.cmph",brz->tmp_dir);
+        tmp_fd = fopen(filename, "w");
+	free(filename);
+	memory_usage = 0;
 	for(i = 0; i < nflushes; i++)
 	{
 		filename = (char *)calloc(strlen(brz->tmp_dir) + 11, sizeof(char));
@@ -406,6 +411,12 @@ static int brz_gen_graphs(cmph_config_t *mph)
 			mphf_tmp = cmph_new(config);
 			bmzf = (bmz8_data_t *)mphf_tmp->data;
 			brz_copy_partial_mphf(brz, bmzf, cur_bucket, source);
+			memory_usage += brz->size[cur_bucket];
+			if((cur_bucket+1 == brz->k)||(memory_usage > brz->memory_availability))
+			{
+				brz_flush_g(brz, &start_index, tmp_fd);
+				memory_usage = 0;
+			}
 			cmph_config_destroy(config);
 			brz_destroy_keys_vd(keys_vd, nkeys_vd);
 			cmph_destroy(mphf_tmp);
@@ -413,6 +424,7 @@ static int brz_gen_graphs(cmph_config_t *mph)
 			nkeys_vd = 0;
 		}
 	}
+	fclose(tmp_fd);
 	for(i = 0; i < nflushes; i++) fclose(tmp_fds[i]);
 	free(tmp_fds);
 	free(keys_vd);
@@ -458,6 +470,17 @@ static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)
 	for(i = 0; i < nkeys; i++) free(keys_vd[i]);
 }
 
+static void brz_flush_g(brz_config_data_t *brz, cmph_uint32 *start_index, FILE * fd)
+{
+	while(*start_index < brz->k && brz->g[*start_index] != NULL)
+	{
+		fwrite(brz->g[*start_index], sizeof(cmph_uint8), brz->size[*start_index], fd);
+		free(brz->g[*start_index]);
+		brz->g[*start_index] = NULL;
+		*start_index = *start_index + 1;
+	}
+}
+
 static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index, cmph_io_adapter_t *source)
 {
 	cmph_uint32 i;
@@ -477,9 +500,14 @@ int brz_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	cmph_uint32 nbuflen;
 	cmph_uint32 i;
 	brz_data_t *data = (brz_data_t *)mphf->data;
+	FILE * tmpg_fd = NULL;
+	char * filename = NULL;
+	filename = (char *)calloc(strlen(data->tmp_dir) + 11, sizeof(char));
+        sprintf(filename, "%stmpg.cmph",data->tmp_dir);
+	tmpg_fd = fopen(filename, "rb");
+        free(filename);
 	DEBUGP("Dumping brzf\n");
 	__cmph_dump(mphf, fd);
 
@@ -517,14 +545,17 @@ int brz_dump(cmph_t *mphf, FILE *fd)
 	for(i = 0; i < data->k; i++)
 	{
 		cmph_uint32 n = ceil(data->c * data->size[i]);
-		fwrite(data->g[i], sizeof(cmph_uint8)*n, 1, fd);
+		buf = (char *)calloc(n, sizeof(cmph_uint8));
+		fread(buf, sizeof(cmph_uint8), n, tmpg_fd);
+		fwrite(buf, sizeof(cmph_uint8), n, fd);
+		free(buf);
 	}
+	fclose(tmpg_fd);
 	return 1;
 }
 
 void brz_load(FILE *f, cmph_t *mphf)
 {
-	cmph_uint32 nhashes;
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 i;
@@ -614,6 +645,7 @@ void brz_destroy(cmph_t *mphf)
 	free(data->h2);
 	free(data->size);
 	free(data->offset);
+	free(data->tmp_dir);
 	free(data);
 	free(mphf);
 }
