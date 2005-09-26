@@ -1,0 +1,8 @@
+# ChangeLog for <CATEGORY>/<PACKAGE_NAME>
+# Copyright 1999-2005 Gentoo Foundation; Distributed under the GPL v2
+# $Header: /cvsroot/cmph/cmph/portage/dev-libs/cmph/ChangeLog,v 1.1 2005/09/26 04:30:54 davi Exp $
+
+*cmph-0.4 (25 Sep 2005)
+
+  25 Sep 2005; Davi de Castro Reis <davi.reis@gmail.com> cmph-04.ebuild, metadata.xml, ChangeLog:
+  Initial import.  
