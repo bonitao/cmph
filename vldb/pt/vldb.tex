@@ -1,0 +1,150 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a template file for the LaTeX package SVJour2 for the
+% Springer journal "The VLDB Journal".
+%
+%                                    Springer Heidelberg 2004/12/03
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% First comes an example EPS file -- just ignore it and
+% proceed on the \documentclass line
+% your LaTeX will extract the file if required
+%\begin{filecontents*}{figs/minimalperfecthash-ph-mph.ps}
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 19 19 221 221
+%%CreationDate: Mon Sep 29 1997
+%%Creator: programmed by hand (JK)
+%%EndComments
+%gsave
+%newpath
+%  20 20 moveto
+%  20 220 lineto
+%  220 220 lineto
+%  220 20 lineto
+%closepath
+%2 setlinewidth
+%gsave
+%  .4 setgray fill
+%grestore
+%stroke
+%grestore
+%\end{filecontents*}
+%
+\documentclass[twocolumn,fleqn,runningheads]{svjour2}
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+\usepackage{graphicx}
+\usepackage{listings}
+%
+% \usepackage{mathptmx}      % use Times fonts if available on your TeX system
+%
+% insert here the call for the packages your document requires
+%\usepackage{latexsym}
+% etc.
+%
+% please place your own definitions here and don't use \def but
+% \newcommand{}{}
+%
+
+\lstset{
+  language=Pascal,
+  basicstyle=\fontsize{9}{9}\selectfont,
+  captionpos=t,
+  aboveskip=1mm,
+  belowskip=1mm,
+  abovecaptionskip=1mm,
+  belowcaptionskip=1mm,
+%  numbers = left,
+  mathescape=true,
+  escapechar=@,
+  extendedchars=true,
+  showstringspaces=false,
+  columns=fixed,
+  basewidth=0.515em,
+  frame=single,
+  framesep=2mm,
+  xleftmargin=2mm,
+  xrightmargin=2mm,
+  framerule=0.5pt
+}
+
+\def\cG{{\mathcal G}}
+\def\crit{{\rm crit}}
+\def\ncrit{{\rm ncrit}}
+\def\scrit{{\rm scrit}}
+\def\bedges{{\rm bedges}}
+\def\ZZ{{\mathbb Z}}
+
+\journalname{The VLDB Journal}
+%
+\begin{document}
+
+\title{Minimal Perfect Hash Functions: New Algorithms and Applications\thanks{
+This work was supported in part by
+GERINDO Project--grant MCT/CNPq/CT-INFO 552.087/02-5,
+CAPES/PROF Scholarship (Fabiano C. Botelho),
+FAPESP Proj.\ Tem.\ 03/09925-5 and CNPq Grant 30.0334/93-1
+(Yoshiharu Kohayakawa),
+and CNPq Grant 30.5237/02-0 (Nivio Ziviani).}
+}
+%\subtitle{Do you have a subtitle?\\ If so, write it here}
+
+%\titlerunning{Short form of title}        % if too long for running head
+
+\author{Fabiano C. Botelho \and Davi C. Reis \and Yoshiharu Kohayakawa \and Nivio Ziviani}
+%\authorrunning{Short form of author list} % if too long for running head
+\institute{
+F. C. Botelho \and 
+N. Ziviani \at
+Dept. of Computer Science,
+Federal Univ. of Minas Gerais,
+Belo Horizonte, Brazil\\
+\email{\{fbotelho,nivio\}@dcc.ufmg.br}
+\and
+D. C. Reis \at
+Google, Brazil \\
+\email{davi.reis@gmail.com}
+\and
+Y. Kohayakawa
+Dept. of Computer Science,
+Univ. of S\~ao Paulo,
+S\~ao Paulo, Brazil\\
+\email{yoshi@ime.usp.br}
+}
+
+\date{Received: date / Accepted: date}
+% The correct dates will be entered by the editor
+
+
+\maketitle
+
+\begin{abstract}
+Insert your abstract here. Include up to five keywords.
+\keywords{First keyword \and Second keyword \and More}
+\end{abstract}
+
+% main text
+\input{introduction}
+\input{relatedwork}
+\input{algorithms}
+\input{experimentalresults}
+\input{applications}
+\input{conclusions}
+
+
+%\begin{acknowledgements}
+%If you'd like to thank anyone, place your comments here
+%and remove the percent signs.
+%\end{acknowledgements}
+
+% BibTeX users please use
+%\bibliographystyle{spmpsci}
+%\bibliography{}   % name your BibTeX data base
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
