@@ -1,0 +1,67 @@
+\section{Related Work}
+Czech, Havas and Majewski~\cite{chm97} provide a
+comprehensive survey of the most important theoretical results
+on perfect hashing.
+In the following, we review some of those results.
+
+Fredman, Koml\'os and Szemer\'edi~\cite{FKS84} showed that it is possible to
+construct space efficient perfect hash functions that can be evaluated in
+constant time with table sizes that are linear in the number of keys:
+$m=O(n)$.  In their model of computation, an element of the universe~$U$ fits
+into one machine word, and arithmetic operations and memory accesses have unit
+cost.  Randomized algorithms in the FKS model can construct a perfect hash
+function in expected time~$O(n)$:
+this is the case of our algorithm and the works in~\cite{chm92,p99}.
+
+Many methods for generating minimal perfect hash functions use a
+{\em mapping}, {\em ordering} and {\em searching}
+(MOS) approach,
+a description coined by Fox, Chen and Heath~\cite{fch92}.
+In the MOS approach, the construction of a minimal perfect hash function
+is accomplished in three steps.
+First, the mapping step transforms the key set from the original universe
+to a new universe.
+Second, the ordering step places the keys in a sequential order that
+determines the order in which hash values are assigned to keys.
+Third, the searching step attempts to assign hash values to the keys.
+Our algorithm and the algorithm presented in~\cite{chm92} use the
+MOS approach.
+
+Pagh~\cite{p99} proposed a family of randomized algorithms for
+constructing minimal perfect hash functions.
+The form of the resulting function is $h(x) = (f(x) + d_{g(x)}) \bmod n$,
+where $f$ and $g$ are universal hash functions and $d$ is a set of
+displacement values to resolve collisions that are caused by the function $f$.
+Pagh identified a set of conditions concerning $f$ and $g$ and showed
+that if these conditions are satisfied, then a minimal perfect hash
+function can be computed in expected time $O(n)$ and stored in
+$(2+\epsilon)n$ computer words.
+Dietzfelbinger and Hagerup~\cite{dh01} improved~\cite{p99},
+reducing from $(2+\epsilon)n$ to $(1+\epsilon)n$ the number of computer
+words required to store the function, but in their approach~$f$ and~$g$ must
+be chosen from a class
+of hash functions that meet additional requirements.
+Differently from the works in~\cite{p99,dh01}, our algorithm uses two
+universal hash functions $h_1$ and $h_2$ randomly selected from a class
+of universal hash functions that do not need to meet any additional
+requirements.
+
+The work in~\cite{chm92} presents an efficient and practical algorithm
+for generating order preserving minimal perfect hash functions.
+Their method involves the generation of acyclic random graphs
+$G = (V, E)$ with~$|V|=cn$ and $|E|=n$, with  $c \ge 2.09$.
+They showed that an order preserving minimal perfect hash function
+can be found in optimal time if~$G$ is acyclic.
+To generate an acyclic graph, two vertices $h_1(x)$ and $h_2(x)$ are
+computed for each key $x \in S$.
+Thus, each set~$S$ has a corresponding graph~$G=(V,E)$, where $V=\{0,1,
+\ldots,t\}$ and $E=\big\{\{h_1(x),h_2(x)\}:x \in S\big\}$.
+In order to guarantee the acyclicity of~$G$, the algorithm repeatedly selects
+$h_1$ and $h_2$ from a family of universal hash functions
+until the corresponding graph is acyclic.
+Havas et al.~\cite{hmwc93} proved that if $|V(G)|=cn$ and $c>2$,
+then the probability that~$G$ is acyclic is $p=e^{1/c}\sqrt{(c-2)/c}$.
+For $c=2.09$, this probability is
+$p \simeq 0.342$, and
+the expected number of iterations to obtain an acyclic graph
+is~$1/p \simeq 2.92$.
