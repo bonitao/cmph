@@ -1,2 +1,33 @@
 \section{Trabalhos Relacionados}
+As FHPs e FHPMs receberam muita aten\c{c}\~ao da comunidade 
+cient\'{\i}fica nas d\'ecadas de 80 e 90. Em~\cite{chm97} \'e 
+apresentado um survey completo da \'area at\'e 1997.
+Nesta se\c{c}\~ao revisitamos os trabalhos cobertos pelo survey que
+est\~ao diretamente relacionados aos algoritmos aqui propostos e
+fazemos um survey dos algoritmos propostos desde ent\~ao.
+ 
+Fredman, Koml\'os e Szemer\'edi~\cite{FKS84} mostraram que \'e poss\'{\i}vel construir
+FHPs que podem ser descritas eficientemente em termos de espa\c{c}o e avaliadas em 
+tempo constante utilizando tamanhos de tabelas que s\~ao lineares no n\'umero de chaves:
+$m=O(n)$. 
+No modelo de computa\c{c}\~ao deles, um elemento do universo~$U$ \'e colocado em uma 
+palavra de m\'aquina, e opera\c{c}\~oes aritm\'eticas e acesso \`a mem\'oria tem custo 
+$O(1)$.
+Algoritmos rand\^omicos no modelo FKS podem construir FHPs com complexidade de tempo 
+experada de $O(n)$: 
+Este \'e o caso dos nossos algoritmos e dos trabalhos em~\cite{chm92,p99}.
+
+Os trabalhos~\cite{asw00,swz00} apresentam algoritmos para construir
+FHPs e FHPMs deterministicamente. 
+As fun\c{c}\~oes geradas necessitam de $O(n \log(n) + \log(\log(u)))$ bits para serem descritas.
+A complexidade de caso m\'edio dos algoritmos para gerar as fun\c{c}\~oes \'e 
+$O(n\log(n) \log( \log (u)))$ e a de pior caso \'e $O(n^3\log(n) \log(\log(u)))$. 
+A complexidade de avalia\c{c}\~ao das fun\c{c}\~oes \'e $O(\log(n) + \log(\log(u)))$.
+*Falar do limite inferiors para descrever um FHP Mehlhorn~\cite{m84}*
+Assim, os algoritmos n\~ao geram fun\c{c}\~oes que podem ser avaliadas com complexidade 
+de tempo $O(1)$, est\~ao distantes a um fator de $\log n$ da complexidade \'otima para descrever 
+FHPs e FHPMs e n\~ao geram as fun\c{c}\~oes com complexidade linear.
+Al\'em disso, o universo $U$ das chaves \'e restrito a n\'umeros inteiros, o que pode 
+limitar a utiliza\c{c}\~ao na pr\'atica. 
+
 \cite{bkz05}
