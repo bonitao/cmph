@@ -23,10 +23,12 @@ As fun\c{c}\~oes geradas necessitam de $O(n \log(n) + \log(\log(u)))$ bits para 
 A complexidade de caso m\'edio dos algoritmos para gerar as fun\c{c}\~oes \'e 
 $O(n\log(n) \log( \log (u)))$ e a de pior caso \'e $O(n^3\log(n) \log(\log(u)))$. 
 A complexidade de avalia\c{c}\~ao das fun\c{c}\~oes \'e $O(\log(n) + \log(\log(u)))$.
-*Falar do limite inferiors para descrever um FHP Mehlhorn~\cite{m84}*
 Assim, os algoritmos n\~ao geram fun\c{c}\~oes que podem ser avaliadas com complexidade 
 de tempo $O(1)$, est\~ao distantes a um fator de $\log n$ da complexidade \'otima para descrever 
-FHPs e FHPMs e n\~ao geram as fun\c{c}\~oes com complexidade linear.
+FHPs e FHPMs (Mehlhorn mostra em~\cite{m84} 
+que para armazenar uma FHP s\~ao necess\'arios no m\'{\i}nimo 
+$\Omega(n^2/(2\ln 2) m + \log\log u)$ bits), e n\~ao geram as 
+fun\c{c}\~oes com complexidade linear.
 Al\'em disso, o universo $U$ das chaves \'e restrito a n\'umeros inteiros, o que pode 
 limitar a utiliza\c{c}\~ao na pr\'atica. 
 

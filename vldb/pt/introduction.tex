@@ -18,23 +18,19 @@ a localiza\c{c}\~oes inutilizadas na tabela e tempo para resolver colis\~oes qua
 chaves s\~ao mapeadas para a mesma localiza\c{c}\~ao na tabela.
 
 
-For {\em static sets} of keys it is possible to compute a function
-to find any key in a table in one probe; such hash functions are called
-\textit{perfect}. 
-Given a set of keys~$S$, we shall say that a hash function~$h:U\to M$ is a
-\textit{perfect hash function} for~$S$ if~$h$ is an injection on~$S$,
-that is, there are no \textit{collisions} among the keys in~$S$: if~$x$
-and~$y$ are in~$S$ and~$x\neq y$, then~$h(x)\neq h(y)$.
-Figure~\ref{fig:minimalperfecthash-ph-mph}(a) illustrates a perfect hash
-function.
-Since no collisions occur, each key can be retrieved from the table
-with a single probe.
-If~$m=n$, that is, the table has the same size as~$S$,
-then~$h$ is a \textit{minimal perfect hash function} for~$S$.
-Figure~\ref{fig:minimalperfecthash-ph-mph}(b) illustrates
-a~minimal perfect hash function.
-Minimal perfect hash functions totally avoid the problem of wasted
-space and time.
+Para {\em conjuntos est\'aticos} de chaves \'e poss\'{\i}vel computar uma fun\c{c}\~ao
+para encontrar qualquer chave na tabela em uma \'unica tentativa; tais fun\c{c}\~oes 
+s\~ao chamadas de \textit{perfeitas}. 
+Dado um conjunto de chaves $S$, dizemos que uma fun\c{c}\~ao hash $h:U\to M$ \'e uma
+\textit{fun\c{c}\~ao hash perfeita} (FHP) para $S$ se $h$ \'e injetora para $S$,
+isto \'e, n\~ao h\'a {\em colis\~oes} entre as chaves em $S$: se $x$
+e $y$ est\~ao em $S$ e $x\neq y$, ent\~ao $h(x)\neq h(y)$.
+A Figura~\ref{fig:minimalperfecthash-ph-mph}(a) ilustra uma fun\c{c}\~ao hash perfeita.
+Se $m=n$, isto \'e, a tabela \'e do mesmo tamanho de $S$,
+ent\~ao $h$ \'e uma \textit{fun\c{c}\~ao hash perfeita m\'{\i}nima} (FHPM).
+A Figura~\ref{fig:minimalperfecthash-ph-mph}(b) ilustra uma 
+fun\c{c}\~ao hash perfeita m\'{\i}nima.
+FHPMs podem evitar totalmente o problema de desperd\'{\i}cio de espa\c{c}o e tempo.
 
 % For two-column wide figures use
 \begin{figure}
@@ -47,12 +43,13 @@ space and time.
 \label{fig:minimalperfecthash-ph-mph}
 \end{figure}
 
-A efici\^encia dos algoritmos ser\'a medida atrav\'es das seguintes m\'etricas:
+A aplicabilidade pr\'atica das FHPMs e consequentemente dos algoritmos utilizados para ger\'a-las est\'a diretamente relacionada com as seguintes m\'etricas:
 \begin{enumerate}
-\item Quantidade de tempo gasto para encontrar uma fun\c{c}\~ao hash perfeita m\'{\i}nima $h$.
-\item Quantidade de tempo necess\'ario para avaliar ou computar $h$.
-\item Quantidade de mem\'oria exigida para armazenar a descri\c{c}\~ao da fun\c{c}\~ao $h$.
+\item Quantidade de tempo gasto para encontrar uma FHPM $h$.
 \item Quantidade de mem\'oria exigida para encontrar $h$.  
-\item Escalabilidade dos algoritmos a medida que o conjunto de chaves cresce. 
+\item Quantidade de tempo necess\'ario para avaliar ou computar $h$ para uma dada chave.
+\item Quantidade de mem\'oria exigida para armazenar a descri\c{c}\~ao da fun\c{c}\~ao $h$.
+\item Escalabilidade dos algoritmos com o crescimento de $S$. 
 \end{enumerate}
 
+Neste artigo apresentamos ...
