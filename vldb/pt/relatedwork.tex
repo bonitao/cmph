@@ -32,7 +32,42 @@ fun\c{c}\~oes com complexidade linear.
 Al\'em disso, o universo $U$ das chaves \'e restrito a n\'umeros inteiros, o que pode 
 limitar a utiliza\c{c}\~ao na pr\'atica. 
 
-/* Descrever compressao de tabelas */
-\cite{gss01}
+Pagh~\cite{p99} prop\^os uma fam\'{\i}lia de algoritmos rand\^omicos para construir
+FHPMs.
+A forma da fun\c{c}\~ao resultante \'e $h(k) = (f(k) + d_{g(k)}) \bmod n$, 
+onde $f$ e $g$ s\~ao fun\c{c}\~oes hash universal \cite{ss89} e $d$ \'e um conjunto de 
+valores de deslocamento para resolver as colis\~oes que s\~ao causadas pela fun\c{c}\~ao $f$.
+Pagh identificou um conjunto de condi\c{c}\~oes referentes a $f$ e $g$, e mostrou 
+que se tais condi\c{c}\~oes fossem satisfeitas, ent\~ao, uma FHPM pode ser computada
+em tempo esperado $O(n)$ e armazenada em $(2+\epsilon)n$ palavras de computador 
+(ou $O((2+\epsilon)n \log n)$ bits.)
+Dietzfelbinger e Hagerup~\cite{dh01} melhoraram ~\cite{p99},
+reduzindo de $(2+\epsilon)n$ para $(1+\epsilon)n$ (ou $O((1+\epsilon)n \log n)$ bits) 
+o n\'umero de palavras de 
+computador exigidas para armazenar a fun\c{c}\~ao, mas na abordagem deles $f$ e $g$
+devem ser escolhidas de uma classe de fun\c{c}\~oes hash que atendam a requisitos
+adicionais.
 
-\cite{bkz05}
+Galli, Seybold e Simon~\cite{gss01} propuseram um algoritmo r\^andomico
+que gera FHPMs da mesma forma das geradas pelos algoritmos de Pagh~\cite{p99}
+e, Dietzfelbinger e Hagerup~\cite{dh01}. No entanto, eles definiram a forma das 
+fun\c{c}\~oes $f(k) = h_c(k) \bmod n$ e $g(k) = \lfloor h_c(k)/n \rfloor$ para obter em tempo esperado $O(n)$ uma fun\c{c}\~ao que pode ser descrita em $O(n\log n)$ bits, onde
+$h_c(k) = (ck \bmod p) \bmod n^2$, $1 \leq c \leq  p-1$ e $p$ um primo maior do que $u$.
+
+Os algoritmos propostos em~\cite{p99,dh01,gss01} n\~ao s\~ao escal\'aveis com o crescimento do
+conjunto de chaves $S$. Isto \'e devido as restri\c{c}\~oes impostas sobre as fun\c{c}\~oes
+hash universal utilizadas no c\'alculo das FHPMs. Normalmente \'e exigido um 
+n\'umero primo maior do que o tamanho do universo $u$ que, em geral, \'e muito maior
+do que $n=|S|$ ou opera\c{c}\~oes que envolvem $n^2$ aparecem no c\'alculo da FHPM.
+Al\'em disso, todas as fun\c{c}\~oes est\~ao distantes a um fator de $\log n$ da complexidade 
+\'otima para descrever FHPMs.
+  
+Diferentemente dos trabalhos em~\cite{p99,dh01,gss01}, nossos algoritmos usam  
+fun\c{c}\~oes hash universal que s\~ao selecionadas randomicamente de uma classe 
+de fun\c{c}\~oes que n\~ao necessitam atender restri\c{c}\~oes adicionais.
+Al\'em disso, as FHPMs s\~ao geradas em tempo esperado $O(n)$, s\~ao avaliadas 
+com custo $O(1)$ e s\~ao descritas em $O(n)$ bits que est\'a muito pr\'oximo da
+complexidade \'otima. 
+Pelo melhor do nosso conhecimento, os algoritmos propostos neste artigo s\~ao
+os primeiros da literatura capazes de gerar FHPMs para conjuntos de chaves na
+ordem de bilh\~oes de chaves utilizando um simples PC com 1GB de mem\'oria principal.
