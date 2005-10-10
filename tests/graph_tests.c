@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
 	graph_iterator_t it;
 	cmph_uint32 i, neighbor;
-	graph_t *g = graph_new(5, 10, 0);
+	graph_t *g = graph_new(5, 10);
 
 	fprintf(stderr, "Building random graph\n");
 	for (i = 0; i < 10; ++i)
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	graph_destroy(g);
 
 	fprintf(stderr, "Building cyclic graph\n");
-	g = graph_new(4, 5, 0);
+	g = graph_new(4, 5);
 	graph_add_edge(g, 0, 3);
 	graph_add_edge(g, 0, 1);
 	graph_add_edge(g, 1, 2);
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 	graph_destroy(g);
 
 	fprintf(stderr, "Building non-cyclic graph\n");
-	g = graph_new(5, 4, 0);
+	g = graph_new(5, 4);
 	graph_add_edge(g, 0, 1);
 	graph_add_edge(g, 1, 2);
 	graph_add_edge(g, 2, 3);
