@@ -26,8 +26,13 @@ typedef struct
 /** Adapter pattern API **/
 /* please call free() in the created adapters */
 cmph_io_adapter_t *cmph_io_nlfile_adapter(FILE * keys_fd);
+void cmph_io_nlfile_adapter_destroy(cmph_io_adapter_t * key_source);
+
 cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys);
+void cmph_io_nlnkfile_adapter_destroy(cmph_io_adapter_t * key_source);
+
 cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys);
+void cmph_io_vector_adapter_destroy(cmph_io_adapter_t * key_source);
 
 /** Hash configuration API **/
 cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source);
