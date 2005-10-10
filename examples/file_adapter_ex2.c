@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Id:%u\n", id);
 	//Destroy hash
 	cmph_destroy(hash);
-	free(source);   
+	cmph_io_nlfile_adapter_destroy(source);   
 	fclose(keys_fd);
 	return 0;
 }

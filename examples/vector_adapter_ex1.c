@@ -21,6 +21,6 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Id:%u\n", id);
 	//Destroy hash
 	cmph_destroy(hash);
-	free(source);   
+	cmph_io_vector_adapter_destroy(source);   
 	return 0;
 }
