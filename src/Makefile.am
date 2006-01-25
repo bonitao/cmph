@@ -1,7 +1,7 @@
 bin_PROGRAMS = cmph
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h
-libcmph_la_SOURCES = debug.h\
+libcmph_la_SOURCES = util.h debug.h\
 				  bitbool.h bitbool.c\
 				  cmph_types.h\
 				  hash.h hash_state.h hash.c\
@@ -17,9 +17,11 @@ libcmph_la_SOURCES = debug.h\
 				  chm.h chm_structs.h chm.c\
 				  bmz.h bmz_structs.h bmz.c\
 				  bmz8.h bmz8_structs.h bmz8.c\
+				  buffer_manage.h buffer_manage.c\
+				  buffer_entry.h buffer_entry.c\
 				  brz.h brz_structs.h brz.c
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 
-cmph_SOURCES = 	main.c ../wingetopt.h ../wingetopt.c
+cmph_SOURCES = 	main.c wingetopt.h wingetopt.c
 cmph_LDADD = libcmph.la

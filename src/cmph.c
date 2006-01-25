@@ -49,7 +49,8 @@ static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 
 static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
-	cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
+/*
+        cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
 	char **keys_vd = (char **)cmph_vector->vector;
 	
 	if (keys_vd + cmph_vector->position == NULL) return -1;
@@ -57,7 +58,17 @@ static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
 	*key = (char *)malloc(*keylen + 1);
 	strcpy(*key, *(keys_vd + cmph_vector->position));
 	cmph_vector->position = cmph_vector->position + 1;
+*/
+        cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
+        char **keys_vd = (char **)cmph_vector->vector;
+
+//        if (keys_vd + cmph_vector->position == NULL) return -1;
+        *keylen = strlen(keys_vd[cmph_vector->position]);
+        *key = (char *)malloc(*keylen + 1);
+        strcpy(*key, keys_vd[cmph_vector->position]);
+        cmph_vector->position = cmph_vector->position + 1;
 	return *keylen;
+
 }
 
 
@@ -68,7 +79,7 @@ static void key_nlfile_dispose(void *data, char *key, cmph_uint32 keylen)
 
 static void key_vector_dispose(void *data, char *key, cmph_uint32 keylen)
 {
-	key_nlfile_dispose(data, key, keylen);
+	free(key);
 }
 
 static void key_nlfile_rewind(void *data)
@@ -236,7 +247,43 @@ void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 		default:
 			assert(0);
 	}
+}
 
+
+void cmph_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd)
+{
+	switch (mph->algo)
+	{
+		case CMPH_CHM:
+			break;
+		case CMPH_BMZ: /* included -- Fabiano */
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_config_set_mphf_fd(mph, mphf_fd);
+			break;
+		default:
+			assert(0);
+	}
+}
+
+void cmph_config_set_b(cmph_config_t *mph, cmph_uint8 b)
+{
+	switch (mph->algo)
+	{
+		case CMPH_CHM:
+			break;
+		case CMPH_BMZ: /* included -- Fabiano */
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_config_set_b(mph, b);
+			break;
+		default:
+			assert(0);
+	}
 }
 
 void cmph_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_availability)
