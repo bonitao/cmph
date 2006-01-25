@@ -17,12 +17,11 @@
 //#define DEBUG
 #include "debug.h"
 
-static int brz_gen_graphs(cmph_config_t *mph);
+static int brz_gen_mphf(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
 static char * brz_read_key(FILE * fd);
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
 static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen);
-//static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index);
 static void brz_flush_g(brz_config_data_t *brz, cmph_uint32 *start_index, FILE * fd);
 brz_config_data_t *brz_config_new()
 {
@@ -128,18 +127,14 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	{
 		fprintf(stderr, "Partioning the set of keys.\n");	
 	}
-	
-//	brz->h1 = (hash_state_t **)calloc(brz->k, sizeof(hash_state_t *));
-//	brz->h2 = (hash_state_t **)calloc(brz->k, sizeof(hash_state_t *));
-//	brz->g  = (cmph_uint8 **)  calloc(brz->k, sizeof(cmph_uint8 *));
-	
+		
 	while(1)
 	{
 		int ok;
 		DEBUGP("hash function 3\n");
 		brz->h0 = hash_state_new(brz->hashfuncs[2], brz->k);
 		DEBUGP("Generating graphs\n");
-		ok = brz_gen_graphs(mph);
+		ok = brz_gen_mphf(mph);
 		if (!ok)
 		{
 			--iterations;
@@ -196,7 +191,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	return mphf;
 }
 
-static int brz_gen_graphs(cmph_config_t *mph)
+static int brz_gen_mphf(cmph_config_t *mph)
 {
 	cmph_uint32 i, e;
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
@@ -480,17 +475,6 @@ static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)
 	for(i = 0; i < nkeys; i++) { free(keys_vd[i]); keys_vd[i] = NULL;}
 }
 
-static void brz_flush_g(brz_config_data_t *brz, cmph_uint32 *start_index, FILE * fd)
-{
-	while(*start_index < brz->k && brz->g[*start_index] != NULL)
-	{
-		fwrite(brz->g[*start_index], sizeof(cmph_uint8), brz->size[*start_index], fd);
-		free(brz->g[*start_index]);
-		brz->g[*start_index] = NULL;
-		*start_index = *start_index + 1;
-	}
-}
-
 static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen)
 {
 	cmph_uint32 i;
@@ -514,21 +498,6 @@ static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, 
 	free(bufh2);
 	return buf;
 }
-/*static void brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index)
-{
-	cmph_uint32 i;
-	cmph_uint32 n = ceil(brz->c * brz->size[index]);
-	if( brz->g[index]) {fprintf(stderr, "index:%u\n",index);exit(10);}
-	brz->g[index] = (cmph_uint8 *)calloc(n, sizeof(cmph_uint8));
-	for(i = 0; i < n; i++)
-	{
-		brz->g[index][i] = bmzf->g[i];
-		//fprintf(stderr, "gsrc[%u]: %u  gdest: %u\n", i, (cmph_uint8) bmzf->g[i], brz->g[index][i]);
-        }
-        brz->h1[index] = hash_state_copy(bmzf->hashes[0]);
-        brz->h2[index] = hash_state_copy(bmzf->hashes[1]);
-}
-*/
 int brz_dump(cmph_t *mphf, FILE *fd)
 {
 	brz_data_t *data = (brz_data_t *)mphf->data;
