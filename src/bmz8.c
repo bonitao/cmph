@@ -5,7 +5,6 @@
 #include "hash.h"
 #include "vqueue.h"
 #include "bitbool.h"
-
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -65,7 +64,6 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 	cmph_uint8 restart_mapping = 0;
 	cmph_uint8 * visited = NULL;
 	bmz8_config_data_t *bmz8 = (bmz8_config_data_t *)mph->data;
-	
 	
 	if (mph->key_source->nkeys >= 256)
 	{
@@ -168,9 +166,11 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
  	        iterations_map--;
 		if (mph->verbosity) fprintf(stderr, "Restarting mapping step. %u iterations remaining.\n", iterations_map);
 	  }    
+
 	  free(used_edges);
 	  free(visited);
-        }while(restart_mapping && iterations_map > 0);
+
+	}while(restart_mapping && iterations_map > 0);
 	graph_destroy(bmz8->graph);	
 	bmz8->graph = NULL;
 	if (iterations_map == 0) 
@@ -266,8 +266,8 @@ static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_ui
 static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz8, cmph_uint8 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited)
 {
         cmph_uint8 next_g;
-	cmph_uint32 u;   /* Auxiliary vertex */
-	cmph_uint32 lav; /* lookahead vertex */
+	cmph_uint32 u;   
+	cmph_uint32 lav; 
 	cmph_uint8 collision;
 	cmph_uint8 * unused_g_values = NULL;
 	cmph_uint8 unused_g_values_capacity = 0;
@@ -278,7 +278,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 	DEBUGP("Labelling critical vertices\n");
 	bmz8->g[v] = (cmph_uint8)ceil ((double)(*biggest_edge_value)/2) - 1;
 	SETBIT(visited, v);
-	next_g    = (cmph_uint8)floor((double)(*biggest_edge_value/2)); /* next_g is incremented in the do..while statement*/
+	next_g    = (cmph_uint8)floor((double)(*biggest_edge_value/2)); 
 	vqueue_insert(q, v);
 	while(!vqueue_is_empty(q))
 	{
@@ -324,14 +324,15 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 					{
 					        if(nunused_g_values == unused_g_values_capacity)
 						{
-   						        unused_g_values = realloc(unused_g_values, (unused_g_values_capacity + BUFSIZ)*sizeof(cmph_uint8));
+							unused_g_values = realloc(unused_g_values, (unused_g_values_capacity + BUFSIZ)*sizeof(cmph_uint8));
 						        unused_g_values_capacity += BUFSIZ;  							
 						} 
 						unused_g_values[nunused_g_values++] = next_g;							
 
 					}
  					if (next_g > *biggest_g_value) *biggest_g_value = next_g;
-				}	
+				}
+				
 				next_g_index--;
 				if (next_g_index < nunused_g_values) unused_g_values[next_g_index] = unused_g_values[--nunused_g_values];
 
@@ -345,9 +346,11 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 						if(next_g + bmz8->g[lav] > *biggest_edge_value) *biggest_edge_value = next_g + bmz8->g[lav];
 					}
 				}
+				
 				bmz8->g[u] = next_g; // Labelling vertex u.
 				SETBIT(visited, u);
-			        vqueue_insert(q, u);
+			      	vqueue_insert(q, u);
+				
 			}			
 	        }
 		 
@@ -537,7 +540,7 @@ cmph_uint8 bmz8_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 void bmz8_destroy(cmph_t *mphf)
 {
 	bmz8_data_t *data = (bmz8_data_t *)mphf->data;
-	free(data->g);	
+	free(data->g);
 	hash_state_destroy(data->hashes[0]);
 	hash_state_destroy(data->hashes[1]);
 	free(data->hashes);

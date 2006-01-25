@@ -22,12 +22,12 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
 	cmph_uint32 i;
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -c\t c value that determines the number of vertices in the graph\n");
@@ -43,13 +43,13 @@ void usage_long(const char *prg)
 	fprintf(stderr, "  -m\t minimum perfect hash function file \n");
 	fprintf(stderr, "  -M\t main memory availability (in MB)\n");
 	fprintf(stderr, "  -d\t temporary directory used in brz algorithm \n");
+	fprintf(stderr, "  -b\t parmeter of BRZ algorithm to make the maximal number of keys in a bucket lower than 256\n");
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
-
 int main(int argc, char **argv)
 {
-	char verbosity = 0;		
+	char verbosity = 0;
 	char generate = 0;
 	char *mphf_file = NULL;
 	FILE *mphf_fd = stdout;
@@ -67,9 +67,10 @@ int main(int argc, char **argv)
 	cmph_uint8 * tmp_dir = NULL;
 	cmph_io_adapter_t *source;
 	cmph_uint32 memory_availability = 0;
+	cmph_uint32 b = 128;
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvgc:k:a:M:f:m:d:s:");
+		char ch = getopt(argc, argv, "hVvgc:k:a:M:b:f:m:d:s:");
 		if (ch == -1) break;
 		switch (ch)
 		{
@@ -118,6 +119,16 @@ int main(int argc, char **argv)
 					memory_availability = strtoul(optarg, &cptr, 10);
 					if(*cptr != 0) {
 						fprintf(stderr, "Invalid memory availability %s\n", optarg);
+						exit(1);
+					}
+				}
+				break;
+			case 'b':
+				{
+					char *cptr;
+					b = strtoul(optarg, &cptr, 10);
+					if(*cptr != 0) {
+						fprintf(stderr, "Parameter b was not found: %s\n", optarg);
 						exit(1);
 					}
 				}
@@ -184,9 +195,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	keys_file = argv[optind];
+  
 	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	srand(seed);
-
 	int ret = 0;
 	if (mphf_file == NULL)
 	{
@@ -196,6 +207,7 @@ int main(int argc, char **argv)
 	}	
 
 	keys_fd = fopen(keys_file, "r");
+
 	if (keys_fd == NULL)
 	{
 		fprintf(stderr, "Unable to open file %s: %s\n", keys_file, strerror(errno));
@@ -209,33 +221,35 @@ int main(int argc, char **argv)
 	if (generate)
 	{
 		//Create mphf
+		mphf_fd = fopen(mphf_file, "w");
 		config = cmph_config_new(source);
 		cmph_config_set_algo(config, mph_algo);
 		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
 		cmph_config_set_verbosity(config, verbosity);
 		cmph_config_set_tmp_dir(config, tmp_dir);
+		cmph_config_set_mphf_fd(config, mphf_fd);
 		cmph_config_set_memory_availability(config, memory_availability);
+		cmph_config_set_b(config, b);
 		if(mph_algo == CMPH_BMZ && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
 		mphf = cmph_new(config);
-
+		cmph_config_destroy(config);
 		if (mphf == NULL)
 		{
 			fprintf(stderr, "Unable to create minimum perfect hashing function\n");
-			cmph_config_destroy(config);
+			//cmph_config_destroy(config);
 			free(mphf_file);
 			return -1;
 		}
 
-		mphf_fd = fopen(mphf_file, "w");
 		if (mphf_fd == NULL)
 		{
 			fprintf(stderr, "Unable to open output file %s: %s\n", mphf_file, strerror(errno));
 			free(mphf_file);
 			return -1;
 		}
-		cmph_dump(mphf, mphf_fd);
-		cmph_destroy(mphf);
+		cmph_dump(mphf, mphf_fd); 
+		cmph_destroy(mphf);	
 		fclose(mphf_fd);
 	}
 	else
@@ -289,6 +303,7 @@ int main(int argc, char **argv)
 	fclose(keys_fd);
 	free(mphf_file);
 	free(tmp_dir);
-	free(source);
+        cmph_io_nlfile_adapter_destroy(source);
 	return ret;
+  
 }

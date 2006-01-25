@@ -7,8 +7,6 @@ typedef struct __jenkins_state_t
 {
 	CMPH_HASH hashfunc;
 	cmph_uint32 seed;
-	cmph_uint32 nbits;
-	cmph_uint32 size;
 } jenkins_state_t;
 	
 jenkins_state_t *jenkins_state_new(cmph_uint32 size); //size of hash table
