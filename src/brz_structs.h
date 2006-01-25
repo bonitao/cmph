@@ -13,8 +13,7 @@ struct __brz_data_t
 	cmph_uint32 k;       // number of components
 	hash_state_t **h1;
 	hash_state_t **h2;
-	hash_state_t * h3;
-	cmph_uint8 * tmp_dir; // temporary directory    
+	hash_state_t * h0;
 };
 
 struct __brz_config_data_t
@@ -25,12 +24,14 @@ struct __brz_config_data_t
 	cmph_uint8  *size;   // size[i] stores the number of edges represented by g[i][...]. 
 	cmph_uint32 *offset; // offset[i] stores the sum: size[0] + size[1] + ... size[i-1].
 	cmph_uint8 **g;      // g function. 
+	cmph_uint8  b;       // parameter b. 
 	cmph_uint32 k;       // number of components
 	hash_state_t **h1;
 	hash_state_t **h2;
-	hash_state_t * h3;    
+	hash_state_t * h0;    
 	cmph_uint32 memory_availability; 
 	cmph_uint8 * tmp_dir; // temporary directory 
+	FILE * mphf_fd; // mphf file
 };
 
 #endif
