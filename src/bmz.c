@@ -64,7 +64,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	cmph_uint8 *used_edges = NULL;
 	cmph_uint8 restart_mapping = 0;
 	cmph_uint8 * visited = NULL;
-	
+
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
 	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;	
@@ -93,7 +93,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 		bmz->hashes[0] = hash_state_new(bmz->hashfuncs[0], bmz->n);
 		DEBUGP("hash function 2\n");
 		bmz->hashes[1] = hash_state_new(bmz->hashfuncs[1], bmz->n);
-		DEBUGP("Generating edges\n");		
+		DEBUGP("Generating edges\n");
 		ok = bmz_gen_edges(mph);
 		if (!ok)
 		{
@@ -109,20 +109,18 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 			}
 			if (iterations == 0) break;
 		} 
-		else break;	
+		else break;
 	  }
 	  if (iterations == 0)
 	  {
 		graph_destroy(bmz->graph);	
 		return NULL;
 	  }
-
 	  // Ordering step
 	  if (mph->verbosity)
 	  {
 		fprintf(stderr, "Starting ordering step\n");
 	  }
-
 	  graph_obtain_critical_nodes(bmz->graph);
 
 	  // Searching step
@@ -164,7 +162,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	  free(used_edges);
 	  free(visited);
         }while(restart_mapping && iterations_map > 0);
-	graph_destroy(bmz->graph);	
+	graph_destroy(bmz->graph);
 	bmz->graph = NULL;
 	if (iterations_map == 0) 
 	{
@@ -181,6 +179,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	bmzf->m = bmz->m;
 	mphf->data = bmzf;
 	mphf->size = bmz->m;
+
 	DEBUGP("Successfully generated minimal perfect hash\n");
 	if (mph->verbosity)
 	{

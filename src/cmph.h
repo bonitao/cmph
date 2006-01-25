@@ -41,6 +41,8 @@ void cmph_config_set_verbosity(cmph_config_t *mph, cmph_uint32 verbosity);
 void cmph_config_set_graphsize(cmph_config_t *mph, float c);
 void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo);
 void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir);
+void cmph_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd);
+void cmph_config_set_b(cmph_config_t *mph, cmph_uint8 b);
 void cmph_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_availability);
 void cmph_config_destroy(cmph_config_t *mph);
 
