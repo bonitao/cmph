@@ -1,0 +1,147 @@
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="center">
+<TR><TD ALIGN="LEFT"><SMALL CLASS="SCRIPTSIZE">
+<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+  SRC="figs/brz/img8.png"
+   ALT="$\mu $"></SPAN> (MB)                                                        </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+    WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+     SRC="figs/brz/img215.png"
+      ALT="$100$"></SPAN> </SMALL></TD>
+      <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+       WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+        SRC="figs/brz/img216.png"
+	 ALT="$200$"></SPAN> </SMALL></TD>
+	 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	  WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+	   SRC="figs/brz/img217.png"
+	    ALT="$300$"></SPAN> </SMALL></TD>
+	    <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	     WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+	      SRC="figs/brz/img218.png"
+	       ALT="$400$"></SPAN> </SMALL></TD>
+	       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	        WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+		 SRC="figs/brz/img219.png"
+		  ALT="$500$"></SPAN> </SMALL></TD>
+		  <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+		   WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+		    SRC="figs/brz/img212.png"
+		     ALT="$600$"></SPAN> </SMALL></TD>
+		     </TR>
+		     <TR><TD ALIGN="LEFT"><SMALL CLASS="SCRIPTSIZE">
+
+		     <SPAN CLASS="MATH"><IMG
+		      WIDTH="19" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+		       SRC="figs/brz/img58.png"
+		        ALT="$N$"></SPAN> (files)                                                       </SMALL></TD>
+			<TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+			 WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			  SRC="figs/brz/img220.png"
+			   ALT="$619$"></SPAN> </SMALL></TD>
+			   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+			    WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			     SRC="figs/brz/img221.png"
+			      ALT="$310$"></SPAN> </SMALL></TD>
+			      <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+			       WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			        SRC="figs/brz/img222.png"
+				 ALT="$207$"></SPAN> </SMALL></TD>
+				 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+				  WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+				   SRC="figs/brz/img223.png"
+				    ALT="$155$"></SPAN> </SMALL></TD>
+				    <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+				     WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+				      SRC="figs/brz/img224.png"
+				       ALT="$124$"></SPAN> </SMALL></TD>
+				       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+				        WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+					 SRC="figs/brz/img225.png"
+					  ALT="$104$"></SPAN> </SMALL></TD>
+					  </TR>
+					  <TR><TD ALIGN="LEFT"><SMALL CLASS="SCRIPTSIZE">
+					  &nbsp;(buffer size in KB)                                     </SMALL></TD>
+					  <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+					   WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+					    SRC="figs/brz/img226.png"
+					     ALT="$165$"></SPAN> </SMALL></TD>
+					     <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+					      WIDTH="28" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+					       SRC="figs/brz/img227.png"
+					        ALT="$661$"></SPAN> </SMALL></TD>
+						<TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+						 WIDTH="43" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+						  SRC="figs/brz/img228.png"
+						   ALT="$1,484$"></SPAN> </SMALL></TD>
+						   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+						    WIDTH="43" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+						     SRC="figs/brz/img229.png"
+						      ALT="$2,643$"></SPAN> </SMALL></TD>
+						      <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+						       WIDTH="43" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+						        SRC="figs/brz/img230.png"
+							 ALT="$4,129$"></SPAN> </SMALL></TD>
+							 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+							  WIDTH="43" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+							   SRC="figs/brz/img231.png"
+							    ALT="$5,908$"></SPAN> </SMALL></TD>
+							    </TR>
+							    <TR><TD ALIGN="LEFT"><SMALL CLASS="SCRIPTSIZE">
+							    <SPAN CLASS="MATH"><IMG
+							     WIDTH="14" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+							      SRC="figs/brz/img135.png"
+							       ALT="$\beta$"></SPAN>/&nbsp;(# of seeks in the worst case)                 </SMALL></TD>
+							       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+							        WIDTH="59" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+								 SRC="figs/brz/img232.png"
+								  ALT="$384,478$"></SPAN> </SMALL></TD>
+								  <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+								   WIDTH="51" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+								    SRC="figs/brz/img233.png"
+								     ALT="$95,974$"></SPAN> </SMALL></TD>
+								     <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+								      WIDTH="51" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+								       SRC="figs/brz/img234.png"
+								        ALT="$42,749$"></SPAN> </SMALL></TD>
+									<TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+									 WIDTH="51" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+									  SRC="figs/brz/img235.png"
+									   ALT="$24,003$"></SPAN> </SMALL></TD>
+									   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+									    WIDTH="51" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+									     SRC="figs/brz/img236.png"
+									      ALT="$15,365$"></SPAN> </SMALL></TD>
+									      <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+									       WIDTH="51" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+									        SRC="figs/brz/img237.png"
+										 ALT="$10,738$"></SPAN> </SMALL></TD>
+										 </TR>
+										 <TR><TD ALIGN="LEFT"><SMALL CLASS="SCRIPTSIZE">
+										 Time (hours)                                                      </SMALL></TD>
+										 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+										  WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+										   SRC="figs/brz/img238.png"
+										    ALT="$4.04$"></SPAN> </SMALL></TD>
+										    <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+										     WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+										      SRC="figs/brz/img239.png"
+										       ALT="$3.64$"></SPAN> </SMALL></TD>
+										       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+										        WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+											 SRC="figs/brz/img240.png"
+											  ALT="$3.34$"></SPAN> </SMALL></TD>
+											  <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+											   WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+											    SRC="figs/brz/img241.png"
+											     ALT="$3.20$"></SPAN> </SMALL></TD>
+											     <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+											      WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+											       SRC="figs/brz/img242.png"
+											        ALT="$3.13$"></SPAN> </SMALL></TD>
+												<TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+												 WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+												  SRC="figs/brz/img243.png"
+												   ALT="$3.09$"></SPAN> </SMALL></TD>
+												   </TR>
+												   </TABLE>
