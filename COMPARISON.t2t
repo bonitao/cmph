@@ -103,8 +103,7 @@ to [figs/img250.png] seconds for [figs/img6.png].
  
 %!include(html): ''TABLE5.t2t'' 
  | **Table 5:** Time measurements for BMZ tuned algorithm with [figs/img5.png] and [figs/img6.png].
-----------------------------------------
- | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
-----------------------------------------
+
+%!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
