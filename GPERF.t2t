@@ -32,8 +32,6 @@ gperf. The first problem is common in the information retrieval field (e.g.
 assigning ids to millions of documents), while the former is usually found in
 the compiler programming area (detect reserved keywords).
 
-----------------------------------------
- | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
-----------------------------------------
+%!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t

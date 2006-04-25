@@ -49,8 +49,6 @@ languages, reserved words in programming languages or interactive systems,
 universal resource locations (URLs) in Web search engines, or item sets in
 data mining techniques.
 
-----------------------------------------
- | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
-----------------------------------------
+%!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
