@@ -46,7 +46,12 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 %txt% - BMZ Algorithm.
   A very fast algorithm based on cyclic random graphs to construct minimal
   perfect hash functions in linear time. The resulting functions are not order preserving and
-  can be stored in only //4cn// bytes, where //c// is between 0.93 and 1.15.  
+  can be stored in only //4cn// bytes, where //c// is between 0.93 and 1.15. 
+%html% - [External Memory Based Algorithm for sets in the order of billion of keys brz.html] 
+%txt% - BMZ Algorithm.
+  A very fast external memory based algorithm for constructing minimal perfect hash functions
+  for sets in the order of billion of keys in linear time. The resulting functions are not order preserving and
+  can be stored using just 8.1 bits per key. **This algorithm is available just in the CVS for while**.
 %html% - [CHM Algorithm chm.html].
 %txt% - CHM Algorithm.
   An algorithm based on acyclic random graphs to construct minimal

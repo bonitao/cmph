@@ -26,8 +26,6 @@ one is executed?
 	  is reset when you call the cmph_config_set_algo function. 
 
 
-----------------------------------------
- | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
-----------------------------------------
+%!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t

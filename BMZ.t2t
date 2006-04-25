@@ -395,11 +395,9 @@ Again we have:
 
 + [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], D. Menoti, [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A New algorithm for constructing minimal perfect hash functions papers/bmz_tr004_04.ps], Technical Report TR004/04, Department of Computer Science, Federal University of Minas Gerais, 2004.
 
-+ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], Y. Kohayakawa, and [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A Practical Minimal Perfect Hashing Method papers/bmz_wea2005.ps] (Submitted).
++ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], Y. Kohayakawa, and [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A Practical Minimal Perfect Hashing Method papers/wea05.pdf]. //4th International Workshop on efficient and Experimental Algorithms (WEA05),// Springer-Verlag Lecture Notes in Computer Science, vol. 3505, Santorini Island, Greece, May 2005, 488-500.
 
 
-----------------------------------------
- | [Home index.html] | [CHM chm.html] | [BMZ bmz.html]
-----------------------------------------
+%!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
