@@ -39,7 +39,7 @@ minimal perfect hash functions had been designed.
 We refer the algorithm to as **BMZ**, because it was conceived by Fabiano C. **B**otelho,
 David **M**enoti and Nivio **Z**iviani. The algorithm is described in [[1 #papers]].
 To analyse BMZ algorithm we needed some results from the random graph theory, so 
-we invite professor [Yoshiharu Kohayakawa http://www.ime.usp.br/~yoshi] to help us.
+we invited professor [Yoshiharu Kohayakawa http://www.ime.usp.br/~yoshi] to help us.
 The final description and analysis of BMZ algorithm is presented in [[2 #papers]].
 
 ----------------------------------------
