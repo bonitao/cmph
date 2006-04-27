@@ -130,7 +130,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 		fprintf(stderr, "\tTraversing critical vertices.\n");
 	  }
 	  DEBUGP("Searching step\n");
-	  visited = (char *)malloc(bmz->n/8 + 1);
+	  visited = (cmph_uint8 *)malloc(bmz->n/8 + 1);
 	  memset(visited, 0, bmz->n/8 + 1);
 	  used_edges = (cmph_uint8 *)malloc(bmz->m/8 + 1);
 	  memset(used_edges, 0, bmz->m/8 + 1);
