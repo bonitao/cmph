@@ -1,5 +1,5 @@
 #include <cmph.h>
-
+#include <string.h>
 // Create minimal perfect hash function from in-memory vector
 int main(int argc, char **argv)
 {   
@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 				"ffffffffff", "gggggggggg", "hhhhhhhhhh", "iiiiiiiiii", "jjjjjjjjjj"};
 	unsigned int nkeys = 10;
 	// Source of keys
-	cmph_io_adapter_t *source = cmph_io_vector_adapter(vector, nkeys);
+	cmph_io_adapter_t *source = cmph_io_vector_adapter((char **)vector, nkeys);
 
 	//Create minimal perfect hash function using the default (chm) algorithm.
 	cmph_config_t *config = cmph_config_new(source);

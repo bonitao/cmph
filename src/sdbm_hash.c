@@ -16,7 +16,7 @@ void sdbm_state_destroy(sdbm_state_t *state)
 cmph_uint32 sdbm_hash(sdbm_state_t *state, const char *k, cmph_uint32 keylen)
 {
 	register cmph_uint32 hash = 0;
-	const unsigned char *ptr = k;
+	const unsigned char *ptr = (unsigned char *)k;
 	cmph_uint32 i = 0;
 
 	while(i < keylen) {
