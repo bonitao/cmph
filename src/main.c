@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	float c = 2.09;
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
-	cmph_uint8 * tmp_dir = NULL;
+	char * tmp_dir = NULL;
 	cmph_io_adapter_t *source;
 	cmph_uint32 memory_availability = 0;
 	cmph_uint32 b = 128;
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
 		cmph_config_set_algo(config, mph_algo);
 		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
 		cmph_config_set_verbosity(config, verbosity);
-		cmph_config_set_tmp_dir(config, tmp_dir);
+		cmph_config_set_tmp_dir(config, (cmph_uint8 *) tmp_dir);
 		cmph_config_set_mphf_fd(config, mphf_fd);
 		cmph_config_set_memory_availability(config, memory_availability);
 		cmph_config_set_b(config, b);

@@ -19,10 +19,8 @@
 
 static int brz_gen_mphf(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
-static char * brz_read_key(FILE * fd);
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
 static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen);
-static void brz_flush_g(brz_config_data_t *brz, cmph_uint32 *start_index, FILE * fd);
 brz_config_data_t *brz_config_new()
 {
 	brz_config_data_t *brz = NULL; 	
@@ -449,26 +447,6 @@ static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n)
 	return min_index;
 }
 
-static char * brz_read_key(FILE * fd)
-{
-	char * buf = (char *)malloc(BUFSIZ);
-	cmph_uint32 buf_pos = 0;
-	char c;
-	while(1)
-	{
-		fread(&c, sizeof(char), 1, fd);
-		if(feof(fd))
-		{
-			free(buf);
-			return NULL;
-		}
-		buf[buf_pos++] = c;
-		if(c == '\0') break;
-		if(buf_pos % BUFSIZ == 0) buf = (char *)realloc(buf, buf_pos + BUFSIZ);
-	}
-	return buf;
-}
-
 static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)
 {
 	cmph_uint8 i;
@@ -477,7 +455,6 @@ static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)
 
 static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen)
 {
-	cmph_uint32 i;
 	cmph_uint32 buflenh1 = 0;
 	cmph_uint32 buflenh2 = 0; 
 	char * bufh1 = NULL;

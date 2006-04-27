@@ -106,7 +106,7 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 		fprintf(stderr, "Starting assignment step\n");
 	}
 	DEBUGP("Assignment step\n");
- 	visited = (char *)malloc(chm->n/8 + 1);
+ 	visited = (cmph_uint8 *)malloc(chm->n/8 + 1);
 	memset(visited, 0, chm->n/8 + 1);
 	free(chm->g);
 	chm->g = malloc(chm->n * sizeof(cmph_uint32));
