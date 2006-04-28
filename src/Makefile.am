@@ -17,7 +17,7 @@ libcmph_la_SOURCES = debug.h\
 				  chm.h chm_structs.h chm.c\
 				  bmz.h bmz_structs.h bmz.c\
 				  bmz8.h bmz8_structs.h bmz8.c\
-				  buffer_manage.h buffer_manage.c\
+				  buffer_manager.h buffer_manager.c\
 				  buffer_entry.h buffer_entry.c\
 				  brz.h brz_structs.h brz.c
 
