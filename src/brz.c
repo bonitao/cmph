@@ -4,7 +4,7 @@
 #include "brz.h"
 #include "cmph_structs.h"
 #include "brz_structs.h"
-#include "buffer_manage.h"
+#include "buffer_manager.h"
 #include "cmph.h"
 #include "hash.h"
 #include "bitbool.h"
@@ -203,7 +203,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	cmph_uint32 nflushes = 0;
 	cmph_uint32 h0;
 	FILE *  tmp_fd = NULL;
-	buffer_manage_t * buff_manage = NULL;
+	buffer_manager_t * buff_manager = NULL;
 	char *filename = NULL;
 	char *key = NULL;
 	cmph_uint32 keylen;
@@ -340,7 +340,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	fwrite(brz->size, sizeof(cmph_uint8)*(brz->k), 1, brz->mphf_fd);
 	
 	//tmp_fds = (FILE **)calloc(nflushes, sizeof(FILE *));
-	buff_manage = buffer_manage_new(brz->memory_availability, nflushes);
+	buff_manager = buffer_manager_new(brz->memory_availability, nflushes);
 	buffer_merge = (cmph_uint8 **)calloc(nflushes, sizeof(cmph_uint8 *));
 	buffer_h0    = (cmph_uint32 *)calloc(nflushes, sizeof(cmph_uint32));
 	
@@ -349,10 +349,10 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	{
 		filename = (char *)calloc(strlen((char *)(brz->tmp_dir)) + 11, sizeof(char));
 		sprintf(filename, "%s%u.cmph",brz->tmp_dir, i);
-		buffer_manage_open(buff_manage, i, filename);
+		buffer_manager_open(buff_manager, i, filename);
 		free(filename);
 		filename = NULL;
-		key = (char *)buffer_manage_read_key(buff_manage, i);
+		key = (char *)buffer_manager_read_key(buff_manager, i);
 		keylen = strlen(key);
 		h0 = hash(brz->h0, key, keylen) % brz->k;
 		buffer_h0[i] = h0;
@@ -367,7 +367,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	{
 		i = brz_min_index(buffer_h0, nflushes);
 		cur_bucket = buffer_h0[i];
-		key = (char *)buffer_manage_read_key(buff_manage, i);
+		key = (char *)buffer_manager_read_key(buff_manager, i);
 		if(key)
 		{
 			while(key)
@@ -378,7 +378,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 				keys_vd[nkeys_vd++] = key;
 				key = NULL; //transfer memory ownership
 				e++;
-				key = (char *)buffer_manage_read_key(buff_manage, i);
+				key = (char *)buffer_manager_read_key(buff_manager, i);
 			}
 			if (key)
 			{
@@ -430,7 +430,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		}
 	}
 
-	buffer_manage_destroy(buff_manage);
+	buffer_manager_destroy(buff_manager);
 	free(keys_vd);
 	free(buffer_merge);
 	free(buffer_h0);
