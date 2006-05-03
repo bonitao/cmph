@@ -25,7 +25,12 @@ one is executed?
 	  the cmph_config_set_hashfuncs. Therefore, the default hash function 
 	  is reset when you call the cmph_config_set_algo function. 
 
-
+- What do I do when the following error is got? 
+	- Error: **error while loading shared libraries: libcmph.so.0: cannot open shared object file: No such file ordirectory**
+	
+	- Solution: type **export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/** at the shell or put that shell command 
+	  in your .profile file or in the /etc/profile file.
+	  
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
