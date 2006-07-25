@@ -112,7 +112,7 @@ static cmph_uint32 count_nlfile_keys(FILE *fd)
 
 cmph_io_adapter_t *cmph_io_nlfile_adapter(FILE * keys_fd)
 {
-  cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
+  cmph_io_adapter_t * key_source = (cmph_io_adapter_t *)malloc(sizeof(cmph_io_adapter_t));
   assert(key_source);
   key_source->data = (void *)keys_fd;
   key_source->nkeys = count_nlfile_keys(keys_fd);
@@ -129,7 +129,7 @@ void cmph_io_nlfile_adapter_destroy(cmph_io_adapter_t * key_source)
 
 cmph_io_adapter_t *cmph_io_nlnkfile_adapter(FILE * keys_fd, cmph_uint32 nkeys)
 {
-  cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
+  cmph_io_adapter_t * key_source = (cmph_io_adapter_t *)malloc(sizeof(cmph_io_adapter_t));
   assert(key_source);
   key_source->data = (void *)keys_fd;
   key_source->nkeys = nkeys;
@@ -146,8 +146,8 @@ void cmph_io_nlnkfile_adapter_destroy(cmph_io_adapter_t * key_source)
 
 static cmph_io_adapter_t *cmph_io_vector_new(void * vector, cmph_uint32 nkeys)
 {
-	cmph_io_adapter_t * key_source = malloc(sizeof(cmph_io_adapter_t));
-	cmph_vector_t * cmph_vector = malloc(sizeof(cmph_vector_t));
+	cmph_io_adapter_t * key_source = (cmph_io_adapter_t *)malloc(sizeof(cmph_io_adapter_t));
+	cmph_vector_t * cmph_vector = (cmph_vector_t *)malloc(sizeof(cmph_vector_t));
 	assert(key_source);
 	assert(cmph_vector);
 	cmph_vector->vector = vector;

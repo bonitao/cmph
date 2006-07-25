@@ -162,7 +162,7 @@ cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keyl
 void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buflen = sizeof(cmph_uint32);
-	*buf = malloc(*buflen);
+	*buf = (char *)malloc(*buflen);
 	if (!*buf) 
 	{
 		*buflen = UINT_MAX;

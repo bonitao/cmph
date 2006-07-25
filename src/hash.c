@@ -77,7 +77,7 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 		default:
 			assert(0);
 	}
-	*buf = malloc(strlen(cmph_hash_names[state->hashfunc]) + 1 + *buflen);
+	*buf = (char *)malloc(strlen(cmph_hash_names[state->hashfunc]) + 1 + *buflen);
 	memcpy(*buf, cmph_hash_names[state->hashfunc], strlen(cmph_hash_names[state->hashfunc]) + 1);
 	DEBUGP("Algobuf is %u\n", *(cmph_uint32 *)algobuf);
 	memcpy(*buf + strlen(cmph_hash_names[state->hashfunc]) + 1, algobuf, *buflen);

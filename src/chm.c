@@ -109,7 +109,7 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
  	visited = (cmph_uint8 *)malloc(chm->n/8 + 1);
 	memset(visited, 0, chm->n/8 + 1);
 	free(chm->g);
-	chm->g = malloc(chm->n * sizeof(cmph_uint32));
+	chm->g = (cmph_uint32 *)malloc(chm->n * sizeof(cmph_uint32));
 	assert(chm->g);
 	for (i = 0; i < chm->n; ++i)
 	{
