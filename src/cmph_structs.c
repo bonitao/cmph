@@ -9,7 +9,6 @@ cmph_config_t *__config_new(cmph_io_adapter_t *key_source)
 {
 	cmph_config_t *mph = (cmph_config_t *)malloc(sizeof(cmph_config_t));
 	memset(mph, 0, sizeof(cmph_config_t));
-	DEBUGP("Creating mph with algorithm %s\n", cmph_names[algo]);
 	if (mph == NULL) return NULL;
 	mph->key_source = key_source;
 	mph->verbosity = 0;

@@ -135,7 +135,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	  used_edges = (cmph_uint8 *)malloc(bmz->m/8 + 1);
 	  memset(used_edges, 0, bmz->m/8 + 1);
 	  free(bmz->g);
-	  bmz->g = calloc(bmz->n, sizeof(cmph_uint32));
+	  bmz->g = (cmph_uint32 *)calloc(bmz->n, sizeof(cmph_uint32));
 	  assert(bmz->g);
 	  for (i = 0; i < bmz->n; ++i) // critical nodes
 	  {
@@ -316,7 +316,7 @@ static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, 
 					{
 					        if(nunused_g_values == unused_g_values_capacity)
 						{
-   						        unused_g_values = realloc(unused_g_values, (unused_g_values_capacity + BUFSIZ)*sizeof(cmph_uint32));
+   						        unused_g_values = (cmph_uint32 *)realloc(unused_g_values, (unused_g_values_capacity + BUFSIZ)*sizeof(cmph_uint32));
 						        unused_g_values_capacity += BUFSIZ;  							
 						} 
 						unused_g_values[nunused_g_values++] = next_g;							

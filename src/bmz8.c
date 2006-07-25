@@ -142,7 +142,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 	  used_edges = (cmph_uint8 *)malloc(bmz8->m/8 + 1);
 	  memset(used_edges, 0, bmz8->m/8 + 1);
 	  free(bmz8->g);
-	  bmz8->g = calloc(bmz8->n, sizeof(cmph_uint8));
+	  bmz8->g = (cmph_uint32 *)calloc(bmz8->n, sizeof(cmph_uint8));
 	  assert(bmz8->g);
 	  for (i = 0; i < bmz8->n; ++i) // critical nodes
 	  {

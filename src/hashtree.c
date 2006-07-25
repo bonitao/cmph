@@ -105,7 +105,7 @@ cmph_t *hashtree_new(cmph_config_t *mph, float c)
  	visited = (char *)malloc(hashtree->n/8 + 1);
 	memset(visited, 0, hashtree->n/8 + 1);
 	free(hashtree->g);
-	hashtree->g = malloc(hashtree->n * sizeof(cmph_uint32));
+	hashtree->g = (cmph_uint32 *)malloc(hashtree->n * sizeof(cmph_uint32));
 	assert(hashtree->g);
 	for (i = 0; i < hashtree->n; ++i)
 	{
