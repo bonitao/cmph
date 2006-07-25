@@ -79,12 +79,12 @@ void brz_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 		free(brz->tmp_dir);
 		if(tmp_dir[len-1] != '/')
 		{
-			brz->tmp_dir = calloc(len+2, sizeof(cmph_uint8));
+			brz->tmp_dir = (cmph_uint8 *)calloc(len+2, sizeof(cmph_uint8));
 			sprintf((char *)(brz->tmp_dir), "%s/", (char *)tmp_dir); 
 		}
 		else
 		{
-			brz->tmp_dir = calloc(len+1, sizeof(cmph_uint8));
+			brz->tmp_dir = (cmph_uint8 *)calloc(len+1, sizeof(cmph_uint8));
 			sprintf((char *)(brz->tmp_dir), "%s", (char *)tmp_dir); 
 		}
 		
@@ -116,7 +116,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brz->c = c;
 	brz->m = mph->key_source->nkeys;
 	DEBUGP("m: %u\n", brz->m);
-	brz->k = ceil(brz->m/(brz->b));
+	brz->k = ceil(((float)brz->m)/brz->b);
 	DEBUGP("k: %u\n", brz->k);
 	brz->size   = (cmph_uint8 *) calloc(brz->k, sizeof(cmph_uint8));
 	
@@ -259,7 +259,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			}
 			nkeys_in_buffer = 0;
 			memory_usage = 0;
-			bzero(buckets_size, brz->k*sizeof(cmph_uint32));
+			memset((void *)buckets_size, 0, brz->k*sizeof(cmph_uint32));
 			nflushes++;
 			free(keys_index);
 			fclose(tmp_fd);
@@ -318,7 +318,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		}
 		nkeys_in_buffer = 0;
 		memory_usage = 0;
-		bzero(buckets_size, brz->k*sizeof(cmph_uint32));
+		memset((void *)buckets_size, 0, brz->k*sizeof(cmph_uint32));
 		nflushes++;
 		free(keys_index);
 		fclose(tmp_fd);
