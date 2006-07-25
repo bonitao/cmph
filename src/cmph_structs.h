@@ -25,7 +25,7 @@ struct __cmph_t
 };
 
 cmph_config_t *__config_new(cmph_io_adapter_t *key_source);
-void __config_destroy();
+void __config_destroy(cmph_config_t*);
 void __cmph_dump(cmph_t *mphf, FILE *);
 cmph_t *__cmph_load(FILE *f);
 
