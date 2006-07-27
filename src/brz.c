@@ -116,7 +116,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brz->c = c;
 	brz->m = mph->key_source->nkeys;
 	DEBUGP("m: %u\n", brz->m);
-	brz->k = ceil(((float)brz->m)/brz->b);
+        brz->k = (cmph_uint32)ceil(brz->m/((float)brz->b));
 	DEBUGP("k: %u\n", brz->k);
 	brz->size   = (cmph_uint8 *) calloc(brz->k, sizeof(cmph_uint8));
 	
