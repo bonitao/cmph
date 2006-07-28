@@ -19,7 +19,7 @@
 
 static int brz_gen_mphf(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
-static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys);
+static void brz_destroy_keys_vd(cmph_uint8 ** keys_vd, cmph_uint8 nkeys);
 static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen);
 brz_config_data_t *brz_config_new()
 {
@@ -209,7 +209,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	cmph_uint32 keylen;
 	cmph_uint32 cur_bucket = 0;
 	cmph_uint8 nkeys_vd = 0;
-	char ** keys_vd = NULL;
+	cmph_uint8 ** keys_vd = NULL;
 	
 	mph->key_source->rewind(mph->key_source->data);
 	DEBUGP("Generating graphs from %u keys\n", brz->m);
@@ -219,7 +219,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
 
 		/* Buffers management */
-		if (memory_usage + keylen + 1 > brz->memory_availability) // flush buffers 
+		if (memory_usage + keylen + sizeof(keylen) > brz->memory_availability) // flush buffers 
 		{
 			if(mph->verbosity)
 			{
@@ -241,11 +241,11 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			keys_index = (cmph_uint32 *)calloc(nkeys_in_buffer, sizeof(cmph_uint32));
 			for(i = 0; i < nkeys_in_buffer; i++)
 			{
-				keylen1 = strlen((char *)(buffer + memory_usage));
-				h0 = hash(brz->h0, (char *)(buffer + memory_usage), keylen1) % brz->k;
+				memcpy(&keylen1, buffer + memory_usage, sizeof(keylen1));
+				h0 = hash(brz->h0, (char *)(buffer + memory_usage + sizeof(keylen1)), keylen1) % brz->k;
 				keys_index[buckets_size[h0]] = memory_usage;
 				buckets_size[h0]++;
-				memory_usage = memory_usage + keylen1 + 1;
+				memory_usage +=  keylen1 + sizeof(keylen1);
 			}
 			filename = (char *)calloc(strlen((char *)(brz->tmp_dir)) + 11, sizeof(char));
 			sprintf(filename, "%s%u.cmph",brz->tmp_dir, nflushes);
@@ -254,8 +254,8 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			filename = NULL;
 			for(i = 0; i < nkeys_in_buffer; i++)
 			{
-				keylen1 = strlen((char *)(buffer + keys_index[i])) + 1;
-				fwrite(buffer + keys_index[i], 1, keylen1, tmp_fd);
+				memcpy(&keylen1, buffer + keys_index[i], sizeof(keylen1));
+				fwrite(buffer + keys_index[i], 1, keylen1 + sizeof(keylen1), tmp_fd);
 			}
 			nkeys_in_buffer = 0;
 			memory_usage = 0;
@@ -264,9 +264,11 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			free(keys_index);
 			fclose(tmp_fd);
 		}
-		memcpy(buffer + memory_usage, key, keylen + 1);
-		memory_usage = memory_usage + keylen + 1;
+		memcpy(buffer + memory_usage, &keylen, sizeof(keylen));
+		memcpy(buffer + memory_usage + sizeof(keylen), key, keylen);
+		memory_usage += keylen + sizeof(keylen);
 		h0 = hash(brz->h0, key, keylen) % brz->k;
+		
 		if ((brz->size[h0] == MAX_BUCKET_SIZE) || ((brz->c >= 1.0) && (cmph_uint8)(brz->c * brz->size[h0]) < brz->size[h0])) 
 		{
 			free(buffer);
@@ -278,7 +280,6 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		nkeys_in_buffer++;
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 	}
-
 	if (memory_usage != 0) // flush buffers 
 	{ 
 		if(mph->verbosity)
@@ -300,11 +301,11 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		keys_index = (cmph_uint32 *)calloc(nkeys_in_buffer, sizeof(cmph_uint32));
 		for(i = 0; i < nkeys_in_buffer; i++)
 		{
-			keylen1 = strlen((char *)(buffer + memory_usage));
-			h0 = hash(brz->h0, (char *)(buffer + memory_usage), keylen1) % brz->k;
+			memcpy(&keylen1, buffer + memory_usage, sizeof(keylen1));
+			h0 = hash(brz->h0, (char *)(buffer + memory_usage + sizeof(keylen1)), keylen1) % brz->k;
 			keys_index[buckets_size[h0]] = memory_usage;
 			buckets_size[h0]++;
-			memory_usage = memory_usage + keylen1 + 1;
+			memory_usage +=  keylen1 + sizeof(keylen1);
 		}
 		filename = (char *)calloc(strlen((char *)(brz->tmp_dir)) + 11, sizeof(char));
 		sprintf(filename, "%s%u.cmph",brz->tmp_dir, nflushes);
@@ -313,8 +314,8 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		filename = NULL;
 		for(i = 0; i < nkeys_in_buffer; i++)
 		{
-			keylen1 = strlen((char *)(buffer + keys_index[i])) + 1;
-			fwrite(buffer + keys_index[i], 1, keylen1, tmp_fd);
+			memcpy(&keylen1, buffer + keys_index[i], sizeof(keylen1));
+			fwrite(buffer + keys_index[i], 1, keylen1 + sizeof(keylen1), tmp_fd);
 		}
 		nkeys_in_buffer = 0;
 		memory_usage = 0;
@@ -352,50 +353,46 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		buffer_manager_open(buff_manager, i, filename);
 		free(filename);
 		filename = NULL;
-		key = (char *)buffer_manager_read_key(buff_manager, i);
-		keylen = strlen(key);
-		h0 = hash(brz->h0, key, keylen) % brz->k;
+		key = (char *)buffer_manager_read_key(buff_manager, i, &keylen);
+		h0 = hash(brz->h0, key+sizeof(keylen), keylen) % brz->k;
 		buffer_h0[i] = h0;
-		buffer_merge[i] = (cmph_uint8 *)calloc(keylen + 1, sizeof(cmph_uint8));
-		memcpy(buffer_merge[i], key, keylen + 1);
-		free(key);
+                buffer_merge[i] = (cmph_uint8 *)key;
+                key = NULL; //transfer memory ownership                 
 	}
 	e = 0;
-	keys_vd = (char **)calloc(MAX_BUCKET_SIZE, sizeof(char *));
+	keys_vd = (cmph_uint8 **)calloc(MAX_BUCKET_SIZE, sizeof(cmph_uint8 *));
 	nkeys_vd = 0;
 	while(e < brz->m)
 	{
 		i = brz_min_index(buffer_h0, nflushes);
 		cur_bucket = buffer_h0[i];
-		key = (char *)buffer_manager_read_key(buff_manager, i);
+		key = (char *)buffer_manager_read_key(buff_manager, i, &keylen);
 		if(key)
 		{
 			while(key)
 			{
-				keylen = strlen(key);
-				h0 = hash(brz->h0, key, keylen) % brz->k;				
-				if (h0 != buffer_h0[i]) break;				
-				keys_vd[nkeys_vd++] = key;
+				//keylen = strlen(key);
+				h0 = hash(brz->h0, key+sizeof(keylen), keylen) % brz->k;
+				if (h0 != buffer_h0[i]) break;
+				keys_vd[nkeys_vd++] = (cmph_uint8 *)key;
 				key = NULL; //transfer memory ownership
 				e++;
-				key = (char *)buffer_manager_read_key(buff_manager, i);
+				key = (char *)buffer_manager_read_key(buff_manager, i, &keylen);
 			}
 			if (key)
 			{
 				assert(nkeys_vd < brz->size[cur_bucket]);
-				keys_vd[nkeys_vd++] = (char *)buffer_merge[i];
+				keys_vd[nkeys_vd++] = buffer_merge[i];
 				buffer_merge[i] = NULL; //transfer memory ownership
 				e++;
 				buffer_h0[i] = h0;
-				buffer_merge[i] = (cmph_uint8 *)calloc(keylen + 1, sizeof(cmph_uint8));
-				memcpy(buffer_merge[i], key, keylen + 1);
-				free(key);
+				buffer_merge[i] = (cmph_uint8 *)key;
 			}
 		}
 		if(!key)
 		{
 			assert(nkeys_vd < brz->size[cur_bucket]);
-			keys_vd[nkeys_vd++] = (char *)buffer_merge[i];
+			keys_vd[nkeys_vd++] = buffer_merge[i];
 			buffer_merge[i] = NULL; //transfer memory ownership
 			e++;
 			buffer_h0[i] = UINT_MAX;
@@ -410,7 +407,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			char *bufmphf = NULL;
 			cmph_uint32 buflenmphf = 0;
 			// Source of keys
-			source = cmph_io_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
+			source = cmph_io_byte_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
 			config = cmph_config_new(source);
 			cmph_config_set_algo(config, CMPH_BMZ8);
 			cmph_config_set_graphsize(config, brz->c);
@@ -424,8 +421,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			cmph_config_destroy(config);
  			brz_destroy_keys_vd(keys_vd, nkeys_vd);
 			cmph_destroy(mphf_tmp);
-			cmph_io_vector_adapter_destroy(source);
-			
+			cmph_io_byte_vector_adapter_destroy(source);
 			nkeys_vd = 0;
 		}
 	}
@@ -447,7 +443,7 @@ static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n)
 	return min_index;
 }
 
-static void brz_destroy_keys_vd(char ** keys_vd, cmph_uint8 nkeys)
+static void brz_destroy_keys_vd(cmph_uint8 ** keys_vd, cmph_uint8 nkeys)
 {
 	cmph_uint8 i;
 	for(i = 0; i < nkeys; i++) { free(keys_vd[i]); keys_vd[i] = NULL;}
@@ -465,7 +461,6 @@ static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, 
 	hash_state_dump(bmzf->hashes[1], &bufh2, &buflenh2);
 	*buflen = buflenh1 + buflenh2 + n + 2*sizeof(cmph_uint32);
 	buf = (char *)malloc(*buflen);
-	//fprintf(stderr,"entrei passei\n");
 	memcpy(buf, &buflenh1, sizeof(cmph_uint32));
 	memcpy(buf+sizeof(cmph_uint32), bufh1, buflenh1);
 	memcpy(buf+sizeof(cmph_uint32)+buflenh1, &buflenh2, sizeof(cmph_uint32));
