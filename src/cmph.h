@@ -34,6 +34,9 @@ void cmph_io_nlnkfile_adapter_destroy(cmph_io_adapter_t * key_source);
 cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys);
 void cmph_io_vector_adapter_destroy(cmph_io_adapter_t * key_source);
 
+cmph_io_adapter_t *cmph_io_byte_vector_adapter(cmph_uint8 ** vector, cmph_uint32 nkeys);
+void cmph_io_byte_vector_adapter_destroy(cmph_io_adapter_t * key_source);
+
 /** Hash configuration API **/
 cmph_config_t *cmph_config_new(cmph_io_adapter_t *key_source);
 void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);

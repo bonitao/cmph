@@ -35,20 +35,18 @@ void buffer_manager_open(buffer_manager_t * buffer_manager, cmph_uint32 index, c
 	buffer_entry_open(buffer_manager->buffer_entries[index], filename);
 }
 
-cmph_uint8 * buffer_manager_read_key(buffer_manager_t * buffer_manager, cmph_uint32 index)
+cmph_uint8 * buffer_manager_read_key(buffer_manager_t * buffer_manager, cmph_uint32 index, cmph_uint32 * keylen)
 {
 	cmph_uint8 * key = NULL;
 	if (buffer_manager->pos_avail_list >= 0 ) // recovering memory
 	{
 		cmph_uint32 new_capacity = buffer_entry_get_capacity(buffer_manager->buffer_entries[index]) + buffer_manager->memory_avail_list[(buffer_manager->pos_avail_list)--];
 		buffer_entry_set_capacity(buffer_manager->buffer_entries[index], new_capacity);
-		//fprintf(stderr, "recovering memory\n");
 	}
-	key = buffer_entry_read_key(buffer_manager->buffer_entries[index]);
+	key = buffer_entry_read_key(buffer_manager->buffer_entries[index], keylen);
 	if (key == NULL) // storing memory to be recovered
 	{
 		buffer_manager->memory_avail_list[++(buffer_manager->pos_avail_list)] = buffer_entry_get_capacity(buffer_manager->buffer_entries[index]);
-		//fprintf(stderr, "storing memory to be recovered\n");
 	}
 	return key;
 }
