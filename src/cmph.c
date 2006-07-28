@@ -47,22 +47,22 @@ static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 	return *keylen;
 }
 
+static int key_byte_vector_read(void *data, char **key, cmph_uint32 *keylen)
+{
+	cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
+	cmph_uint8 **keys_vd = (cmph_uint8 **)cmph_vector->vector;
+	memcpy(keylen, keys_vd[cmph_vector->position], sizeof(*keylen));
+	*key = (char *)malloc(*keylen);
+	memcpy(*key, keys_vd[cmph_vector->position] + sizeof(*keylen), *keylen);
+	cmph_vector->position = cmph_vector->position + 1;
+	return *keylen;
+
+}
+
 static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
-/*
-        cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
-	char **keys_vd = (char **)cmph_vector->vector;
-	
-	if (keys_vd + cmph_vector->position == NULL) return -1;
-	*keylen = strlen(*(keys_vd + cmph_vector->position));
-	*key = (char *)malloc(*keylen + 1);
-	strcpy(*key, *(keys_vd + cmph_vector->position));
-	cmph_vector->position = cmph_vector->position + 1;
-*/
         cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
         char **keys_vd = (char **)cmph_vector->vector;
-
-//        if (keys_vd + cmph_vector->position == NULL) return -1;
         *keylen = strlen(keys_vd[cmph_vector->position]);
         *key = (char *)malloc(*keylen + 1);
         strcpy(*key, keys_vd[cmph_vector->position]);
@@ -165,6 +165,18 @@ static void cmph_io_vector_destroy(cmph_io_adapter_t * key_source)
 	free(key_source);
 }
 
+cmph_io_adapter_t *cmph_io_byte_vector_adapter(cmph_uint8 ** vector, cmph_uint32 nkeys)
+{
+	cmph_io_adapter_t * key_source = cmph_io_vector_new(vector, nkeys);
+	key_source->read = key_byte_vector_read;
+	key_source->dispose = key_vector_dispose;
+	key_source->rewind = key_vector_rewind;
+	return key_source;
+}
+void cmph_io_byte_vector_adapter_destroy(cmph_io_adapter_t * key_source)
+{
+	cmph_io_vector_destroy(key_source);
+}
 cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys)
 {
 	cmph_io_adapter_t * key_source = cmph_io_vector_new(vector, nkeys);
