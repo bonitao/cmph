@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct __buffer_entry_t
 {
@@ -51,24 +52,40 @@ void buffer_entry_load(buffer_entry_t * buffer_entry)
 	buffer_entry->pos = 0;
 }
 
-cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry)
+cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * keylen)
 {
-	cmph_uint8 * buf = (cmph_uint8 *)malloc(BUFSIZ);
-	cmph_uint32 buf_pos = 0;
-	cmph_uint8 c;
-	while(1)
+	cmph_uint8 * buf = NULL;
+	cmph_uint32 lacked_bytes = sizeof(*keylen);
+	cmph_uint32 copied_bytes = 0;
+	if(buffer_entry->eof && (buffer_entry->pos == buffer_entry->nbytes)) // end
 	{
-		if(buffer_entry->eof && (buffer_entry->pos == buffer_entry->nbytes)) // end
-		{
-			free(buf);
-			return NULL;
-		}
-		if(buffer_entry->pos == buffer_entry->nbytes) buffer_entry_load(buffer_entry);
-		c = buffer_entry->buff[(buffer_entry->pos)++];
-		buf[buf_pos++] = c;
-		if(c == '\0') break;
-		if(buf_pos % BUFSIZ == 0) buf = (cmph_uint8 *)realloc(buf, buf_pos + BUFSIZ);
+		free(buf);
+		return NULL;
 	}
+	if((buffer_entry->pos + lacked_bytes) > buffer_entry->nbytes) 
+	{
+		copied_bytes = buffer_entry->nbytes - buffer_entry->pos;
+		lacked_bytes = (buffer_entry->pos + lacked_bytes) - buffer_entry->nbytes;
+		if (copied_bytes != 0) memcpy(keylen, buffer_entry->buff + buffer_entry->pos, copied_bytes);
+		buffer_entry_load(buffer_entry);
+	}
+	memcpy(keylen + copied_bytes, buffer_entry->buff + buffer_entry->pos, lacked_bytes);
+	buffer_entry->pos += lacked_bytes;
+	
+	lacked_bytes = *keylen;
+	copied_bytes = 0;
+	buf = (cmph_uint8 *)malloc(*keylen + sizeof(*keylen));
+        memcpy(buf, keylen, sizeof(*keylen));
+	if((buffer_entry->pos + lacked_bytes) > buffer_entry->nbytes) {
+		copied_bytes = buffer_entry->nbytes - buffer_entry->pos;
+		lacked_bytes = (buffer_entry->pos + lacked_bytes) - buffer_entry->nbytes;
+		if (copied_bytes != 0) {
+			memcpy(buf + sizeof(*keylen), buffer_entry->buff + buffer_entry->pos, copied_bytes);
+                }
+		buffer_entry_load(buffer_entry);
+	}        
+	memcpy(buf+sizeof(*keylen)+copied_bytes, buffer_entry->buff + buffer_entry->pos, lacked_bytes);
+	buffer_entry->pos += lacked_bytes;
 	return buf;
 }
 
