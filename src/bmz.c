@@ -468,6 +468,7 @@ int bmz_dump(cmph_t *mphf, FILE *fd)
 	
 	fwrite(data->g, sizeof(cmph_uint32)*(data->n), 1, fd);
 	#ifdef DEBUG
+	cmph_uint32 i;
 	fprintf(stderr, "G: ");
 	for (i = 0; i < data->n; ++i) fprintf(stderr, "%u ", data->g[i]);
 	fprintf(stderr, "\n");
