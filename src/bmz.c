@@ -367,7 +367,7 @@ static void bmz_traverse(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_u
 	while((neighbor = graph_next_neighbor(bmz->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
      	        if(GETBIT(visited,neighbor)) continue;
-		DEBUGP("Visiting neighbor %u\n", neighbor);
+		//DEBUGP("Visiting neighbor %u\n", neighbor);
 		*unused_edge_index = next_unused_edge(bmz, used_edges, *unused_edge_index);
 		bmz->g[neighbor] = *unused_edge_index - bmz->g[v];
 		//if (bmz->g[neighbor] >= bmz->m) bmz->g[neighbor] += bmz->m;
@@ -430,7 +430,7 @@ static int bmz_gen_edges(cmph_config_t *mph)
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
 			return 0;
 		}
-		DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
+		//DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 //		fprintf(stderr, "key = %s -- dispose BMZ\n", key);
 		multiple_edges = graph_contains_edge(bmz->graph, h1, h2);
