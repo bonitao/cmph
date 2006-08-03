@@ -1,0 +1,18 @@
+#ifndef __CMPH_FCH_H__
+#define __CMPH_FCH_H__
+
+#include "cmph.h"
+
+typedef struct __fch_data_t fch_data_t;
+typedef struct __fch_config_data_t fch_config_data_t;
+
+fch_config_data_t *fch_config_new();
+void fch_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
+void fch_config_destroy(cmph_config_t *mph);
+cmph_t *fch_new(cmph_config_t *mph, float c);
+
+void fch_load(FILE *f, cmph_t *mphf);
+int fch_dump(cmph_t *mphf, FILE *f);
+void fch_destroy(cmph_t *mphf);
+cmph_uint32 fch_search(cmph_t *mphf, const char *key, cmph_uint32 keylen);
+#endif

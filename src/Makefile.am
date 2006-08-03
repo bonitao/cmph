@@ -19,7 +19,9 @@ libcmph_la_SOURCES = debug.h\
 				  bmz8.h bmz8_structs.h bmz8.c\
 				  buffer_manager.h buffer_manager.c\
 				  buffer_entry.h buffer_entry.c\
-				  brz.h brz_structs.h brz.c
+				  brz.h brz_structs.h brz.c\
+				  fch.h fch_structs.h fch.c\
+				  fch_buckets.h fch_buckets.c
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 
