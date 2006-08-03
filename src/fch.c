@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <string.h>
 #define INDEX 0 /* alignment index within a bucket */
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 
 static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2, cmph_uint32 initial_index);
