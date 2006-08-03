@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	cmph_uint32 nhashes = 0;
 	cmph_uint32 i;
 	CMPH_ALGO mph_algo = CMPH_CHM;
-	float c = 2.09;
+	float c = 0;
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
 	char * tmp_dir = NULL;
