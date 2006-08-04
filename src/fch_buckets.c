@@ -162,12 +162,12 @@ cmph_uint32 fch_buckets_get_keylength(fch_buckets_t * buckets, cmph_uint32 index
 
 cmph_uint32 fch_buckets_get_max_size(fch_buckets_t * buckets)
 {
-	return buckets->nbuckets;
+	return buckets->max_size;
 }
 
 cmph_uint32 fch_buckets_get_nbuckets(fch_buckets_t * buckets)
 {
-	return buckets->max_size;
+	return buckets->nbuckets;
 }
 
 cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets) 
