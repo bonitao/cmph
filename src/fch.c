@@ -4,22 +4,20 @@
 #include "hash.h"
 #include "bitbool.h"
 #include "fch_buckets.h"
-//#include <sys/time.h>
-#include <time.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #define INDEX 0 /* alignment index within a bucket */
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 
 static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2, cmph_uint32 initial_index);
 static void calc_parameters(fch_config_data_t *fch);
 static fch_buckets_t * mapping(cmph_config_t *mph);
 static cmph_uint32 * ordering(fch_buckets_t * buckets);
-static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets);
+static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets, cmph_uint32 *sorted_indexes);
 static void permut(cmph_uint32 * vector, cmph_uint32 n);
 static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph_uint32 *sorted_indexes);
 
@@ -72,22 +70,19 @@ static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2,
 static void calc_parameters(fch_config_data_t *fch)
 {
 	fch->b = (cmph_uint32)ceil((fch->c*fch->m)/(log(fch->m)/log(2) + 1));
-	fch->p1 = ceil(0.6*fch->m);
+	fch->p1 = ceil(0.55*fch->m);
 	fch->p2 = ceil(0.3*fch->b);
 }
 
 static fch_buckets_t * mapping(cmph_config_t *mph)
 {
-//	struct timeval seed;
 	cmph_uint32 i = 0;
 	fch_buckets_t *buckets = NULL;
 	fch_config_data_t *fch = (fch_config_data_t *)mph->data;
-//	gettimeofday(&seed,NULL);        
-//	srand((cmph_uint32)((seed.tv_sec + 1001*seed.tv_usec))); 
-	srand((cmph_uint32)time(NULL)); 
 	if (fch->h1) hash_state_destroy(fch->h1);
 	fch->h1 = hash_state_new(fch->hashfuncs[0], fch->m);  
 	calc_parameters (fch);
+	//DEBUGP("b:%u   p1:%f   p2:%f\n", fch->b, fch->p1, fch->p2);
 	buckets = fch_buckets_new(fch->b);
 
 	mph->key_source->rewind(mph->key_source->data);  
@@ -113,7 +108,7 @@ static cmph_uint32 * ordering(fch_buckets_t * buckets)
 }
 
 /* Check whether function h2 causes collisions among the keys of each bucket */ 
-static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets)
+static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets, cmph_uint32 *sorted_indexes)
 {
 	//cmph_uint32 max_size = fch_buckets_get_max_size(buckets);
 	cmph_uint8 * hashtable = (cmph_uint8 *)calloc(fch->m, sizeof(cmph_uint8));
@@ -121,12 +116,13 @@ static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t 
 	cmph_uint32 i = 0, index = 0, j =0;
 	for (i = 0; i < nbuckets; i++)
 	{
-		cmph_uint32 nkeys = fch_buckets_get_size(buckets, i);
+		cmph_uint32 nkeys = fch_buckets_get_size(buckets, sorted_indexes[i]);
 		memset(hashtable, 0, fch->m);
+		//DEBUGP("bucket %u -- nkeys: %u\n", i, nkeys);
 		for (j = 0; j < nkeys; j++)
 		{
-			char * key = fch_buckets_get_key(buckets, i, j);
-			cmph_uint32 keylen = fch_buckets_get_keylength(buckets, i, j);
+			char * key = fch_buckets_get_key(buckets, sorted_indexes[i], j);
+			cmph_uint32 keylen = fch_buckets_get_keylength(buckets, sorted_indexes[i], j);
 			index = hash(fch->h2, key, keylen) % fch->m;
 			if(hashtable[index]) { // collision detected
 				free(hashtable);
@@ -142,7 +138,6 @@ static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t 
 static void permut(cmph_uint32 * vector, cmph_uint32 n)
 { 
   cmph_uint32 i, j, b;
-  srand((cmph_uint32)time(NULL)); 
   for (i = 0; i < n; i++) {
     j = rand() % n;
     b = vector[i];
@@ -163,6 +158,8 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 	if (fch->g) free (fch->g);
 	fch->g = (cmph_uint32 *) calloc(fch->b, sizeof(cmph_uint32));
 
+	//DEBUGP("max bucket size: %u\n", fch_buckets_get_max_size(buckets));
+
 	for(i = 0; i < fch->m; i++)
 	{
 		random_table[i] = i;
@@ -172,27 +169,36 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 	{
 		map_table[random_table[i]] = i;
 	}
-	
-	//DEBUGP("max bucket size: %u\n", fch_buckets_get_max_size(buckets));
-
 	do {   
-		srand((cmph_uint32)time(NULL)); 
 		if (fch->h2) hash_state_destroy(fch->h2);
 		fch->h2 = hash_state_new(fch->hashfuncs[1], fch->m);  
-		restart = check_for_collisions_h2(fch, buckets);
+		restart = check_for_collisions_h2(fch, buckets, sorted_indexes);
 		filled_count = 0;
-		if (!restart) searching_iterations++;
-		else iteration_to_generate_h2++;
+		if (!restart) 
+		{
+			searching_iterations++; iteration_to_generate_h2 = 0;
+			//DEBUGP("searching_iterations: %u\n", searching_iterations);
+		}
+		else {
+			iteration_to_generate_h2++;
+			//DEBUGP("iteration_to_generate_h2: %u\n", iteration_to_generate_h2);
+		}		
 		for(i = 0; (i < nbuckets) && !restart; i++) {
-			restart = 1; // true
+			cmph_uint32 bucketsize = fch_buckets_get_size(buckets, sorted_indexes[i]);
+			if (bucketsize == 0)
+			{
+				restart = 0; // false
+				break;
+			}
+			else restart = 1; // true
 			for(z = 0; (z < (fch->m - filled_count)) && restart; z++) {
 				char * key = fch_buckets_get_key(buckets, sorted_indexes[i], INDEX);
 				cmph_uint32 keylen = fch_buckets_get_keylength(buckets, sorted_indexes[i], INDEX);
-				cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;
-				cmph_uint32 bucketsize = fch_buckets_get_size(buckets, sorted_indexes[i]);
+				cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;				
 				counter = 0; 
 				restart = 0; // false
 				fch->g[sorted_indexes[i]] = (fch->m + random_table[filled_count + z] - h2) % fch->m;
+				//DEBUGP("g[%u]: %u\n", sorted_indexes[i], fch->g[sorted_indexes[i]]);
 				j = INDEX;
 				do {
 					cmph_uint32 index = 0;
@@ -200,6 +206,7 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 					keylen = fch_buckets_get_keylength(buckets, sorted_indexes[i], j);
 					h2 = hash(fch->h2, key, keylen) % fch->m;
 					index = (h2 + fch->g[sorted_indexes[i]]) % fch->m;
+					//DEBUGP("key:%s  keylen:%u  index: %u  h2:%u  bucketsize:%u\n", key, keylen, index, h2, bucketsize);
 					if (map_table[index] >= filled_count) {  
 						cmph_uint32 y  = map_table[index];
 						cmph_uint32 ry = random_table[y];
@@ -219,8 +226,9 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 					j = (j + 1) % bucketsize;
 				} while(j % bucketsize != INDEX); 
 			}
+			//getchar();
 		}              
-	} while(restart  && (searching_iterations < 100000));
+	} while(restart  && (searching_iterations < 10));
 	free(map_table);
 	free(random_table);
 	return restart;
@@ -258,11 +266,14 @@ cmph_t *fch_new(cmph_config_t *mph, float c)
 		}
 		if (sorted_indexes) free (sorted_indexes);
 		sorted_indexes = ordering(buckets);
+		cmph_uint32 nbuckets = fch_buckets_get_nbuckets(buckets);
+		cmph_uint32 i = 0;
 		if (mph->verbosity)
 		{
 			fprintf(stderr, "Starting searching step.\n");
 		}
 		restart_mapping = searching(fch, buckets, sorted_indexes);
+		iterations--;
 		
         } while(restart_mapping && iterations > 0);
 	if (buckets) fch_buckets_destroy(buckets);
@@ -316,7 +327,6 @@ int fch_dump(cmph_t *mphf, FILE *fd)
 	fwrite(&(data->b), sizeof(cmph_uint32), 1, fd);
 	fwrite(&(data->p1), sizeof(cmph_float32), 1, fd);
 	fwrite(&(data->p2), sizeof(cmph_float32), 1, fd);
-	
 	fwrite(data->g, sizeof(cmph_uint32)*(data->b), 1, fd);
 	#ifdef DEBUG
 	cmph_uint32 i;
