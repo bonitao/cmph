@@ -374,7 +374,7 @@ cmph_t *cmph_new(cmph_config_t *mph)
 			break;
 		case CMPH_FCH: /* included -- Fabiano */
 			DEBUGP("Creating fch hash\n");
-			if (c <= 2) c = 2.1;
+			if (c <= 2) c = 2.6;
 			mphf = fch_new(mph, c);
 			break;
 		default:
