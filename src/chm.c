@@ -59,7 +59,8 @@ cmph_t *chm_new(cmph_config_t *mph, float c)
 	cmph_uint32 iterations = 20;
 	cmph_uint8 *visited = NULL;
 	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
-	chm->m = mph->key_source->nkeys;	
+	chm->m = mph->key_source->nkeys;
+	if (c == 0) c = 2.09;
 	chm->n = ceil(c * mph->key_source->nkeys);	
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", chm->m, chm->n, c);
 	chm->graph = graph_new(chm->n, chm->m);

@@ -5,6 +5,7 @@
 
 struct __brz_data_t
 {
+	CMPH_ALGO algo;      // CMPH algo for generating the MPHFs for the buckets (Just CMPH_FCH and CMPH_BMZ8)
 	cmph_uint32 m;       // edges (words) count
 	cmph_float32 c;      // constant c
 	cmph_uint8  *size;   // size[i] stores the number of edges represented by g[i][...]. 
@@ -19,6 +20,7 @@ struct __brz_data_t
 struct __brz_config_data_t
 {
 	CMPH_HASH hashfuncs[3];
+	CMPH_ALGO algo;      // CMPH algo for generating the MPHFs for the buckets (Just CMPH_FCH and CMPH_BMZ8)
 	cmph_float32 c;      // constant c
 	cmph_uint32 m;       // edges (words) count
 	cmph_uint8  *size;   // size[i] stores the number of edges represented by g[i][...]. 

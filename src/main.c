@@ -217,7 +217,6 @@ int main(int argc, char **argv)
 	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	if(nkeys == UINT_MAX) source = cmph_io_nlfile_adapter(keys_fd);
 	else source = cmph_io_nlnkfile_adapter(keys_fd, nkeys);
-
 	if (generate)
 	{
 		//Create mphf
@@ -230,7 +229,8 @@ int main(int argc, char **argv)
 		cmph_config_set_mphf_fd(config, mphf_fd);
 		cmph_config_set_memory_availability(config, memory_availability);
 		cmph_config_set_b(config, b);
-		if((mph_algo == CMPH_BMZ || mph_algo == CMPH_BRZ) && c >= 2.0) c=1.15;
+		//if((mph_algo == CMPH_BMZ || mph_algo == CMPH_BRZ) && c >= 2.0) c=1.15;
+		if(mph_algo == CMPH_BMZ  && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
 		mphf = cmph_new(config);
 		cmph_config_destroy(config);

@@ -13,8 +13,6 @@
 //#define DEBUG
 #include "debug.h"
 
-static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2, cmph_uint32 initial_index);
-static void calc_parameters(fch_config_data_t *fch);
 static fch_buckets_t * mapping(cmph_config_t *mph);
 static cmph_uint32 * ordering(fch_buckets_t * buckets);
 static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets, cmph_uint32 *sorted_indexes);
@@ -57,7 +55,7 @@ void fch_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2, cmph_uint32 initial_index)
+cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2, cmph_uint32 initial_index)
 {
 	if (initial_index < p1)  initial_index %= (cmph_uint32)p2;  /* h11 o h10 */
 	else { /* h12 o h10 */
@@ -67,11 +65,20 @@ static cmph_uint32 mixh10h11h12(cmph_uint32 b, cmph_float32 p1, cmph_float32 p2,
 	return initial_index;
 }
 
-static void calc_parameters(fch_config_data_t *fch)
+
+cmph_uint32 fch_calc_b(cmph_float32 c, cmph_uint32 m)
 {
-	fch->b = (cmph_uint32)ceil((fch->c*fch->m)/(log(fch->m)/log(2) + 1));
-	fch->p1 = ceil(0.55*fch->m);
-	fch->p2 = ceil(0.3*fch->b);
+	return (cmph_uint32)ceil((c*m)/(log(m)/log(2) + 1));
+}
+
+cmph_float32 fch_calc_p1(cmph_uint32 m)
+{
+	return ceil(0.55*m);
+}
+
+cmph_float32 fch_calc_p2(cmph_uint32 b)
+{
+	return ceil(0.3*b);
 }
 
 static fch_buckets_t * mapping(cmph_config_t *mph)
@@ -81,7 +88,9 @@ static fch_buckets_t * mapping(cmph_config_t *mph)
 	fch_config_data_t *fch = (fch_config_data_t *)mph->data;
 	if (fch->h1) hash_state_destroy(fch->h1);
 	fch->h1 = hash_state_new(fch->hashfuncs[0], fch->m);  
-	calc_parameters (fch);
+	fch->b = fch_calc_b(fch->c, fch->m);
+	fch->p1 = fch_calc_p1(fch->m);
+	fch->p2 = fch_calc_p2(fch->b);
 	//DEBUGP("b:%u   p1:%f   p2:%f\n", fch->b, fch->p1, fch->p2);
 	buckets = fch_buckets_new(fch->b);
 
@@ -247,6 +256,7 @@ cmph_t *fch_new(cmph_config_t *mph, float c)
 	fch_config_data_t *fch = (fch_config_data_t *)mph->data;
 	fch->m = mph->key_source->nkeys;
 	//DEBUGP("m: %f\n", fch->m);
+	if (c <= 2) c = 2.6; // validating restrictions over parameter c.
 	fch->c = c;
 	//DEBUGP("c: %f\n", fch->c);
 	fch->h1 = NULL;
@@ -389,7 +399,6 @@ cmph_uint32 fch_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	fch_data_t *fch = mphf->data;
 	cmph_uint32 h1 = hash(fch->h1, key, keylen) % fch->m;
 	cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;
-	h1 = hash(fch->h1, key, keylen) % fch->m;
 	h1 = mixh10h11h12 (fch->b, fch->p1, fch->p2, h1);
 	//DEBUGP("key: %s h1: %u h2: %u  g[h1]: %u\n", key, h1, h2, fch->g[h1]);
 	return (h2 + fch->g[h1]) % fch->m;
