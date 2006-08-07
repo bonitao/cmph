@@ -1,4 +1,6 @@
 #include "graph.h"
+#include "fch.h"
+#include "fch_structs.h"
 #include "bmz8.h"
 #include "bmz8_structs.h"
 #include "brz.h"
@@ -20,11 +22,13 @@
 static int brz_gen_mphf(cmph_config_t *mph);
 static cmph_uint32 brz_min_index(cmph_uint32 * vector, cmph_uint32 n);
 static void brz_destroy_keys_vd(cmph_uint8 ** keys_vd, cmph_uint8 nkeys);
-static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen);
+static char * brz_copy_partial_fch_mphf(brz_config_data_t *brz, fch_data_t * fchf, cmph_uint32 index,  cmph_uint32 *buflen);
+static char * brz_copy_partial_bmz8_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen);
 brz_config_data_t *brz_config_new()
 {
 	brz_config_data_t *brz = NULL; 	
 	brz = (brz_config_data_t *)malloc(sizeof(brz_config_data_t));
+	brz->algo = CMPH_BMZ8;
 	brz->b = 128;
 	brz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	brz->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -111,8 +115,17 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	cmph_uint32 i;
 	cmph_uint32 iterations = 20;
 
-	DEBUGP("c: %f\n");
+	DEBUGP("c: %f\n", c);
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
+	switch(brz->algo) // validating restrictions over parameter c.
+	{
+		case CMPH_BMZ8:
+			if (c == 0 || c >= 2.0) c = 1;
+			break;
+		case CMPH_FCH:
+			if (c <= 2.0) c = 2.6;
+			break;
+	}
 	brz->c = c;
 	brz->m = mph->key_source->nkeys;
 	DEBUGP("m: %u\n", brz->m);
@@ -179,8 +192,9 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 	brzf->k = brz->k;
 	brzf->c = brz->c;
 	brzf->m = brz->m;
+	brzf->algo = brz->algo;
 	mphf->data = brzf;
-	mphf->size = brz->m;
+	mphf->size = brz->m;	
 	DEBUGP("Successfully generated minimal perfect hash\n");
 	if (mph->verbosity)
 	{
@@ -191,7 +205,7 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 
 static int brz_gen_mphf(cmph_config_t *mph)
 {
-	cmph_uint32 i, e;
+	cmph_uint32 i, e, error;
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
 	cmph_uint32 memory_usage = 0;
 	cmph_uint32 nkeys_in_buffer = 0;
@@ -269,7 +283,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 		memory_usage += keylen + sizeof(keylen);
 		h0 = hash(brz->h0, key, keylen) % brz->k;
 		
-		if ((brz->size[h0] == MAX_BUCKET_SIZE) || ((brz->c >= 1.0) && (cmph_uint8)(brz->c * brz->size[h0]) < brz->size[h0])) 
+		if ((brz->size[h0] == MAX_BUCKET_SIZE) || (brz->algo == CMPH_BMZ8 && ((brz->c >= 1.0) && (cmph_uint8)(brz->c * brz->size[h0]) < brz->size[h0]))) 
 		{
 			free(buffer);
 			free(buckets_size);
@@ -337,6 +351,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	fwrite(cmph_names[CMPH_BRZ], (cmph_uint32)(strlen(cmph_names[CMPH_BRZ]) + 1), 1, brz->mphf_fd);
 	fwrite(&(brz->m), sizeof(brz->m), 1, brz->mphf_fd);
 	fwrite(&(brz->c), sizeof(cmph_float32), 1, brz->mphf_fd);
+	fwrite(&(brz->algo), sizeof(brz->algo), 1, brz->mphf_fd);
 	fwrite(&(brz->k), sizeof(cmph_uint32), 1, brz->mphf_fd); // number of MPHFs
 	fwrite(brz->size, sizeof(cmph_uint8)*(brz->k), 1, brz->mphf_fd);
 	
@@ -362,6 +377,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	e = 0;
 	keys_vd = (cmph_uint8 **)calloc(MAX_BUCKET_SIZE, sizeof(cmph_uint8 *));
 	nkeys_vd = 0;
+	error = 0;
 	while(e < brz->m)
 	{
 		i = brz_min_index(buffer_h0, nflushes);
@@ -403,18 +419,49 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			cmph_io_adapter_t *source = NULL;
 			cmph_config_t *config = NULL;
 			cmph_t *mphf_tmp = NULL;
-			bmz8_data_t * bmzf = NULL;
 			char *bufmphf = NULL;
 			cmph_uint32 buflenmphf = 0;
 			// Source of keys
 			source = cmph_io_byte_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
 			config = cmph_config_new(source);
-			cmph_config_set_algo(config, CMPH_BMZ8);
+			cmph_config_set_algo(config, brz->algo);
+			//cmph_config_set_algo(config, CMPH_BMZ8);
 			cmph_config_set_graphsize(config, brz->c);
 			mphf_tmp = cmph_new(config);
-			bmzf = (bmz8_data_t *)mphf_tmp->data;
-			bufmphf = brz_copy_partial_mphf(brz, bmzf, cur_bucket,  &buflenmphf);
-			bmzf = NULL;
+			if (mphf_tmp == NULL) 
+			{
+				if(mph->verbosity) fprintf(stderr, "ERROR: Can't generate MPHF for bucket %u out of %u\n", cur_bucket + 1, brz->k);
+				error = 1;
+				cmph_config_destroy(config);
+ 				brz_destroy_keys_vd(keys_vd, nkeys_vd);
+				cmph_io_byte_vector_adapter_destroy(source);
+				break;
+			}
+			if(mph->verbosity) 
+			{
+			  if (cur_bucket % 1000 == 0) 
+  			  {
+			  	fprintf(stderr, "MPHF for bucket %u out of %u was generated.\n", cur_bucket + 1, brz->k);
+			  }
+			}
+			switch(brz->algo)
+			{
+				case CMPH_FCH:
+				{
+					fch_data_t * fchf = NULL;
+					fchf = (fch_data_t *)mphf_tmp->data;			
+					bufmphf = brz_copy_partial_fch_mphf(brz, fchf, cur_bucket, &buflenmphf);
+				}
+					break;
+				case CMPH_BMZ8:
+				{
+					bmz8_data_t * bmzf = NULL;
+					bmzf = (bmz8_data_t *)mphf_tmp->data;
+					bufmphf = brz_copy_partial_bmz8_mphf(brz, bmzf, cur_bucket,  &buflenmphf);
+				}
+					break;
+				default: assert(0);
+			}
 		        fwrite(bufmphf, buflenmphf, 1, brz->mphf_fd);
 			free(bufmphf);
 			bufmphf = NULL;
@@ -425,11 +472,11 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			nkeys_vd = 0;
 		}
 	}
-
 	buffer_manager_destroy(buff_manager);
 	free(keys_vd);
 	free(buffer_merge);
 	free(buffer_h0);
+	if (error) return 0;
 	return 1;
 }
 
@@ -449,7 +496,29 @@ static void brz_destroy_keys_vd(cmph_uint8 ** keys_vd, cmph_uint8 nkeys)
 	for(i = 0; i < nkeys; i++) { free(keys_vd[i]); keys_vd[i] = NULL;}
 }
 
-static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen)
+static char * brz_copy_partial_fch_mphf(brz_config_data_t *brz, fch_data_t * fchf, cmph_uint32 index,  cmph_uint32 *buflen)
+{
+	cmph_uint32 i = 0;
+	cmph_uint32 buflenh1 = 0;
+	cmph_uint32 buflenh2 = 0; 
+	char * bufh1 = NULL;
+	char * bufh2 = NULL;
+	char * buf   = NULL;
+	cmph_uint32 n  = fchf->b;//brz->size[index];
+	hash_state_dump(fchf->h1, &bufh1, &buflenh1);
+	hash_state_dump(fchf->h2, &bufh2, &buflenh2);
+	*buflen = buflenh1 + buflenh2 + n + 2*sizeof(cmph_uint32);
+	buf = (char *)malloc(*buflen);
+	memcpy(buf, &buflenh1, sizeof(cmph_uint32));
+	memcpy(buf+sizeof(cmph_uint32), bufh1, buflenh1);
+	memcpy(buf+sizeof(cmph_uint32)+buflenh1, &buflenh2, sizeof(cmph_uint32));
+	memcpy(buf+2*sizeof(cmph_uint32)+buflenh1, bufh2, buflenh2);	
+	for (i = 0; i < n; i++) memcpy(buf+2*sizeof(cmph_uint32)+buflenh1+buflenh2+i,(fchf->g + i), 1);
+	free(bufh1);
+	free(bufh2);
+	return buf;
+}
+static char * brz_copy_partial_bmz8_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, cmph_uint32 index,  cmph_uint32 *buflen)
 {
 	cmph_uint32 buflenh1 = 0;
 	cmph_uint32 buflenh2 = 0; 
@@ -470,6 +539,8 @@ static char * brz_copy_partial_mphf(brz_config_data_t *brz, bmz8_data_t * bmzf, 
 	free(bufh2);
 	return buf;
 }
+
+
 int brz_dump(cmph_t *mphf, FILE *fd)
 {
 	brz_data_t *data = (brz_data_t *)mphf->data;
@@ -489,9 +560,6 @@ int brz_dump(cmph_t *mphf, FILE *fd)
 	return 1;
 }
 
-
-
-
 void brz_load(FILE *f, cmph_t *mphf)
 {
 	char *buf = NULL;
@@ -502,31 +570,41 @@ void brz_load(FILE *f, cmph_t *mphf)
 	DEBUGP("Loading brz mphf\n");
 	mphf->data = brz;
 	fread(&(brz->c), sizeof(cmph_float32), 1, f);
+	fread(&(brz->algo), sizeof(brz->algo), 1, f); // Reading algo.
 	fread(&(brz->k), sizeof(cmph_uint32), 1, f);
 	brz->size   = (cmph_uint8 *) malloc(sizeof(cmph_uint8)*brz->k);
 	fread(brz->size, sizeof(cmph_uint8)*(brz->k), 1, f);	
 	brz->h1 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
 	brz->h2 = (hash_state_t **)malloc(sizeof(hash_state_t *)*brz->k);
 	brz->g  = (cmph_uint8 **)  calloc(brz->k, sizeof(cmph_uint8 *));
-	DEBUGP("Reading %u h1 and %u h2\n", brz->k, brz->k);
+	DEBUGP("Reading c = %f   k = %u   algo = %u \n", brz->c, brz->k, brz->algo);
 	//loading h_i1, h_i2 and g_i.
 	for(i = 0; i < brz->k; i++)
 	{
 		// h1
 		fread(&buflen, sizeof(cmph_uint32), 1, f);
-		DEBUGP("Hash state has %u bytes\n", buflen);
+		DEBUGP("Hash state 1 has %u bytes\n", buflen);
 		buf = (char *)malloc(buflen);
 		fread(buf, buflen, 1, f);
 		brz->h1[i] = hash_state_load(buf, buflen);
 		free(buf);
 		//h2
 		fread(&buflen, sizeof(cmph_uint32), 1, f);
-		DEBUGP("Hash state has %u bytes\n", buflen);
+		DEBUGP("Hash state 2 has %u bytes\n", buflen);
 		buf = (char *)malloc(buflen);
 		fread(buf, buflen, 1, f);
 		brz->h2[i] = hash_state_load(buf, buflen);
 		free(buf);
-		n = ceil(brz->c * brz->size[i]);
+		switch(brz->algo)
+		{
+			case CMPH_FCH:
+				n = fch_calc_b(brz->c, brz->size[i]);
+				break;
+			case CMPH_BMZ8:
+				n = ceil(brz->c * brz->size[i]);
+				break;
+			default: assert(0);
+		}
 		DEBUGP("g_i has %u bytes\n", n);
 		brz->g[i] = (cmph_uint8 *)calloc(n, sizeof(cmph_uint8));
 		fread(brz->g[i], sizeof(cmph_uint8)*n, 1, f);
@@ -542,13 +620,12 @@ void brz_load(FILE *f, cmph_t *mphf)
 	//loading c, m, and the vector offset.	
 	fread(&(brz->m), sizeof(cmph_uint32), 1, f);
 	brz->offset = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*brz->k);
-	fread(brz->offset, sizeof(cmph_uint32)*(brz->k), 1, f);	
+	fread(brz->offset, sizeof(cmph_uint32)*(brz->k), 1, f);
 	return;
 }
 
-cmph_uint32 brz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
+static cmph_uint32 brz_bmz8_search(brz_data_t *brz, const char *key, cmph_uint32 keylen)
 {
-	brz_data_t *brz = mphf->data;	
 	cmph_uint32 h0 = hash(brz->h0, key, keylen) % brz->k;
 	cmph_uint32 m = brz->size[h0];
 	cmph_uint32 n = ceil(brz->c * m);
@@ -561,6 +638,35 @@ cmph_uint32 brz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u offset[h0]: %u edges: %u\n", key, brz->g[h0][h1], brz->g[h0][h2], brz->offset[h0], brz->m);
 	DEBUGP("Address: %u\n", mphf_bucket + brz->offset[h0]);
 	return (mphf_bucket + brz->offset[h0]);
+}
+
+static cmph_uint32 brz_fch_search(brz_data_t *brz, const char *key, cmph_uint32 keylen)
+{
+	cmph_uint32 h0 = hash(brz->h0, key, keylen) % brz->k;
+	cmph_uint32 m = brz->size[h0];
+	cmph_uint32 b = fch_calc_b(brz->c, m);
+	cmph_float32 p1 = fch_calc_p1(m);
+	cmph_float32 p2 = fch_calc_p2(b);
+	cmph_uint32 h1 = hash(brz->h1[h0], key, keylen) % m;
+	cmph_uint32 h2 = hash(brz->h2[h0], key, keylen) % m;
+	cmph_uint8 mphf_bucket = 0;
+	h1 = mixh10h11h12(b, p1, p2, h1);
+	mphf_bucket = (h2 + brz->g[h0][h1]) % m;
+	return (mphf_bucket + brz->offset[h0]);
+}
+
+cmph_uint32 brz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
+{
+	brz_data_t *brz = mphf->data;
+	switch(brz->algo)
+	{
+		case CMPH_FCH:
+			return brz_fch_search(brz, key, keylen);
+		case CMPH_BMZ8:
+			return brz_bmz8_search(brz, key, keylen);
+		default: assert(0);
+	}
+	return 0;
 }
 void brz_destroy(cmph_t *mphf)
 {

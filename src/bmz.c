@@ -66,6 +66,7 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 	cmph_uint8 * visited = NULL;
 
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
+	if (c == 0) c = 1.15; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;	
 	bmz->n = ceil(c * mph->key_source->nkeys);	
