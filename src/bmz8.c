@@ -70,7 +70,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 		if (mph->verbosity) fprintf(stderr, "The number of keys in BMZ8 must be lower than 256.\n");
 		return NULL;
 	}
-	
+	if (c == 0) c = 1.15; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bmz8->m = mph->key_source->nkeys;	
 	bmz8->n = ceil(c * mph->key_source->nkeys);	
