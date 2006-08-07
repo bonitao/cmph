@@ -28,7 +28,7 @@ brz_config_data_t *brz_config_new()
 {
 	brz_config_data_t *brz = NULL; 	
 	brz = (brz_config_data_t *)malloc(sizeof(brz_config_data_t));
-	brz->algo = CMPH_BMZ8;
+	brz->algo = CMPH_FCH;
 	brz->b = 128;
 	brz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	brz->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -106,6 +106,15 @@ void brz_config_set_b(cmph_config_t *mph, cmph_uint8 b)
 {
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
 	brz->b = b;
+}
+
+void brz_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo) 
+{
+	if (algo == CMPH_BMZ8 || algo == CMPH_FCH) // supported algorithms
+	{
+		brz_config_data_t *brz = (brz_config_data_t *)mph->data;
+		brz->algo = algo;
+	}
 }
 
 cmph_t *brz_new(cmph_config_t *mph, float c)
