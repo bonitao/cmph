@@ -354,27 +354,22 @@ cmph_t *cmph_new(cmph_config_t *mph)
 	{
 		case CMPH_CHM:
 			DEBUGP("Creating chm hash\n");
-			if (c == 0) c = 2.09;
 			mphf = chm_new(mph, c);
 			break;
 		case CMPH_BMZ: /* included -- Fabiano */
 			DEBUGP("Creating bmz hash\n");
-			if (c == 0) c = 1.15;
 			mphf = bmz_new(mph, c);
 			break;
 		case CMPH_BMZ8: /* included -- Fabiano */
 			DEBUGP("Creating bmz8 hash\n");
-			if (c == 0) c = 1.15;
 			mphf = bmz8_new(mph, c);
 			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			DEBUGP("Creating brz hash\n");
-			if (c == 0) c = 1.15;
 			mphf = brz_new(mph, c);
 			break;
 		case CMPH_FCH: /* included -- Fabiano */
 			DEBUGP("Creating fch hash\n");
-			if (c <= 2) c = 2.6;
 			mphf = fch_new(mph, c);
 			break;
 		default:
