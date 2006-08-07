@@ -366,6 +366,8 @@ cmph_t *cmph_new(cmph_config_t *mph)
 			break;
 		case CMPH_BRZ: /* included -- Fabiano */
 			DEBUGP("Creating brz hash\n");
+			if (c >= 2.0) brz_config_set_algo(mph, CMPH_FCH);
+			else brz_config_set_algo(mph, CMPH_BMZ8);
 			mphf = brz_new(mph, c);
 			break;
 		case CMPH_FCH: /* included -- Fabiano */
