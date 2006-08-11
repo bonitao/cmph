@@ -1,0 +1,18 @@
+% Time-stamp: <Sunday 29 Jan 2006 11:55:42pm EST yoshi@flare>
+\vspace{-3mm}
+\section{Notation and terminology}
+\vspace{-2mm}
+\label{sec:notation}
+
+\enlargethispage{2\baselineskip}
+The essential notation and terminology used throughout this paper are as follows.
+\begin{itemize}
+\item $U$: key universe. $|U| = u$.
+\item $S$: actual static key set. $S \subset U$, $|S| = n \ll u$.
+\item $h: U \to M$ is a hash function that maps keys from a universe $U$ into
+a given range $M = \{0,1,\dots,m-1\}$ of integer numbers.
+\item $h$ is a perfect hash function if it is one-to-one on~$S$, i.e., if
+  $h(k_1) \not = h(k_2)$ for all $k_1 \not = k_2$ from $S$.
+\item $h$ is a minimal perfect hash function (MPHF) if it is one-to-one on~$S$ 
+  and $n=m$. 
+\end{itemize}
