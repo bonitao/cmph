@@ -1,0 +1,146 @@
+% Nivio: 29/jan/06
+% Time-stamp: <Monday 30 Jan 2006 04:01:40am EDT yoshi@ime.usp.br>
+\enlargethispage{2\baselineskip}
+\subsection{Determining~$b$}
+\label{sec:determining-b}
+\begin{table*}[t]
+\begin{center}
+{\small %\scriptsize
+\begin{tabular}{|c|ccc|ccc|}
+\hline
+\raisebox{-0.7em}{$n$} & \multicolumn{3}{c|}{\raisebox{-1mm}{b=128}}  &
+\multicolumn{3}{c|}{\raisebox{-1mm}{b=175}}\\
+\cline{2-4} \cline{5-7}
+ & \raisebox{-0.5mm}{Worst Case} & \raisebox{-0.5mm}{Average} &\raisebox{-0.5mm}{Eq.~(\ref{eq:maxbs})} 
+ & \raisebox{-0.5mm}{Worst Case} & \raisebox{-0.5mm}{Average} &\raisebox{-0.5mm}{Eq.~(\ref{eq:maxbs})} \\
+\hline
+$1.0 \times 10^6$  & 177 & 172.0 & 176  & 232 & 226.6 & 230 \\
+%$2.0 \times 10^6$  & 179 & 174.0 & 178  & 236 & 228.5 & 232 \\
+$4.0 \times 10^6$  & 182 & 177.5 & 179  & 241 & 231.8 & 234 \\
+%$8.0 \times 10^6$  & 186 & 181.6 & 181  & 238 & 234.2 & 236 \\
+$1.6 \times 10^7$  & 184 & 181.6 & 183  & 241 & 236.1 & 238 \\
+%$3.2 \times 10^7$  & 191 & 183.9 & 184  & 240 & 236.6 & 240 \\
+$6.4 \times 10^7$  & 195 & 185.2 & 186  & 244 & 239.0 & 242 \\
+%$1.28 \times 10^8$ & 193 & 187.7 & 187  & 244 & 239.7 & 244 \\
+$5.12 \times 10^8$ & 196 & 191.7 & 190  & 251 & 246.3 & 247 \\
+$1.0 \times 10^9$  & 197 & 191.6 & 192  & 253 & 248.9 & 249 \\
+\hline
+\end{tabular}
+\vspace{-1mm}
+}
+\end{center}
+\caption{Values for $\mathit{BS}_{\mathit{max}}$: worst case and average case obtained in the experiments and using Eq.~(\ref{eq:maxbs}), 
+considering $b=128$ and $b=175$ for different number $n$ of keys in $S$.} 
+\label{tab:comparison}
+\vspace{-6mm}
+\end{table*}
+
+The partitioning step can be viewed as the well known ``balls into bins'' 
+problem~\cite{ra98,dfm02} where~$n$ keys (the balls) are placed independently and 
+uniformly into $\lceil n/b\rceil$ buckets (the bins). The main question related to that problem we are interested 
+in is: what is the maximum number of keys in any bucket? 
+In fact, we want to get the maximum value for $b$ that makes the maximum number of keys in any bucket
+no greater than 256 with high probability. 
+This is important, as we wish to use 8 bits per entry in the vector $g_i$ of
+each $\mathrm{MPHF}_i$, 
+where $0 \leq i < \lceil n/b\rceil$.      
+Let $\mathit{BS}_{\mathit{max}}$ be the maximum number of keys in any bucket.
+
+Clearly, $\BSmax$ is the maximum
+of~$\lceil n/b\rceil$ random variables~$Z_i$, each with binomial
+distribution~$\Bi(n,p)$ with parameters~$n$ and~$p=1/\lceil n/b\rceil$.
+However, the~$Z_i$ are not independent.  Note that~$\Bi(n,p)$ has mean and
+variance~$\simeq b$.  To give an upper estimate for the probability of the
+event~$\BSmax\geq \gamma$, we can estimate the probability that we have~$Z_i\geq \gamma$
+for a fixed~$i$, and then sum these estimates over all~$i$.
+Let~$\gamma=b+\sigma\sqrt{b\ln(n/b)}$, where~$\sigma=\sqrt2$.
+Approximating~$\Bi(n,p)$ by the normal distribution with mean and
+variance~$b$, we obtain the
+estimate~$(\sigma\sqrt{2\pi\ln(n/b)})^{-1}\times\exp(-(1/2)\sigma^2\ln(n/b))$ for
+the probability that~$Z_i\geq \gamma$ occurs, which, summed over all~$i$, gives
+that the probability that~$\BSmax\geq \gamma$ occurs is at
+most~$1/(\sigma\sqrt{2\pi\ln(n/b)})$, which tends to~$0$ as~$n\to\infty$.
+Thus, we have shown that, with high probability, 
+\begin{equation}
+  \label{eq:maxbs}
+  \BSmax\leq b+\sqrt{2b\ln{n\over b}}.
+\end{equation}
+
+% The traditional approach used to estimate $\mathit{BS}_{\mathit{max}}$ with high probability is 
+% to consider $\mathit{BS}_{\mathit{max}}$ as a random variable that follows a binomial distribution 
+% that can be approximated by a poisson distribution. This yields a good approximation
+% when the number of balls is lower than or equal to the number of bins~\cite{g81}. In our case,
+% the number of balls is greater than the number of buckets.
+% % and that is why we have used more recent works to estimate $\mathit{BS}_{\mathit{max}}$. 
+% As $b > \ln (n/b)$, we can use the result by Raab and Steger~\cite{ra98} to estimate
+% $\mathit{BS}_{\mathit{max}}$ with high probability. 
+% The following equation gives the estimation, where $\sigma=\sqrt{2}$:  
+% \begin{eqnarray} \label{eq:maxbs}
+% \mathit{BS}_{\mathit{max}} = b + O \left( \sqrt{b\ln\frac{n}{b}} \right) = b + \sigma \times \left(\sqrt{b\ln\frac{n}{b}} \right)
+% \end{eqnarray}
+
+% In order to estimate the suitable constant $\sigma$ we did a linear 
+% regression suppressing the constant term. 
+% We use the equation $BS_{max} - b = \sigma \times \sqrt{b\ln (n/b)}$ 
+% in the linear regression considering $y=BS_{max} - b$ and $x=\sqrt{b\ln (n/b)}$. 
+% In order to obtain data to be used in the linear regression we set 
+% b=128 and ran the new algorithm ten times 
+% for n equal to 1, 2, 4, 8, 16, 32, 64, 128, 512, 1000 million keys.  
+% Taking a confidence level equal to 95\% we got 
+% $\sigma = 2.11 \pm 0.03$. 
+% The coefficient of determination was $99.6\%$, which means that the linear 
+% regression explains $99.6\%$ of the data variation and only $0.4\%$ 
+% is due to experimental errors.
+% Therefore, Eq.~(\ref{eq:maxbs}) with $\sigma = 2.11 \pm 0.03$ and $b=128$ 
+% makes a very good estimation of the maximum number of keys in any bucket.
+
+% Repeating the same experiments for $b$ equals to $175$ and  
+% a confidence level of $95\%$ we got $\sigma = 2.07 \pm 0.03$.
+% Again we verified that Eq.~(\ref{eq:maxbs}) with $\sigma = 2.07 \pm 0.03$ and $b=175$ is 
+% a very good estimation of the maximum number of keys in any bucket once the
+% coefficient of determination obtained was $99.7 \%$ and $\sigma$ is in a very narrow range.
+
+In our algorithm the maximum number of keys in any bucket must be at most 256. 
+Table~\ref{tab:comparison} presents the values for $\mathit{BS}_{\mathit{max}}$
+obtained experimentally and using Eq.~(\ref{eq:maxbs}).
+The table presents the worst case and the average case, 
+considering $b=128$,  $b=175$ and Eq.~(\ref{eq:maxbs}),
+for several numbers~$n$ of keys in $S$. 
+The estimation given by Eq.~(\ref{eq:maxbs}) is very close to the experimental
+results.
+
+Now we estimate the biggest problem our algorithm is able to solve for 
+a given $b$. 
+Using Eq.~(\ref{eq:maxbs}) considering $b=128$, $b=175$ and imposing
+that~$\mathit{BS}_{\mathit{max}}\leq256$, 
+the sizes of the biggest key set our algorithm 
+can deal with are $10^{30}$ keys and $10^{10}$ keys, respectively. 
+%It is also important to have $b$ as big as possible, once its value is
+%related to the space required to store the resultant MPHF, as shown later on.
+%Table~\ref{tab:bp} shows the biggest problem the algorithm can solve.
+% The values were obtained from Eq.~(\ref{eq:maxbs}), 
+% considering $b=128$ and~$b=175$ and imposing
+% that~$\mathit{BS}_{\mathit{max}}\leq256$. 
+
+% We set $\sigma=2.14$ because it was the greatest value obtained for $\sigma$
+% in the two linear regression we did.
+% \vspace{-3mm} 
+% \begin{table}[htb]
+% \begin{center}
+% {\small %\scriptsize
+% \begin{tabular}{|c|c|}
+% \hline
+% b    & Problem size ($n$) \\
+% \hline
+% 128  & $10^{30}$ keys  \\
+% 175  & $10^{10}$ keys  \\
+% \hline
+% \end{tabular}
+% \vspace{-1mm}
+% }
+% \end{center}
+% \caption{Using Eq.~(\ref{eq:maxbs}) to estimate the biggest problem our algorithm can solve.}
+% %considering $\sigma=\sqrt{2}$.}
+% \label{tab:bp}
+% \vspace{-14mm}
+% \end{table}

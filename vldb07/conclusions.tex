@@ -1,0 +1,42 @@
+% Time-stamp: <Monday 30 Jan 2006 12:38:06am EST yoshi@flare>
+\enlargethispage{2\baselineskip}
+\section{Concluding remarks}
+\label{sec:concuding-remarks}
+
+This paper has presented a novel external memory based algorithm for
+constructing MPHFs that works for sets in the order of billions of keys.  The
+algorithm outputs the resulting function in~$O(n)$ time and, furthermore, it
+can be tuned to run only $34\%$ slower (see \cite{bkz06t} for details) than the fastest 
+algorithm available in the literature for constructing MPHFs~\cite{bkz05}.  
+In addition, the space
+requirement of the resulting MPHF is of up to 9 bits per key for datasets of
+up to $2^{58}\simeq10^{17.4}$ keys. 
+ 
+The algorithm is simple and needs just a
+small vector of size approximately 5.45 megabytes in main memory to construct
+a MPHF for a collection of 1 billion URLs, each one 64 bytes long on average.
+Therefore, almost all main memory is available to be used as disk I/O buffer.
+Making use of such a buffering scheme considering an internal memory area of size
+$\mu=200$ megabytes, our algorithm can produce a MPHF for a
+set of 1 billion URLs in approximately 3.6 hours using a commodity PC of 2.4 gigahertz and
+500 megabytes of main memory.  
+If we increase both the main memory
+available to 1 gigabyte and the internal memory area to $\mu=500$ megabytes, 
+a MPHF for the set of 1 billion URLs is produced in approximately 3 hours. For any
+key, the evaluation of the resulting MPHF takes three memory accesses and the
+computation of three universal hash functions. 
+
+In order to allow the reproduction of our results and the utilization of both the internal memory
+based algorithm and the external memory based algorithm,
+the algorithms are available at \texttt{http://cmph.sf.net}
+under the GNU Lesser General Public License (LGPL).
+They were implemented in the C language.
+
+In future work, we will exploit the fact that the searching step intrinsically
+presents a high degree of parallelism and requires $73\%$ of the
+construction time.  Therefore, a parallel implementation of our algorithm will
+allow the construction and the evaluation of the resulting function in parallel.
+Therefore, the description of the resulting MPHFs will be distributed in the paralell 
+computer allowing the scalability to sets of hundreds of billions of keys. 
+This is an important contribution, mainly for applications related to the Web, as 
+mentioned in Section~\ref{sec:intro}.
