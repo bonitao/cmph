@@ -134,6 +134,8 @@ cmph_t *brz_new(cmph_config_t *mph, float c)
 		case CMPH_FCH:
 			if (c <= 2.0) c = 2.6;
 			break;
+		default:
+			assert(0);
 	}
 	brz->c = c;
 	brz->m = mph->key_source->nkeys;
