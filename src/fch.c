@@ -276,8 +276,6 @@ cmph_t *fch_new(cmph_config_t *mph, float c)
 		}
 		if (sorted_indexes) free (sorted_indexes);
 		sorted_indexes = ordering(buckets);
-		cmph_uint32 nbuckets = fch_buckets_get_nbuckets(buckets);
-		cmph_uint32 i = 0;
 		if (mph->verbosity)
 		{
 			fprintf(stderr, "Starting searching step.\n");
