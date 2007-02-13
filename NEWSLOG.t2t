@@ -1,0 +1,44 @@
+News Log
+
+
+%!includeconf: CONFIG.t2t
+
+----------------------------------------
+
+==News for version 0.6==
+
+- [An algorithm to generate MPHFs that require less than 4 bits per key to be stored fch.html], which is referred to as FCH algorithm. The algorithm is only efficient for small sets.
+- The FCH algorithm is integrated with [BRZ algorithm brz.html] so that you will be able to efficiently generate space-efficient MPHFs for sets in the order of billion keys.
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
+==News for version 0.5==
+
+- A thread safe vector adapter has been added.
+- [A new algorithm for sets in the order of billion of keys that requires approximately 8.1 bits per key to store the resulting MPHFs. brz.html] 
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
+==News for version 0.4==
+
+- Vector Adapter has been added.
+- An optimized version of bmz (bmz8) for small set of keys (at most 256 keys) has been added.
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
+==News for version 0.3==
+
+- New heuristic added to the bmz algorithm permits to generate a mphf with only
+  //24.80n + O(1)// bytes. The resulting function can be stored in //3.72n// bytes.
+%html% [click here bmz.html#heuristic] for details.
+
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
