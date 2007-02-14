@@ -6,7 +6,7 @@ CHM Algorithm
 ----------------------------------------
 
 ==The Algorithm==
-
+The algorithm is presented in [[1,2,3 #papers]].
 ----------------------------------------
 
 ==Memory Consumption==
@@ -70,7 +70,7 @@ Again we have:
 
 ----------------------------------------
   
-==Papers==
+==Papers==[papers]
 
 + Z.J. Czech, G. Havas, and B.S. Majewski. [An optimal algorithm for generating minimal perfect hash functions. papers/chm92.pdf], Information Processing Letters, 43(5):257-264, 1992.
 
