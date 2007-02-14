@@ -176,16 +176,21 @@ utility.
 
 
 ```
- usage: cmph [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph] keysfile
- Minimum perfect hashing tool
+usage: cmph [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] 
+            [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] 
+            [-m file.mph] keysfile
+Minimum perfect hashing tool
 
   -h     print this help message
-  -c     c value that determines the number of vertices in the graph
+  -c     c value determines:
+           the number of vertices in the graph for the algorithms BMZ and CHM
+           the number of bits per key required in the FCH algorithm
   -a     algorithm - valid values are
           * bmz
           * bmz8
           * chm
           * brz
+          * fch
   -f     hash function (may be used multiple times) - valid values are
           * djb2
           * fnv
@@ -201,7 +206,6 @@ utility.
   -d     temporary directory used in brz algorithm
   -b     parmeter of BRZ algorithm to make the maximal number of keys in a bucket lower than 256
   keysfile       line separated file with keys
-
 ```
 
 ==Additional Documentation==
