@@ -78,6 +78,8 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 - The FCH algorithm is integrated with [BRZ algorithm brz.html] so that you will be able to efficiently generate space-efficient MPHFs for sets in the order of billion keys.
 - All reported bugs and suggestions have been corrected and included as well.
 
+[Click here to see the news log newslog.html]
+
 
 ----------------------------------------
 
