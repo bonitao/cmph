@@ -30,7 +30,9 @@ void usage_long(const char *prg)
 	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
-	fprintf(stderr, "  -c\t c value that determines the number of vertices in the graph\n");
+	fprintf(stderr, "  -c\t c value determines:\n");
+	fprintf(stderr, "    \t   the number of vertices in the graph for the algorithms BMZ and CHM\n");
+	fprintf(stderr, "    \t   the number of bits per key required in the FCH algorithm\n");
 	fprintf(stderr, "  -a\t algorithm - valid values are\n");
 	for (i = 0; i < CMPH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", cmph_names[i]);
 	fprintf(stderr, "  -f\t hash function (may be used multiple times) - valid values are\n");
