@@ -1,3 +1,5 @@
+#!/bin/sh
+
 txt2tags -t html --mask-email -i README.t2t -o index.html
 txt2tags -t html -i BMZ.t2t -o bmz.html
 txt2tags -t html -i BRZ.t2t -o brz.html
