@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(cmph, 0.6)
+AM_INIT_AUTOMAKE(cmph, 0.7)
 AM_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
@@ -35,4 +35,4 @@ dnl Checks for library functions.
 
 AC_CHECK_SPOON
 dnl AC_OUTPUT(Makefile tests/Makefile samples/Makefile)
-AC_OUTPUT(Makefile src/Makefile tests/Makefile examples/Makefile)
+AC_OUTPUT(Makefile src/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc)
