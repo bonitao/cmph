@@ -72,6 +72,10 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 0.7==
+
+- Added man pages and a pkgconfig file.
+
 ==News for version 0.6==
 
 - [An algorithm to generate MPHFs that require less than 4 bits per key to be stored fch.html], which is referred to as FCH algorithm. The algorithm is only efficient for small sets.
