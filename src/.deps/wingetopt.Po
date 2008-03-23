@@ -1,0 +1,1 @@
+wingetopt.o wingetopt.o: wingetopt.c

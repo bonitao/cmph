@@ -233,7 +233,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_ui
 							        vqueue_destroy(q);
 								return 1; // restart mapping step.
 							}
-							if (GETBIT(used_edges, next_g + bmz8->g[lav])) 
+							if (GETBIT(used_edges, (next_g + bmz8->g[lav]))) 
 							{
 							        collision = 1;
 								break;
@@ -248,7 +248,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_ui
 				{
                  		        if (graph_node_is_critical(bmz8->graph, lav) && GETBIT(visited, lav))
 					{
-                   			        SETBIT(used_edges,next_g + bmz8->g[lav]);
+                   			        SETBIT(used_edges,(next_g + bmz8->g[lav]));
 						if(next_g + bmz8->g[lav] > *biggest_edge_value) *biggest_edge_value = next_g + bmz8->g[lav];
 					}
 				}
@@ -313,7 +313,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 								free(unused_g_values);
 								return 1; // restart mapping step.
 							}
-							if (GETBIT(used_edges, next_g + bmz8->g[lav])) 
+							if (GETBIT(used_edges, (next_g + bmz8->g[lav]))) 
 							{
 							        collision = 1;
 								break;
@@ -342,7 +342,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 				{
                  		        if (graph_node_is_critical(bmz8->graph, lav) && GETBIT(visited, lav))
 					{
-                   			        SETBIT(used_edges,next_g + bmz8->g[lav]);
+                   			        SETBIT(used_edges,(next_g + bmz8->g[lav]));
 						if(next_g + bmz8->g[lav] > *biggest_edge_value) *biggest_edge_value = next_g + bmz8->g[lav];
 					}
 				}
