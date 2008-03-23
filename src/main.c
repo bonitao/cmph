@@ -45,7 +45,13 @@ void usage_long(const char *prg)
 	fprintf(stderr, "  -m\t minimum perfect hash function file \n");
 	fprintf(stderr, "  -M\t main memory availability (in MB)\n");
 	fprintf(stderr, "  -d\t temporary directory used in brz algorithm \n");
-	fprintf(stderr, "  -b\t parmeter of BRZ algorithm to make the maximal number of keys in a bucket lower than 256\n");
+	fprintf(stderr, "  -b\t the meaning of this parameter depends on the algorithm used.\n");
+	fprintf(stderr, "    \t If BRZ algorithm is selected in -a option, than it is used\n");
+	fprintf(stderr, "    \t to make the maximal number of keys in a bucket lower than 256.\n");
+	fprintf(stderr, "    \t In this case its value should be an integer in the range [64,175].\n");
+	fprintf(stderr, "    \t If BDZ algorithm is selected in option -a, than it is used to\n");
+	fprintf(stderr, "    \t determine the size of some precomputed rank information and\n");
+	fprintf(stderr, "    \t its value should be an integer in the range [3,10]\n");
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
