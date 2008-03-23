@@ -75,12 +75,10 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
   4.1 bits per key to be stored. For that, you just need to set the parameters -a to brz and
   -c to a value larger than or equal to 2.6.
 
-%html% [Click Here comparison.html] to see a comparison between the algorithms BMZ and CHM. 
-
 
 ----------------------------------------
 
-==News for version 0.8==
+==News for version 0.8 (Coming soon)==
 
 - [An algorithm to generate MPHFs that require around 2.6 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
 - The hash functions djb2, fnv and sdbm were removed because they do not use random seeds and therefore are not useful for MPHFs algorithms.
