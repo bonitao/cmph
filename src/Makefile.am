@@ -6,9 +6,6 @@ libcmph_la_SOURCES = debug.h\
 				  cmph_types.h\
 				  hash.h hash_state.h hash.c\
 				  jenkins_hash.h jenkins_hash.c\
-				  djb2_hash.h djb2_hash.c\
-				  sdbm_hash.h sdbm_hash.c\
-				  fnv_hash.h fnv_hash.c\
 				  vstack.h vstack.c\
 				  vqueue.h vqueue.c\
 				  graph.h graph.c\
@@ -17,6 +14,7 @@ libcmph_la_SOURCES = debug.h\
 				  chm.h chm_structs.h chm.c\
 				  bmz.h bmz_structs.h bmz.c\
 				  bmz8.h bmz8_structs.h bmz8.c\
+				  bdz.h bdz_structs.h bdz.c\
 				  buffer_manager.h buffer_manager.c\
 				  buffer_entry.h buffer_entry.c\
 				  brz.h brz_structs.h brz.c\
