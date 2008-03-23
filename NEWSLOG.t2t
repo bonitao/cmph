@@ -5,6 +5,22 @@ News Log
 
 ----------------------------------------
 
+==News for version 0.8==
+
+- [An algorithm to generate MPHFs that require around 2.62 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
+- The hash functions djb2, fnv and sdbm were removed because they do not use random seeds and therefore are not useful for MPHFs algorithms.
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
+==News for version 0.7==
+
+- Added man pages and a pkgconfig file.
+
+
+----------------------------------------
+
 ==News for version 0.6==
 
 - [An algorithm to generate MPHFs that require less than 4 bits per key to be stored fch.html], which is referred to as FCH algorithm. The algorithm is only efficient for small sets.
