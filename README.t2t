@@ -48,7 +48,8 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
   generalization of a graph where each edge connects 3 vertices instead of only 2. The 
   resulting functions are not order preserving and can be stored in only //(2 + x)cn// 
   bits, where //c// should be larger than or equal to //1.23// and //x// is a constant 
-  larger than //0// (actually, x = 1/b and b is a parameter that should be larger 2). 
+  larger than //0// (actually, x = 1/b and b is a parameter that should be larger than 2). 
+  For //c = 1.23// and //b = 8//, the resulting functions are stored in approximately 2.6 bits per key.
 %html% - [BMZ Algorithm bmz.html].
 %txt% - BMZ Algorithm.
   A very fast algorithm based on cyclic random graphs to construct minimal
@@ -81,15 +82,17 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ==News for version 0.8==
 
-- [An algorithm to generate MPHFs that require around 2.62 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
+- [An algorithm to generate MPHFs that require around 2.6 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
 - The hash functions djb2, fnv and sdbm were removed because they do not use random seeds and therefore are not useful for MPHFs algorithms.
 - All reported bugs and suggestions have been corrected and included as well.
+
 
 ==News for version 0.7==
 
 - Added man pages and a pkgconfig file.
 
 
+[News log newslog.html]
 ----------------------------------------
 
 ==Examples==
@@ -234,7 +237,7 @@ Use the project page at sourceforge: http://sf.net/projects/cmph
 
 ==License Stuff==
 
-Code is under the LGPL. 
+Code is under the LGPL and the MPL 1.1. 
 ----------------------------------------
 
 %!include: FOOTER.t2t
