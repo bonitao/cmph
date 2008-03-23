@@ -42,6 +42,13 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 ==Supported Algorithms==
 
  
+%html% - [BDZ Algorithm bdz.html].
+%txt% - BDZ Algorithm.
+  The fastest algorithm to build MPHFs. It is based on random 3-graphs. A 3-graph is a 
+  generalization of a graph where each edge connects 3 vertices instead of only 2. The 
+  resulting functions are not order preserving and can be stored in only //(2 + x)cn// 
+  bits, where //c// should be larger than or equal to //1.23// and //x// is a constant 
+  larger than //0// (actually, x = 1/b and b is a parameter that should be larger 2). 
 %html% - [BMZ Algorithm bmz.html].
 %txt% - BMZ Algorithm.
   A very fast algorithm based on cyclic random graphs to construct minimal
@@ -72,18 +79,15 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 0.8==
+
+- [An algorithm to generate MPHFs that require around 2.62 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
+- The hash functions djb2, fnv and sdbm were removed because they do not use random seeds and therefore are not useful for MPHFs algorithms.
+- All reported bugs and suggestions have been corrected and included as well.
+
 ==News for version 0.7==
 
 - Added man pages and a pkgconfig file.
-
-
-==News for version 0.6==
-
-- [An algorithm to generate MPHFs that require less than 4 bits per key to be stored fch.html], which is referred to as FCH algorithm. The algorithm is only efficient for small sets.
-- The FCH algorithm is integrated with [BRZ algorithm brz.html] so that you will be able to efficiently generate space-efficient MPHFs for sets in the order of billion keys.
-- All reported bugs and suggestions have been corrected and included as well.
-
-[Click here to see the news log newslog.html]
 
 
 ----------------------------------------
@@ -198,20 +202,24 @@ Minimum perfect hashing tool
           * chm
           * brz
           * fch
+          * bdz
   -f     hash function (may be used multiple times) - valid values are
-          * djb2
-          * fnv
           * jenkins
-          * sdbm
   -V     print version number and exit
   -v     increase verbosity (may be used multiple times)
   -k     number of keys
   -g     generation mode
   -s     random seed
-  -m     minimum perfect hash function file
+  -m     minimum perfect hash function file 
   -M     main memory availability (in MB)
-  -d     temporary directory used in brz algorithm
-  -b     parmeter of BRZ algorithm to make the maximal number of keys in a bucket lower than 256
+  -d     temporary directory used in brz algorithm 
+  -b     the meaning of this parameter depends on the algorithm used.
+         If BRZ algorithm is selected in -a option, than it is used
+         to make the maximal number of keys in a bucket lower than 256.
+         In this case its value should be an integer in the range [64,175].
+         If BDZ algorithm is selected in option -a, than it is used to
+         determine the size of some precomputed rank information and
+         its value should be an integer in the range [3,10]
   keysfile       line separated file with keys
 ```
 
