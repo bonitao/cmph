@@ -242,7 +242,7 @@ void bdz_config_destroy(cmph_config_t *mph)
 void bdz_config_set_b(cmph_config_t *mph, cmph_uint8 b)
 {
 	bdz_config_data_t *bdz = (bdz_config_data_t *)mph->data;
-	if (b <= 2) b = 7; // validating restrictions over parameter b.
+	if (b <= 2 || b > 10) b = 7; // validating restrictions over parameter b.
 	bdz->b = b;
 	DEBUGP("b: %u\n", b);
 
@@ -269,7 +269,7 @@ cmph_t *bdz_new(cmph_config_t *mph, float c)
 	bdz_queue_t edges;
 	bdz_graph3_t graph3;
 	bdz_config_data_t *bdz = (bdz_config_data_t *)mph->data;
-	if (c == 0) c = 1.25; // validating restrictions over parameter c.
+	if (c == 0) c = 1.23; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bdz->m = mph->key_source->nkeys;	
 	bdz->r = ceil((c * mph->key_source->nkeys)/3);	
@@ -531,6 +531,7 @@ void bdz_load(FILE *f, cmph_t *mphf)
 	fread(bdz->ranktable, sizeof(cmph_uint32)*(bdz->ranktablesize), 1, f);
 
 	#ifdef DEBUG
+	cmph_uint32  i = 0;
 	fprintf(stderr, "G: ");
 	for (i = 0; i < bdz->n; ++i) fprintf(stderr, "%u ", GETVALUE(bdz->g,i));
 	fprintf(stderr, "\n");
