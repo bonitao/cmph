@@ -1,2 +1,3 @@
 scp -r *.html fc_botelho@shell.sourceforge.net:/home/groups/c/cm/cmph/htdocs
 scp -r examples/*.c examples/keys.txt fc_botelho@shell.sourceforge.net:/home/groups/c/cm/cmph/htdocs/examples
+scp -r papers/*.pdf fc_botelho@shell.sourceforge.net:/home/groups/c/cm/cmph/htdocs/papers/
