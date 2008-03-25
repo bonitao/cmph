@@ -412,26 +412,26 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 		if(!GETBIT(marked_vertices, v0)){
 			if(!GETBIT(marked_vertices,v1))
 			{
-				SETVALUE(bdz->g, v1, UNASSIGNED); 
+				SETVALUE1(bdz->g, v1, UNASSIGNED); 
 				SETBIT(marked_vertices, v1);
 			}
 			if(!GETBIT(marked_vertices,v2))
 			{
-				SETVALUE(bdz->g, v2, UNASSIGNED);		
+				SETVALUE1(bdz->g, v2, UNASSIGNED);		
 				SETBIT(marked_vertices, v2);
 			}
-			SETVALUE(bdz->g, v0, (6-(GETVALUE(bdz->g, v1) + GETVALUE(bdz->g,v2)))%3);
+			SETVALUE1(bdz->g, v0, (6-(GETVALUE(bdz->g, v1) + GETVALUE(bdz->g,v2)))%3);
 			SETBIT(marked_vertices, v0);
 		} else if(!GETBIT(marked_vertices, v1)) {
 			if(!GETBIT(marked_vertices, v2))
 			{
-				SETVALUE(bdz->g, v2, UNASSIGNED);
+				SETVALUE1(bdz->g, v2, UNASSIGNED);
 				SETBIT(marked_vertices, v2);
 			}
-			SETVALUE(bdz->g, v1, (7-(GETVALUE(bdz->g, v0)+GETVALUE(bdz->g, v2)))%3);
+			SETVALUE1(bdz->g, v1, (7-(GETVALUE(bdz->g, v0)+GETVALUE(bdz->g, v2)))%3);
 			SETBIT(marked_vertices, v1);
 		}else {
-			SETVALUE(bdz->g, v2, (8-(GETVALUE(bdz->g,v0)+GETVALUE(bdz->g, v1)))%3);
+			SETVALUE1(bdz->g, v2, (8-(GETVALUE(bdz->g,v0)+GETVALUE(bdz->g, v1)))%3);
 			SETBIT(marked_vertices, v2);
 		}		
 		DEBUGP("A:%u %u %u -- %u %u %u\n", v0, v1, v2, GETVALUE(bdz->g, v0), GETVALUE(bdz->g, v1), GETVALUE(bdz->g, v2));
