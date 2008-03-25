@@ -1,5 +1,0 @@
-bitbool.lo bitbool.o: bitbool.c bitbool.h cmph_types.h
-
-bitbool.h:
-
-cmph_types.h:
