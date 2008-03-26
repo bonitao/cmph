@@ -14,7 +14,7 @@
 #include "hash.h"
 
 #ifdef WIN32
-#define VERSION "0.2"
+#define VERSION "0.8"
 #else
 #include "config.h"
 #endif
@@ -305,6 +305,7 @@ int main(int argc, char **argv)
 			}
 			source->dispose(source->data, buf, buflen);
 		}
+		
 		cmph_destroy(mphf);
 		free(hashtable);
 	}

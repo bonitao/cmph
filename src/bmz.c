@@ -538,3 +538,96 @@ void bmz_destroy(cmph_t *mphf)
 	free(data);
 	free(mphf);
 }
+
+/** cmph_uint32 bmz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
+ *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
+ *  \param mphf pointer to the resulting function
+ *  \param key is the key to be hashed
+ *  \param keylen is the key legth in bytes
+ *  \return The mphf value
+ * 
+ * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
+ * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
+ * as fingerprint. According to the application, just few bits can be enough, once mphf does
+ * not allow collisions for the keys previously known.
+ */
+cmph_uint32 bmz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+	bmz_data_t *bmz = mphf->data;
+	cmph_uint32 h1, h2;
+	
+	hash_vector(bmz->hashes[0], key, keylen, fingerprint);
+	h1 = fingerprint[2] % bmz->n;
+
+	hash_vector(bmz->hashes[1], key, keylen, fingerprint);
+	h2 = fingerprint[2] % bmz->n;
+	
+	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
+	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
+	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
+	return bmz->g[h1] + bmz->g[h2];
+}
+
+/** \fn void bmz_pack(cmph_t *mphf, void *packed_mphf);
+ *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
+ *  \param mphf pointer to the resulting mphf
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ */
+void bmz_pack(cmph_t *mphf, void *packed_mphf)
+{
+	bmz_data_t *data = (bmz_data_t *)mphf->data;
+	cmph_uint32 * ptr = packed_mphf;
+	
+	// packing h1
+	hash_state_pack(data->hashes[0], ptr);
+	
+	ptr += (hash_state_packed_size(data->hashes[0]) >> 2); // (hash_state_packed_size(data->hashes[0]) / 4);
+		
+	// packing h2
+	hash_state_pack(data->hashes[1], ptr);
+	ptr += (hash_state_packed_size(data->hashes[1]) >> 2); // (hash_state_packed_size(data->hashes[1]) / 4);
+
+	// packing n
+	*ptr++ = data->n;
+	
+	// packing g
+	memcpy(ptr, data->g, sizeof(cmph_uint32)*data->n);
+}
+
+/** \fn cmph_uint32 bmz_packed_size(cmph_t *mphf);
+ *  \brief Return the amount of space needed to pack mphf.
+ *  \param mphf pointer to a mphf
+ *  \return the size of the packed function or zero for failures
+ */ 
+cmph_uint32 bmz_packed_size(cmph_t *mphf)
+{
+	bmz_data_t *data = (bmz_data_t *)mphf->data;
+	return (sizeof(CMPH_ALGO) + 2*hash_state_packed_size(data->hashes[0]) + sizeof(cmph_uint32) + sizeof(cmph_uint32)*data->n);
+}
+
+/** cmph_uint32 bmz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
+ *  \brief Use the packed mphf to do a search. 
+ *  \param  packed_mphf pointer to the packed mphf
+ *  \param key key to be hashed
+ *  \param keylen key legth in bytes
+ *  \return The mphf value
+ */
+cmph_uint32 bmz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
+{
+	register cmph_uint32 *h1_ptr = (cmph_uint32 *)packed_mphf;
+	register  cmph_uint32 h1_size =  *h1_ptr;
+
+	register cmph_uint32 *h2_ptr = h1_ptr + (h1_size >> 2); // h1_ptr + h1_size/4
+	register cmph_uint32 h2_size =  *h2_ptr;
+	
+	register cmph_uint32 *g_ptr = h2_ptr + (h2_size >> 2); // h2_ptr + h2_size/4
+	
+	register cmph_uint32 n = *g_ptr++;  
+	
+	register cmph_uint32 h1 = hash_packed(h1_ptr, key, keylen) % n; 
+	register cmph_uint32 h2 = hash_packed(h2_ptr, key, keylen) % n; 
+	
+	if (h1 == h2 && ++h2 > n) h2 = 0;
+
+	return (g_ptr[h1] + g_ptr[h2]);
+}

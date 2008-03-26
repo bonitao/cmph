@@ -490,7 +490,7 @@ cmph_t *cmph_load(FILE *f)
 
 cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-      	DEBUGP("mphf algorithm: %u \n", mphf->algo);
+   	DEBUGP("mphf algorithm: %u \n", mphf->algo);
 	switch(mphf->algo)
 	{
 		case CMPH_CHM:
@@ -519,6 +519,54 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	assert(0);
 	return 0;
 }
+
+
+
+/** cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
+ *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
+ *  \param mphf pointer to the resulting function
+ *  \param key is the key to be hashed
+ *  \param keylen is the key legth in bytes
+ *  \return The mphf value
+ * 
+ * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
+ * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
+ * as fingerprint. According to the application, just few bits can be enough, once mphf does
+ * not allow collisions for the keys previously known.
+ */
+cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+   	DEBUGP("mphf algorithm: %u \n", mphf->algo);
+	switch(mphf->algo)
+	{
+		case CMPH_CHM:
+			return chm_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_BMZ: /* included -- Fabiano */
+		        DEBUGP("bmz algorithm search\n");		         
+		        return bmz_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_BMZ8: /* included -- Fabiano */
+		        DEBUGP("bmz8 algorithm search\n");		         
+		        return bmz8_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_BRZ: /* included -- Fabiano */
+		        DEBUGP("brz algorithm search\n");		         
+		        return brz_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_FCH: /* included -- Fabiano */
+		        DEBUGP("fch algorithm search\n");		         
+		        return fch_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_BDZ: /* included -- Fabiano */
+		        DEBUGP("bdz algorithm search\n");		         
+		        return bdz_search_fingerprint(mphf, key, keylen, fingerprint);
+		case CMPH_BDZ_PH: /* included -- Fabiano */
+		        DEBUGP("bdz_ph algorithm search\n");		         
+		        return bdz_ph_search_fingerprint(mphf, key, keylen, fingerprint);
+		default:
+			assert(0);
+	}
+	assert(0);
+	return 0;
+}
+
+
 
 cmph_uint32 cmph_size(cmph_t *mphf)
 {
@@ -555,4 +603,107 @@ void cmph_destroy(cmph_t *mphf)
 	}
 	assert(0);
 	return;
+}
+
+
+/** \fn void cmph_pack(cmph_t *mphf, void *packed_mphf);
+ *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
+ *  \param mphf pointer to the resulting mphf
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ */
+void cmph_pack(cmph_t *mphf, void *packed_mphf)
+{
+	// packing algorithm type to be used in cmph.c
+	cmph_uint32 * ptr = (cmph_uint32 *) packed_mphf; 
+	*ptr++ = mphf->algo;
+	DEBUGP("mphf->algo = %u\n", mphf->algo);
+	switch(mphf->algo)
+	{
+		case CMPH_CHM:
+			chm_pack(mphf, ptr);
+			break;
+		case CMPH_BMZ: /* included -- Fabiano */
+			bmz_pack(mphf, ptr);
+			break;
+		case CMPH_BMZ8: /* included -- Fabiano */
+			bmz8_pack(mphf, ptr);
+			break;
+		case CMPH_BRZ: /* included -- Fabiano */
+			brz_pack(mphf, ptr);
+			break;
+		case CMPH_FCH: /* included -- Fabiano */
+			fch_pack(mphf, ptr);
+			break;
+		case CMPH_BDZ: /* included -- Fabiano */
+			bdz_pack(mphf, ptr);
+			break;
+		case CMPH_BDZ_PH: /* included -- Fabiano */
+			bdz_ph_pack(mphf, ptr);
+			break;
+		default: 
+			assert(0);
+	}
+	return;
+}
+
+/** \fn cmph_uint32 cmph_packed_size(cmph_t *mphf);
+ *  \brief Return the amount of space needed to pack mphf.
+ *  \param mphf pointer to a mphf
+ *  \return the size of the packed function or zero for failures
+ */ 
+cmph_uint32 cmph_packed_size(cmph_t *mphf)
+{
+	switch(mphf->algo)
+	{
+		case CMPH_CHM:
+			return chm_packed_size(mphf);
+		case CMPH_BMZ: /* included -- Fabiano */
+			return bmz_packed_size(mphf);
+		case CMPH_BMZ8: /* included -- Fabiano */
+			return bmz8_packed_size(mphf);
+		case CMPH_BRZ: /* included -- Fabiano */
+			return brz_packed_size(mphf);
+		case CMPH_FCH: /* included -- Fabiano */
+			return fch_packed_size(mphf);
+		case CMPH_BDZ: /* included -- Fabiano */
+			return bdz_packed_size(mphf);
+		case CMPH_BDZ_PH: /* included -- Fabiano */
+			return bdz_ph_packed_size(mphf);
+		default: 
+			assert(0);
+	}
+	return 0; // FAILURE
+}
+
+/** cmph_uint32 cmph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
+ *  \brief Use the packed mphf to do a search. 
+ *  \param  packed_mphf pointer to the packed mphf
+ *  \param key key to be hashed
+ *  \param keylen key legth in bytes
+ *  \return The mphf value
+ */
+cmph_uint32 cmph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
+{
+	cmph_uint32 *ptr = (cmph_uint32 *)packed_mphf;
+//	fprintf(stderr, "algo:%u\n", *ptr);
+	switch(*ptr)
+	{
+		case CMPH_CHM:
+			return chm_search_packed(++ptr, key, keylen);
+		case CMPH_BMZ: /* included -- Fabiano */
+			return bmz_search_packed(++ptr, key, keylen);
+		case CMPH_BMZ8: /* included -- Fabiano */
+			return bmz8_search_packed(++ptr, key, keylen);
+		case CMPH_BRZ: /* included -- Fabiano */
+			return brz_search_packed(++ptr, key, keylen);
+		case CMPH_FCH: /* included -- Fabiano */
+			return fch_search_packed(++ptr, key, keylen);
+		case CMPH_BDZ: /* included -- Fabiano */
+			return bdz_search_packed(++ptr, key, keylen);
+		case CMPH_BDZ_PH: /* included -- Fabiano */
+			return bdz_ph_search_packed(++ptr, key, keylen);
+		default: 
+			assert(0);
+	}
+	return 0; // FAILURE
 }

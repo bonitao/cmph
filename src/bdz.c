@@ -214,7 +214,7 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 static int bdz_mapping(cmph_config_t *mph, bdz_graph3_t* graph3, bdz_queue_t queue);
 static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t queue);
 static void ranking(bdz_config_data_t *bdz);
-static cmph_uint32 rank(bdz_data_t *bdz, cmph_uint32 vertex);
+static cmph_uint32 rank(cmph_uint8 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex);
 
 bdz_config_data_t *bdz_config_new()
 {
@@ -553,22 +553,22 @@ cmph_uint32 bdz_search_ph(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	return vertex;
 }
 
-static inline cmph_uint32 rank(bdz_data_t *bdz, cmph_uint32 vertex)
+static inline cmph_uint32 rank(cmph_uint8 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex)
 {
-	cmph_uint32 index = vertex >> bdz->b;
-	cmph_uint32 base_rank = bdz->ranktable[index];
-	cmph_uint32 beg_idx_v = index << bdz->b;
-	cmph_uint32 beg_idx_b = beg_idx_v >> 2;
-	cmph_uint32 end_idx_b = vertex >> 2;
+	register cmph_uint32 index = vertex >> b;
+	register cmph_uint32 base_rank = ranktable[index];
+	register cmph_uint32 beg_idx_v = index << b;
+	register cmph_uint32 beg_idx_b = beg_idx_v >> 2;
+	register cmph_uint32 end_idx_b = vertex >> 2;
 	while(beg_idx_b < end_idx_b)
 	{
-		base_rank += bdz_lookup_table[*(bdz->g + beg_idx_b++)];
+		base_rank += bdz_lookup_table[*(g + beg_idx_b++)];
 		
 	}
 	beg_idx_v = beg_idx_b << 2;
 	while(beg_idx_v < vertex) 
 	{
-		if(GETVALUE(bdz->g, beg_idx_v) != UNASSIGNED) base_rank++;
+		if(GETVALUE(g, beg_idx_v) != UNASSIGNED) base_rank++;
 		beg_idx_v++;
 	}
 	
@@ -577,15 +577,15 @@ static inline cmph_uint32 rank(bdz_data_t *bdz, cmph_uint32 vertex)
 
 cmph_uint32 bdz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	bdz_data_t *bdz = mphf->data;
+	register cmph_uint32 vertex;
+	register bdz_data_t *bdz = mphf->data;
 	cmph_uint32 hl[3];
 	hash_vector(bdz->hl, key, keylen, hl);
-	cmph_uint32 vertex;
 	hl[0] = hl[0] % bdz->r;
 	hl[1] = hl[1] % bdz->r + bdz->r;
 	hl[2] = hl[2] % bdz->r + (bdz->r << 1);
 	vertex = hl[(GETVALUE(bdz->g, hl[0]) + GETVALUE(bdz->g, hl[1]) + GETVALUE(bdz->g, hl[2])) % 3];
-	return rank(bdz, vertex);
+	return rank(bdz->b, bdz->ranktable, bdz->g, vertex);
 }
 
 
@@ -597,4 +597,108 @@ void bdz_destroy(cmph_t *mphf)
 	free(data->ranktable);
 	free(data);
 	free(mphf);
+}
+
+/** cmph_uint32 bdz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
+ *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
+ *  \param mphf pointer to the resulting function
+ *  \param key is the key to be hashed
+ *  \param keylen is the key legth in bytes
+ *  \return The mphf value
+ * 
+ * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
+ * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
+ * as fingerprint. According to the application, just few bits can be enough, once mphf does
+ * not allow collisions for the keys previously known.
+ */
+cmph_uint32 bdz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+	register cmph_uint32 vertex;
+	register bdz_data_t *bdz = mphf->data;
+	cmph_uint32 hl[3];
+	
+	hash_vector(bdz->hl, key, keylen, hl);
+	memcpy(fingerprint, hl, sizeof(hl));
+	hl[0] = hl[0] % bdz->r;
+	hl[1] = hl[1] % bdz->r + bdz->r;
+	hl[2] = hl[2] % bdz->r + (bdz->r << 1);
+	vertex = hl[(GETVALUE(bdz->g, hl[0]) + GETVALUE(bdz->g, hl[1]) + GETVALUE(bdz->g, hl[2])) % 3];
+	return rank(bdz->b, bdz->ranktable, bdz->g, vertex);
+}
+
+/** \fn void bdz_pack(cmph_t *mphf, void *packed_mphf);
+ *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
+ *  \param mphf pointer to the resulting mphf
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ */
+void bdz_pack(cmph_t *mphf, void *packed_mphf)
+{
+	bdz_data_t *data = (bdz_data_t *)mphf->data;
+	cmph_uint32 * ptr = packed_mphf;
+
+	// packing hl
+	hash_state_pack(data->hl, ptr);
+
+	
+	ptr += (hash_state_packed_size(data->hl) >> 2); // (hash_state_packed_size(data->hl) / 4);
+		
+	// packing r
+	*ptr++ = data->r;
+
+	// packing ranktablesize
+	*ptr++ = data->ranktablesize;
+
+	// packing ranktable
+	memcpy(ptr, data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize));
+	ptr += data->ranktablesize;
+
+	cmph_uint8 * ptr8 = (cmph_uint8 *) ptr;
+	
+	// packing b
+	*ptr8++ = data->b;
+
+	// packing g
+	memcpy(ptr8, data->g,  sizeof(cmph_uint8)*((data->n >> 2) +1));
+}
+
+/** \fn cmph_uint32 bdz_packed_size(cmph_t *mphf);
+ *  \brief Return the amount of space needed to pack mphf.
+ *  \param mphf pointer to a mphf
+ *  \return the size of the packed function or zero for failures
+ */ 
+cmph_uint32 bdz_packed_size(cmph_t *mphf)
+{
+	bdz_data_t *data = (bdz_data_t *)mphf->data;
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(data->hl) + (sizeof(cmph_uint32) << 1) + sizeof(cmph_uint32)*(data->ranktablesize) + sizeof(cmph_uint8) + sizeof(cmph_uint8)*((data->n >> 2) +1));
+}
+
+/** cmph_uint32 bdz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
+ *  \brief Use the packed mphf to do a search. 
+ *  \param  packed_mphf pointer to the packed mphf
+ *  \param key key to be hashed
+ *  \param keylen key legth in bytes
+ *  \return The mphf value
+ */
+cmph_uint32 bdz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
+{
+	register cmph_uint32 vertex;
+	register cmph_uint32 *hl_ptr = (cmph_uint32 *)packed_mphf;
+	register cmph_uint32 hl_size =  *hl_ptr;
+	register cmph_uint32 *ptr = hl_ptr + (hl_size >> 2); // h2_ptr + h2_size/4
+
+	register cmph_uint32 r = *ptr++;
+	register cmph_uint32 ranktablesize = *ptr++;
+	register cmph_uint32 *ranktable = ptr;
+	ptr += ranktablesize;
+	
+	register cmph_uint8 * g = (cmph_uint8 *)ptr;
+	register cmph_uint8 b = *g++;
+
+	cmph_uint32 hl[3];
+	hash_vector_packed(hl_ptr, key, keylen, hl);
+	hl[0] = hl[0] % r;
+	hl[1] = hl[1] % r + r;
+	hl[2] = hl[2] % r + (r << 1);
+	vertex = hl[(GETVALUE(g, hl[0]) + GETVALUE(g, hl[1]) + GETVALUE(g, hl[2])) % 3];
+	return rank(b, ranktable, g, vertex);
 }

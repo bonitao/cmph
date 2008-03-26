@@ -96,78 +96,16 @@ void jenkins_state_destroy(jenkins_state_t *state)
 	free(state);
 }
 
-cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keylen)
+
+inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
 {
-	cmph_uint32 a, b, c;
-	cmph_uint32 len, length;
-
-	/* Set up the internal state */
-	length = keylen;
-	len = length;
-	a = b = 0x9e3779b9;  /* the golden ratio; an arbitrary value */
-	c = state->seed;   /* the previous hash value - seed in our case */
-
-	/*---------------------------------------- handle most of the key */
-	while (len >= 12)
-	{
-		a += (k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
-		b += (k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
-		c += (k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
-		mix(a,b,c);
-		k += 12; len -= 12;
-	}
-
-	/*------------------------------------- handle the last 11 bytes */
-	c  += length;
-	switch(len)              /* all the case statements fall through */
-	{
-		case 11: 
-			c +=((cmph_uint32)k[10]<<24);
-		case 10: 
-			c +=((cmph_uint32)k[9]<<16);
-		case 9 : 
-			c +=((cmph_uint32)k[8]<<8);
-			/* the first byte of c is reserved for the length */
-		case 8 : 
-			b +=((cmph_uint32)k[7]<<24);
-		case 7 : 
-			b +=((cmph_uint32)k[6]<<16);
-		case 6 : 
-			b +=((cmph_uint32)k[5]<<8);
-		case 5 : 
-			b +=k[4];
-		case 4 : 
-			a +=((cmph_uint32)k[3]<<24);
-		case 3 : 
-			a +=((cmph_uint32)k[2]<<16);
-		case 2 : 
-			a +=((cmph_uint32)k[1]<<8);
-		case 1 : 
-			a +=k[0];
-			/* case 0: nothing left to add */
-	}
-
-	mix(a,b,c);
-
-	/*-------------------------------------------- report the result */
-
-	//c = (c & hashmask(state->size));
-	//c = (c >= state->size) ? c ^ state->size: c;  
-
-	//state->last_hash = c; Do not update last_hash because we use a fixed
-	//seed
-	return c;
-}
-
-void jenkins_hash_vector(jenkins_state_t *state, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
-{
-	cmph_uint32 len, length;
+	register cmph_uint32 len, length;
 
 	/* Set up the internal state */
 	length = keylen;
 	len = length;
 	hashes[0] = hashes[1] = 0x9e3779b9;  /* the golden ratio; an arbitrary value */
-	hashes[2] = state->seed;   /* the previous hash value - seed in our case */
+	hashes[2] = seed;   /* the previous hash value - seed in our case */
 
 	/*---------------------------------------- handle most of the key */
 	while (len >= 12)
@@ -212,6 +150,73 @@ void jenkins_hash_vector(jenkins_state_t *state, const char *k, cmph_uint32 keyl
 	mix(hashes[0],hashes[1],hashes[2]);
 }
 
+cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keylen)
+{
+	cmph_uint32 hashes[3];
+	__jenkins_hash_vector(state->seed, k, keylen, hashes);
+	return hashes[2];
+/*	cmph_uint32 a, b, c;
+	cmph_uint32 len, length;
+
+	// Set up the internal state 
+	length = keylen;
+	len = length;
+	a = b = 0x9e3779b9;  // the golden ratio; an arbitrary value 
+	c = state->seed;   // the previous hash value - seed in our case 
+
+	// handle most of the key 
+	while (len >= 12)
+	{
+		a += (k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
+		b += (k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
+		c += (k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
+		mix(a,b,c);
+		k += 12; len -= 12;
+	}
+
+	// handle the last 11 bytes
+	c  += length;
+	switch(len)              /// all the case statements fall through 
+	{
+		case 11: 
+			c +=((cmph_uint32)k[10]<<24);
+		case 10: 
+			c +=((cmph_uint32)k[9]<<16);
+		case 9 : 
+			c +=((cmph_uint32)k[8]<<8);
+			// the first byte of c is reserved for the length 
+		case 8 : 
+			b +=((cmph_uint32)k[7]<<24);
+		case 7 : 
+			b +=((cmph_uint32)k[6]<<16);
+		case 6 : 
+			b +=((cmph_uint32)k[5]<<8);
+		case 5 : 
+			b +=k[4];
+		case 4 : 
+			a +=((cmph_uint32)k[3]<<24);
+		case 3 : 
+			a +=((cmph_uint32)k[2]<<16);
+		case 2 : 
+			a +=((cmph_uint32)k[1]<<8);
+		case 1 : 
+			a +=k[0];
+		// case 0: nothing left to add 
+	}
+
+	mix(a,b,c);
+
+	/// report the result 
+
+	return c;
+	*/
+}
+
+void jenkins_hash_vector_(jenkins_state_t *state, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
+{
+	__jenkins_hash_vector(state->seed, k, keylen, hashes);
+}
+
 void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buflen = sizeof(cmph_uint32);
@@ -241,4 +246,52 @@ jenkins_state_t *jenkins_state_load(const char *buf, cmph_uint32 buflen)
 	state->hashfunc = CMPH_HASH_JENKINS;
 	DEBUGP("Loaded jenkins state with seed %u\n", state->seed);
 	return state;
+}
+
+
+/** \fn void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed);
+ *  \brief Support the ability to pack a jenkins function into a preallocated contiguous memory space pointed by jenkins_packed.
+ *  \param state points to the jenkins function
+ *  \param jenkins_packed pointer to the contiguous memory area used to store the jenkins function. The size of jenkins_packed must be at least jenkins_state_packed_size() 
+ */
+void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed)
+{
+	if (state && jenkins_packed)
+	{
+		memcpy(jenkins_packed, &(state->seed), sizeof(cmph_uint32));
+	}
+}
+
+/** \fn cmph_uint32 jenkins_state_packed_size(jenkins_state_t *state);
+ *  \brief Return the amount of space needed to pack a jenkins function.
+ *  \return the size of the packed function or zero for failures
+ */ 
+cmph_uint32 jenkins_state_packed_size()
+{
+	return sizeof(cmph_uint32);
+}
+
+
+/** \fn cmph_uint32 jenkins_hash_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen);
+ *  \param jenkins_packed is a pointer to a contiguous memory area
+ *  \param key is a pointer to a key
+ *  \param keylen is the key length
+ *  \return an integer that represents a hash value of 32 bits.
+ */
+cmph_uint32 jenkins_hash_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen)
+{
+	cmph_uint32 hashes[3];
+	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), k, keylen, hashes);
+	return hashes[2];
+}
+
+/** \fn jenkins_hash_vector_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes);
+ *  \param jenkins_packed is a pointer to a contiguous memory area
+ *  \param key is a pointer to a key
+ *  \param keylen is the key length
+ *  \param hashes is a pointer to a memory large enough to fit three 32-bit integers.
+ */
+void jenkins_hash_vector_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
+{
+	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), k, keylen, hashes);
 }
