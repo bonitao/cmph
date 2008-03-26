@@ -478,21 +478,23 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 	bdz_ph->g = (cmph_uint8 *)calloc((bdz_ph->n/5)+1, sizeof(cmph_uint8));
 	fread(bdz_ph->g, ((bdz_ph->n/5)+1)*sizeof(cmph_uint8), 1, f);
 
-	#ifdef DEBUG
+/*	#ifdef DEBUG
+	cmph_uint32 i;
 	fprintf(stderr, "G: ");
 	for (i = 0; i < bdz_ph->n; ++i) fprintf(stderr, "%u ", GETVALUE(bdz_ph->g,i));
 	fprintf(stderr, "\n");
 	#endif
+*/	
 	return;
 }
 		
 
 cmph_uint32 bdz_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	bdz_ph_data_t *bdz_ph = mphf->data;
+	register bdz_ph_data_t *bdz_ph = mphf->data;
 	cmph_uint32 hl[3];
-	cmph_uint8 byte0, byte1, byte2;
-	cmph_uint32 vertex;
+	register cmph_uint8 byte0, byte1, byte2;
+	register cmph_uint32 vertex;
 
 	hash_vector(bdz_ph->hl, key, keylen,hl);
 	hl[0] = hl[0] % bdz_ph->r;
@@ -519,4 +521,115 @@ void bdz_ph_destroy(cmph_t *mphf)
 	hash_state_destroy(data->hl);
 	free(data);
 	free(mphf);
+}
+
+/** cmph_uint32 bdz_ph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
+ *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
+ *  \param mphf pointer to the resulting function
+ *  \param key is the key to be hashed
+ *  \param keylen is the key legth in bytes
+ *  \return The mphf value
+ * 
+ * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
+ * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
+ * as fingerprint. According to the application, just few bits can be enough, once mphf does
+ * not allow collisions for the keys previously known.
+ */
+cmph_uint32 bdz_ph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+	register bdz_ph_data_t *bdz_ph = mphf->data;
+	cmph_uint32 hl[3];
+	register cmph_uint8 byte0, byte1, byte2;
+	register cmph_uint32 vertex;
+
+	hash_vector(bdz_ph->hl, key, keylen,hl);
+	memcpy(fingerprint, hl, sizeof(hl));
+
+	hl[0] = hl[0] % bdz_ph->r;
+	hl[1] = hl[1] % bdz_ph->r + bdz_ph->r;
+	hl[2] = hl[2] % bdz_ph->r + (bdz_ph->r << 1);
+
+	byte0 = bdz_ph->g[hl[0]/5];
+	byte1 = bdz_ph->g[hl[1]/5];
+	byte2 = bdz_ph->g[hl[2]/5];
+	
+	byte0 = lookup_table[hl[0]%5][byte0];
+	byte1 = lookup_table[hl[1]%5][byte1];
+	byte2 = lookup_table[hl[2]%5][byte2];
+	vertex = hl[(byte0 + byte1 + byte2)%3];
+
+	return vertex;
+}
+
+/** \fn void bdz_ph_pack(cmph_t *mphf, void *packed_mphf);
+ *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
+ *  \param mphf pointer to the resulting mphf
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ */
+void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
+{
+	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
+	cmph_uint32 * ptr = packed_mphf;
+
+	// packing hl
+	hash_state_pack(data->hl, ptr);
+
+	
+	ptr += (hash_state_packed_size(data->hl) >> 2); // (hash_state_packed_size(data->hl) / 4);
+
+	// packing r
+	*ptr++ = data->r;
+
+	// packing g
+	memcpy(ptr, data->g,  sizeof(cmph_uint8)*((data->n/5)+1));
+}
+
+/** \fn cmph_uint32 bdz_ph_packed_size(cmph_t *mphf);
+ *  \brief Return the amount of space needed to pack mphf.
+ *  \param mphf pointer to a mphf
+ *  \return the size of the packed function or zero for failures
+ */ 
+cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
+{
+	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(data->hl) + sizeof(cmph_uint32) + sizeof(cmph_uint8)*((data->n/5)+1));
+}
+
+/** cmph_uint32 bdz_ph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
+ *  \brief Use the packed mphf to do a search. 
+ *  \param  packed_mphf pointer to the packed mphf
+ *  \param key key to be hashed
+ *  \param keylen key legth in bytes
+ *  \return The mphf value
+ */
+cmph_uint32 bdz_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
+{
+	
+	register cmph_uint32 *hl_ptr = (cmph_uint32 *)packed_mphf;
+	register cmph_uint32 hl_size =  *hl_ptr;
+	register cmph_uint32 *ptr = hl_ptr + (hl_size >> 2); // h2_ptr + h2_size/4
+
+	register cmph_uint32 r = *ptr++;
+	register cmph_uint8 * g = (cmph_uint8 *)ptr;
+	
+	cmph_uint32 hl[3];
+	register cmph_uint8 byte0, byte1, byte2;
+	register cmph_uint32 vertex;
+
+	hash_vector_packed(hl_ptr, key, keylen, hl);
+	
+	hl[0] = hl[0] % r;
+	hl[1] = hl[1] % r + r;
+	hl[2] = hl[2] % r + (r << 1);
+
+	byte0 = g[hl[0]/5];
+	byte1 = g[hl[1]/5];
+	byte2 = g[hl[2]/5];
+	
+	byte0 = lookup_table[hl[0]%5][byte0];
+	byte1 = lookup_table[hl[1]%5][byte1];
+	byte2 = lookup_table[hl[2]%5][byte2];
+	vertex = hl[(byte0 + byte1 + byte2)%3];
+		
+	return vertex;
 }
