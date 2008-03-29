@@ -124,28 +124,21 @@ void hash_state_destroy(hash_state_t *state)
 	return;
 }
 
-/** \fn void hash_state_pack(hash_state_t *state, void *hash_packed);
+/** \fn void hash_state_pack(hash_state_t *state, void *hash_packed)
  *  \brief Support the ability to pack a hash function into a preallocated contiguous memory space pointed by hash_packed.
  *  \param state points to the hash function
- *  \param hash_packed pointer to the contiguous memory area used to store the hash function. The size of hash_packed must be at least hash_state_packed_size() 
+ *  \param hash_packed pointer to the contiguous memory area used to store the hash function. The size of hash_packed must be at least hash_state_packed_size()
+ *  
+ * Support the ability to pack a hash function into a preallocated contiguous memory space pointed by hash_packed.
+ * However, the hash function type must be packed outside.
  */
 void hash_state_pack(hash_state_t *state, void *hash_packed)
 {
-	cmph_uint32 * ptr = (cmph_uint32 *)hash_packed;
-	cmph_uint32 * ptr_size = ptr++;
-
-	// Reserve space for the hash function size
-	*ptr_size = 0;
-
-	// Pack the hash function type
-	*ptr++ = state->hashfunc;
-
 	switch (state->hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
 			// pack the jenkins hash function			
-			jenkins_state_pack((jenkins_state_t *)state, ptr);
-			*ptr_size = sizeof(cmph_uint32) + sizeof(CMPH_HASH)  + jenkins_state_packed_size();
+			jenkins_state_pack((jenkins_state_t *)state, hash_packed);
 			break;
 		default:
 			assert(0);
@@ -153,15 +146,15 @@ void hash_state_pack(hash_state_t *state, void *hash_packed)
 	return;	
 }
 
-/** \fn cmph_uint32 hash_state_packed_size(hash_state_t *state);
+/** \fn cmph_uint32 hash_state_packed_size(CMPH_HASH hashfunc)
  *  \brief Return the amount of space needed to pack a hash function.
- *  \param state points to a hash function
+ *  \param hashfunc function type
  *  \return the size of the packed function or zero for failures
  */ 
-cmph_uint32 hash_state_packed_size(hash_state_t *state)
+cmph_uint32 hash_state_packed_size(CMPH_HASH hashfunc)
 {
-	cmph_uint32 size = sizeof(cmph_uint32) + sizeof(CMPH_HASH);
-	switch (state->hashfunc)
+	cmph_uint32 size = 0;
+	switch (hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
 			size += jenkins_state_packed_size();
@@ -172,23 +165,19 @@ cmph_uint32 hash_state_packed_size(hash_state_t *state)
 	return size;
 }
 
-
-/** \fn cmph_uint32 hash_packed(void *hash_packed, const char *k, cmph_uint32 keylen)
+/** \fn cmph_uint32 hash_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cmph_uint32 keylen)
  *  \param hash_packed is a pointer to a contiguous memory area
+ *  \param hashfunc is the type of the hash function packed in hash_packed
  *  \param key is a pointer to a key
  *  \param keylen is the key length
  *  \return an integer that represents a hash value of 32 bits.
  */
-cmph_uint32 hash_packed(void *hash_packed, const char *k, cmph_uint32 keylen)
+cmph_uint32 hash_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cmph_uint32 keylen)
 {
-	register cmph_uint32 * ptr = (((cmph_uint32 *) hash_packed) + 1);
-		
-	register CMPH_HASH hashfunc = *ptr++;
-
 	switch (hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			return jenkins_hash_packed(ptr, k, keylen);
+			return jenkins_hash_packed(hash_packed, k, keylen);
 		default:
 			assert(0);
 	}
@@ -196,23 +185,30 @@ cmph_uint32 hash_packed(void *hash_packed, const char *k, cmph_uint32 keylen)
 	return 0;
 }
 
-/** \fn hash_vector_packed(void *hash_packed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes);
+/** \fn hash_vector_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
  *  \param hash_packed is a pointer to a contiguous memory area
  *  \param key is a pointer to a key
  *  \param keylen is the key length
  *  \param hashes is a pointer to a memory large enough to fit three 32-bit integers.
  */
-void hash_vector_packed(void *hash_packed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
-{
-	cmph_uint32 * ptr = (((cmph_uint32 *) hash_packed) + 1);
-		
-	CMPH_HASH hashfunc = *ptr++;
+void hash_vector_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
+{		
 	switch (hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
-			jenkins_hash_vector_packed(ptr, k, keylen, hashes);
+			jenkins_hash_vector_packed(hash_packed, k, keylen, hashes);
 			break;
 		default:
 			assert(0);
 	}
+}
+
+
+/** \fn CMPH_HASH hash_get_type(hash_state_t *state);
+ *  \param state is a pointer to a hash_state_t structure
+ *  \return the hash function type pointed by state
+ */
+CMPH_HASH hash_get_type(hash_state_t *state)
+{
+	return state->hashfunc;
 }
