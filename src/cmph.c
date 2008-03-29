@@ -304,34 +304,37 @@ void cmph_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_
 
 void cmph_config_destroy(cmph_config_t *mph)
 {
-	DEBUGP("Destroying mph with algo %s\n", cmph_names[mph->algo]);
-	switch (mph->algo)
+	if(mph)
 	{
-		case CMPH_CHM:
-			chm_config_destroy(mph);
-			break;
-		case CMPH_BMZ: /* included -- Fabiano */
-			bmz_config_destroy(mph);
-			break;
-		case CMPH_BMZ8: /* included -- Fabiano */
-        	bmz8_config_destroy(mph);
-			break;
-		case CMPH_BRZ: /* included -- Fabiano */
-        	brz_config_destroy(mph);
-			break;
-		case CMPH_FCH: /* included -- Fabiano */
-        	fch_config_destroy(mph);
-			break;
-		case CMPH_BDZ: /* included -- Fabiano */
-        	bdz_config_destroy(mph);
-			break;
-		case CMPH_BDZ_PH: /* included -- Fabiano */
-        	bdz_ph_config_destroy(mph);
-			break;
-		default:
-			assert(0);
+		DEBUGP("Destroying mph with algo %s\n", cmph_names[mph->algo]);
+		switch (mph->algo)
+		{
+			case CMPH_CHM:
+				chm_config_destroy(mph);
+				break;
+			case CMPH_BMZ: /* included -- Fabiano */
+				bmz_config_destroy(mph);
+				break;
+			case CMPH_BMZ8: /* included -- Fabiano */
+	        	bmz8_config_destroy(mph);
+				break;
+			case CMPH_BRZ: /* included -- Fabiano */
+	        	brz_config_destroy(mph);
+				break;
+			case CMPH_FCH: /* included -- Fabiano */
+	        	fch_config_destroy(mph);
+				break;
+			case CMPH_BDZ: /* included -- Fabiano */
+	        	bdz_config_destroy(mph);
+				break;
+			case CMPH_BDZ_PH: /* included -- Fabiano */
+	        	bdz_ph_config_destroy(mph);
+				break;
+			default:
+				assert(0);
+		}
+		__config_destroy(mph);
 	}
-	__config_destroy(mph);
 }
 
 void cmph_config_set_verbosity(cmph_config_t *mph, cmph_uint32 verbosity)
