@@ -425,7 +425,17 @@ void fch_destroy(cmph_t *mphf)
  */
 cmph_uint32 fch_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
-	return 0;
+	register fch_data_t *fch = mphf->data;
+	
+	hash_vector(fch->h1, key, keylen, fingerprint);
+	register cmph_uint32 h1 = fingerprint[2] % fch->m;
+
+	hash_vector(fch->h2, key, keylen, fingerprint);
+	register cmph_uint32 h2 = fingerprint[2] % fch->m;
+
+	h1 = mixh10h11h12 (fch->b, fch->p1, fch->p2, h1);
+	//DEBUGP("key: %s h1: %u h2: %u  g[h1]: %u\n", key, h1, h2, fch->g[h1]);
+	return (h2 + fch->g[h1]) % fch->m;
 }
 
 /** \fn void fch_pack(cmph_t *mphf, void *packed_mphf);
@@ -435,6 +445,45 @@ cmph_uint32 fch_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 ke
  */
 void fch_pack(cmph_t *mphf, void *packed_mphf)
 {
+	fch_data_t *data = (fch_data_t *)mphf->data;
+	cmph_uint8 * ptr = packed_mphf;
+
+	// packing h1 type
+	CMPH_HASH h1_type = hash_get_type(data->h1);
+	*((cmph_uint32 *) ptr) = h1_type;
+	ptr += sizeof(cmph_uint32);
+
+	// packing h1
+	hash_state_pack(data->h1, ptr);
+	ptr += hash_state_packed_size(h1_type);
+
+	// packing h2 type
+	CMPH_HASH h2_type = hash_get_type(data->h2);
+	*((cmph_uint32 *) ptr) = h2_type;
+	ptr += sizeof(cmph_uint32);
+
+	// packing h2
+	hash_state_pack(data->h2, ptr);
+	ptr += hash_state_packed_size(h2_type);
+
+	// packing m
+	*((cmph_uint32 *) ptr) = data->m;
+	ptr += sizeof(data->m);
+
+	// packing b
+	*((cmph_uint32 *) ptr) = data->b;
+	ptr += sizeof(data->b);
+	
+	// packing p1
+	*((cmph_uint32 *)ptr) = (cmph_uint32)data->p1; 
+	ptr += sizeof(data->p1);
+
+	// packing p2
+	*((cmph_uint32 *)ptr) = (cmph_uint32)data->p2; 
+	ptr += sizeof(data->p2);
+
+	// packing g
+	memcpy(ptr, data->g, sizeof(cmph_uint32)*(data->b));	
 }
 
 /** \fn cmph_uint32 fch_packed_size(cmph_t *mphf);
@@ -444,7 +493,12 @@ void fch_pack(cmph_t *mphf, void *packed_mphf)
  */ 
 cmph_uint32 fch_packed_size(cmph_t *mphf)
 {
-	return 0;
+	fch_data_t *data = (fch_data_t *)mphf->data;
+	CMPH_HASH h1_type = hash_get_type(data->h1); 
+	CMPH_HASH h2_type = hash_get_type(data->h2); 
+
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+			4*sizeof(cmph_uint32) + 2*sizeof(cmph_float32) + sizeof(cmph_uint32)*(data->b));
 }
 
 
@@ -457,6 +511,31 @@ cmph_uint32 fch_packed_size(cmph_t *mphf)
  */
 cmph_uint32 fch_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	return 0;
+	register cmph_uint8 *h1_ptr = packed_mphf;
+	register CMPH_HASH h1_type  = *((cmph_uint32 *)h1_ptr);
+	h1_ptr += 4;
+
+	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
+	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
+	h2_ptr += 4;
+	
+	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));
+	
+	register cmph_uint32 m = *g_ptr++;  
+
+	register cmph_uint32 b = *g_ptr++;  
+	
+	register cmph_float32 p1 = (cmph_float32)(*g_ptr);
+	g_ptr++;
+	
+	register cmph_float32 p2 = (cmph_float32)(*g_ptr);
+	g_ptr++;
+
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % m; 
+	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % m;
+
+	h1 = mixh10h11h12 (b, p1, p2, h1);
+	return (h2 + g_ptr[h1]) % m;
+
 }
 

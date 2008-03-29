@@ -241,6 +241,7 @@ int main(int argc, char **argv)
 		if(mph_algo == CMPH_BMZ  && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
 		mphf = cmph_new(config);
+
 		cmph_config_destroy(config);
 		if (mphf == NULL)
 		{

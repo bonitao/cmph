@@ -635,14 +635,19 @@ void brz_load(FILE *f, cmph_t *mphf)
 	return;
 }
 
-static cmph_uint32 brz_bmz8_search(brz_data_t *brz, const char *key, cmph_uint32 keylen)
+static cmph_uint32 brz_bmz8_search(brz_data_t *brz, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
-	cmph_uint32 h0 = hash(brz->h0, key, keylen) % brz->k;
-	cmph_uint32 m = brz->size[h0];
-	cmph_uint32 n = ceil(brz->c * m);
-	cmph_uint32 h1 = hash(brz->h1[h0], key, keylen) % n;
-	cmph_uint32 h2 = hash(brz->h2[h0], key, keylen) % n;
-	cmph_uint8 mphf_bucket;
+	register cmph_uint32 h0;
+
+	hash_vector(brz->h0, key, keylen, fingerprint);
+	h0 = fingerprint[2] % brz->k;
+
+	register cmph_uint32 m = brz->size[h0];
+	register cmph_uint32 n = ceil(brz->c * m);
+	register cmph_uint32 h1 = hash(brz->h1[h0], key, keylen) % n;
+	register cmph_uint32 h2 = hash(brz->h2[h0], key, keylen) % n;
+	register cmph_uint8 mphf_bucket;
+	
 	if (h1 == h2 && ++h2 >= n) h2 = 0;
 	mphf_bucket = brz->g[h0][h1] + brz->g[h0][h2]; 
 	DEBUGP("key: %s h1: %u h2: %u h0: %u\n", key, h1, h2, h0);
@@ -651,16 +656,20 @@ static cmph_uint32 brz_bmz8_search(brz_data_t *brz, const char *key, cmph_uint32
 	return (mphf_bucket + brz->offset[h0]);
 }
 
-static cmph_uint32 brz_fch_search(brz_data_t *brz, const char *key, cmph_uint32 keylen)
+static cmph_uint32 brz_fch_search(brz_data_t *brz, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
-	cmph_uint32 h0 = hash(brz->h0, key, keylen) % brz->k;
-	cmph_uint32 m = brz->size[h0];
-	cmph_uint32 b = fch_calc_b(brz->c, m);
-	cmph_float32 p1 = fch_calc_p1(m);
-	cmph_float32 p2 = fch_calc_p2(b);
-	cmph_uint32 h1 = hash(brz->h1[h0], key, keylen) % m;
-	cmph_uint32 h2 = hash(brz->h2[h0], key, keylen) % m;
-	cmph_uint8 mphf_bucket = 0;
+	register cmph_uint32 h0;
+
+	hash_vector(brz->h0, key, keylen, fingerprint);
+	h0 = fingerprint[2] % brz->k;
+
+	register cmph_uint32 m = brz->size[h0];
+	register cmph_uint32 b = fch_calc_b(brz->c, m);
+	register cmph_float32 p1 = fch_calc_p1(m);
+	register cmph_float32 p2 = fch_calc_p2(b);
+	register cmph_uint32 h1 = hash(brz->h1[h0], key, keylen) % m;
+	register cmph_uint32 h2 = hash(brz->h2[h0], key, keylen) % m;
+	register cmph_uint8 mphf_bucket = 0;
 	h1 = mixh10h11h12(b, p1, p2, h1);
 	mphf_bucket = (h2 + brz->g[h0][h1]) % m;
 	return (mphf_bucket + brz->offset[h0]);
@@ -669,12 +678,13 @@ static cmph_uint32 brz_fch_search(brz_data_t *brz, const char *key, cmph_uint32 
 cmph_uint32 brz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
 	brz_data_t *brz = mphf->data;
+	cmph_uint32 fingerprint[3];
 	switch(brz->algo)
 	{
 		case CMPH_FCH:
-			return brz_fch_search(brz, key, keylen);
+			return brz_fch_search(brz, key, keylen, fingerprint);
 		case CMPH_BMZ8:
-			return brz_bmz8_search(brz, key, keylen);
+			return brz_bmz8_search(brz, key, keylen, fingerprint);
 		default: assert(0);
 	}
 	return 0;
@@ -716,6 +726,15 @@ void brz_destroy(cmph_t *mphf)
  */
 cmph_uint32 brz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
+	brz_data_t *brz = mphf->data;
+	switch(brz->algo)
+	{
+		case CMPH_FCH:
+			return brz_fch_search(brz, key, keylen, fingerprint);
+		case CMPH_BMZ8:
+			return brz_bmz8_search(brz, key, keylen, fingerprint);
+		default: assert(0);
+	}
 	return 0;
 }
 
@@ -726,6 +745,88 @@ cmph_uint32 brz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 ke
  */
 void brz_pack(cmph_t *mphf, void *packed_mphf)
 {
+	brz_data_t *data = (brz_data_t *)mphf->data;
+	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint32 i,n;
+	
+	// packing internal algo type
+	memcpy(ptr, &(data->algo), sizeof(data->algo));
+	ptr += sizeof(data->algo);
+
+	// packing h0 type
+	CMPH_HASH h0_type = hash_get_type(data->h0); 
+	memcpy(ptr, &h0_type, sizeof(h0_type));
+	ptr += sizeof(h0_type);
+
+	// packing h0
+	hash_state_pack(data->h0, ptr);
+	ptr += hash_state_packed_size(h0_type);
+	
+	// packing k
+	memcpy(ptr, &(data->k), sizeof(data->k));
+	ptr += sizeof(data->k);
+
+	// packing c
+	*((cmph_uint32 *)ptr) = (cmph_uint32)data->c; 
+	ptr += sizeof(data->c);
+
+	// packing h1 type
+	CMPH_HASH h1_type = hash_get_type(data->h1[0]); 
+	memcpy(ptr, &h1_type, sizeof(h1_type));
+	ptr += sizeof(h1_type);
+
+	// packing h2 type
+	CMPH_HASH h2_type = hash_get_type(data->h2[0]); 
+	memcpy(ptr, &h2_type, sizeof(h2_type));
+	ptr += sizeof(h2_type);
+
+	// packing size
+	memcpy(ptr, data->size, sizeof(cmph_uint8)*data->k);	
+	ptr += data->k;
+	
+	// packing offset
+	memcpy(ptr, data->offset, sizeof(cmph_uint32)*data->k);	
+	ptr += sizeof(cmph_uint32)*data->k;
+	
+	#if defined (__ia64) || defined (__x86_64__)
+		cmph_uint64 * g_is_ptr = (cmph_uint64 *)ptr;
+	#else
+		cmph_uint32 * g_is_ptr = ptr;
+	#endif
+	
+	cmph_uint8 * g_i = (cmph_uint8 *) (g_is_ptr + data->k);
+	
+	for(i = 0; i < data->k; i++)
+	{
+		#if defined (__ia64) || defined (__x86_64__)
+			*g_is_ptr++ = (cmph_uint64)g_i;
+		#else
+			*g_is_ptr++ = (cmph_uint32)g_i;
+		#endif
+		// packing h1[i]
+		hash_state_pack(data->h1[i], g_i);
+		g_i += hash_state_packed_size(h1_type);
+		
+		// packing h2[i]
+		hash_state_pack(data->h2[i], g_i);
+		g_i += hash_state_packed_size(h2_type);
+
+		// packing g_i
+		switch(data->algo)
+		{
+			case CMPH_FCH:
+				n = fch_calc_b(data->c, data->size[i]);
+				break;
+			case CMPH_BMZ8:
+				n = ceil(data->c * data->size[i]);
+				break;
+			default: assert(0);
+		}
+		memcpy(g_i, data->g[i], sizeof(cmph_uint8)*n);	
+		g_i += n;
+		
+	}
+
 }
 
 /** \fn cmph_uint32 brz_packed_size(cmph_t *mphf);
@@ -735,7 +836,149 @@ void brz_pack(cmph_t *mphf, void *packed_mphf)
  */ 
 cmph_uint32 brz_packed_size(cmph_t *mphf)
 {
-	return 0;
+	cmph_uint32 i;
+	cmph_uint32 size = 0;
+	brz_data_t *data = (brz_data_t *)mphf->data;
+	CMPH_HASH h0_type = hash_get_type(data->h0); 
+	CMPH_HASH h1_type = hash_get_type(data->h1[0]); 
+	CMPH_HASH h2_type = hash_get_type(data->h2[0]);
+	size = (2*sizeof(CMPH_ALGO) + 3*sizeof(CMPH_HASH) + hash_state_packed_size(h0_type) + sizeof(cmph_uint32) + 
+			sizeof(cmph_float32) + sizeof(cmph_uint8)*data->k + sizeof(cmph_uint32)*data->k);
+	// pointers to g_is
+	#if defined (__ia64) || defined (__x86_64__)
+		size +=  sizeof(cmph_uint64)*data->k;
+	#else
+		size +=  sizeof(cmph_uint32)*data->k;
+	#endif
+	
+	size += hash_state_packed_size(h1_type) * data->k;
+	size += hash_state_packed_size(h2_type) * data->k;
+	
+	cmph_uint32 n = 0;
+	for(i = 0; i < data->k; i++)
+	{
+   		switch(data->algo)
+   		{
+   			case CMPH_FCH:
+   				n = fch_calc_b(data->c, data->size[i]);
+   				break;
+   			case CMPH_BMZ8:
+   				n = ceil(data->c * data->size[i]);
+   				break;
+   			default: assert(0);
+   		}
+		size += n;	
+	}
+	return size;
+}
+
+
+
+static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+	register CMPH_HASH h0_type = *packed_mphf++;
+	register cmph_uint32 *h0_ptr = packed_mphf;
+	packed_mphf = (cmph_uint32 *)(((cmph_uint8 *)packed_mphf) + hash_state_packed_size(h0_type)); 
+	
+	register cmph_uint32 k = *packed_mphf++;
+
+	register cmph_float32 c = (cmph_float32)(*packed_mphf);
+	packed_mphf++;
+
+	register CMPH_HASH h1_type = *packed_mphf++; 
+	
+	register CMPH_HASH h2_type = *packed_mphf++; 
+
+	register cmph_uint8 * size = (cmph_uint8 *) packed_mphf;
+	packed_mphf = (cmph_uint32 *)(size + k);  
+	
+	register cmph_uint32 * offset = packed_mphf;
+	packed_mphf += k;
+
+	register cmph_uint32 h0;
+	
+	hash_vector_packed(h0_ptr, h0_type, key, keylen, fingerprint);
+	h0 = fingerprint[2] % k;
+	
+	register cmph_uint32 m = size[h0];
+	register cmph_uint32 n = ceil(c * m);
+
+	#if defined (__ia64) || defined (__x86_64__)
+		register cmph_uint64 * g_is_ptr = (cmph_uint64 *)packed_mphf;
+	#else
+		register cmph_uint32 * g_is_ptr = packed_mphf;
+	#endif
+	
+	register cmph_uint8 * h1_ptr = (cmph_uint8 *) g_is_ptr[h0];
+	
+	register cmph_uint8 * h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
+
+	register cmph_uint8 * g = h2_ptr + hash_state_packed_size(h2_type);
+	
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n;
+	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n;
+
+	register cmph_uint8 mphf_bucket;
+		
+	if (h1 == h2 && ++h2 >= n) h2 = 0;
+	mphf_bucket = g[h1] + g[h2]; 
+	DEBUGP("key: %s h1: %u h2: %u h0: %u\n", key, h1, h2, h0);
+	DEBUGP("key: %s g[h1]: %u g[h2]: %u offset[h0]: %u edges: %u\n", key, g[h1], g[h2], >offset[h0], m);
+	DEBUGP("Address: %u\n", mphf_bucket + offset[h0]);
+	return (mphf_bucket + offset[h0]);	
+}
+
+static cmph_uint32 brz_fch_search_packed(cmph_uint32 *packed_mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
+{
+	register CMPH_HASH h0_type = *packed_mphf++;
+	
+	register cmph_uint32 *h0_ptr = packed_mphf;
+	packed_mphf = (cmph_uint32 *)(((cmph_uint8 *)packed_mphf) + hash_state_packed_size(h0_type)); 
+	
+	register cmph_uint32 k = *packed_mphf++;
+
+	register cmph_float32 c = (cmph_float32)(*packed_mphf);
+	packed_mphf++;
+
+	register CMPH_HASH h1_type = *packed_mphf++; 
+
+	register CMPH_HASH h2_type = *packed_mphf++; 
+
+	register cmph_uint8 * size = (cmph_uint8 *) packed_mphf;
+	packed_mphf = (cmph_uint32 *)(size + k);  
+	
+	register cmph_uint32 * offset = packed_mphf;
+	packed_mphf += k;
+	
+	register cmph_uint32 h0;
+	
+	hash_vector_packed(h0_ptr, h0_type, key, keylen, fingerprint);
+	h0 = fingerprint[2] % k;
+	
+	register cmph_uint32 m = size[h0];
+	register cmph_uint32 b = fch_calc_b(c, m);
+	register cmph_float32 p1 = fch_calc_p1(m);
+	register cmph_float32 p2 = fch_calc_p2(b);
+	
+	#if defined (__ia64) || defined (__x86_64__)
+		register cmph_uint64 * g_is_ptr = (cmph_uint64 *)packed_mphf;
+	#else
+		register cmph_uint32 * g_is_ptr = packed_mphf;
+	#endif
+	
+	register cmph_uint8 * h1_ptr = (cmph_uint8 *) g_is_ptr[h0];
+	
+	register cmph_uint8 * h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
+
+	register cmph_uint8 * g = h2_ptr + hash_state_packed_size(h2_type);
+	
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % m;
+	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % m;
+
+	register cmph_uint8 mphf_bucket = 0;
+	h1 = mixh10h11h12(b, p1, p2, h1);
+	mphf_bucket = (h2 + g[h1]) % m;
+	return (mphf_bucket + offset[h0]);
 }
 
 /** cmph_uint32 brz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
@@ -747,6 +990,16 @@ cmph_uint32 brz_packed_size(cmph_t *mphf)
  */
 cmph_uint32 brz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	return 0;
+	register cmph_uint32 *ptr = (cmph_uint32 *)packed_mphf;	
+	register CMPH_ALGO algo = *ptr++;
+	cmph_uint32 fingerprint[3];
+	switch(algo)
+	{
+		case CMPH_FCH:
+			return brz_fch_search_packed(ptr, key, keylen, fingerprint);
+		case CMPH_BMZ8:
+			return brz_bmz8_search_packed(ptr, key, keylen, fingerprint);
+		default: assert(0);
+	}
 }
 

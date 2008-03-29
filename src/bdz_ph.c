@@ -569,16 +569,20 @@ cmph_uint32 bdz_ph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32
 void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
 {
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
-	cmph_uint32 * ptr = packed_mphf;
+	cmph_uint8 * ptr = packed_mphf;
+
+	// packing hl type
+	CMPH_HASH hl_type = hash_get_type(data->hl);
+	*((cmph_uint32 *) ptr) = hl_type;
+	ptr += sizeof(cmph_uint32);
 
 	// packing hl
 	hash_state_pack(data->hl, ptr);
-
-	
-	ptr += (hash_state_packed_size(data->hl) >> 2); // (hash_state_packed_size(data->hl) / 4);
+	ptr += hash_state_packed_size(hl_type);
 
 	// packing r
-	*ptr++ = data->r;
+	*((cmph_uint32 *) ptr) = data->r;
+	ptr += sizeof(data->r);
 
 	// packing g
 	memcpy(ptr, data->g,  sizeof(cmph_uint8)*((data->n/5)+1));
@@ -592,7 +596,9 @@ void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
 cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
 {
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(data->hl) + sizeof(cmph_uint32) + sizeof(cmph_uint8)*((data->n/5)+1));
+	CMPH_HASH hl_type = hash_get_type(data->hl); 
+
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 2*sizeof(cmph_uint32) + sizeof(cmph_uint8)*((data->n/5)+1));
 }
 
 /** cmph_uint32 bdz_ph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
@@ -605,18 +611,19 @@ cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
 cmph_uint32 bdz_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
 	
-	register cmph_uint32 *hl_ptr = (cmph_uint32 *)packed_mphf;
-	register cmph_uint32 hl_size =  *hl_ptr;
-	register cmph_uint32 *ptr = hl_ptr + (hl_size >> 2); // h2_ptr + h2_size/4
+	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
+	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf + 4);
+	
+	register cmph_uint8 * ptr = hl_ptr + hash_state_packed_size(hl_type);
 
-	register cmph_uint32 r = *ptr++;
-	register cmph_uint8 * g = (cmph_uint8 *)ptr;
+	register cmph_uint32 r = *((cmph_uint32*) ptr);
+	register cmph_uint8 * g = ptr + 4;
 	
 	cmph_uint32 hl[3];
 	register cmph_uint8 byte0, byte1, byte2;
 	register cmph_uint32 vertex;
 
-	hash_vector_packed(hl_ptr, key, keylen, hl);
+	hash_vector_packed(hl_ptr, hl_type, key, keylen, hl);
 	
 	hl[0] = hl[0] % r;
 	hl[1] = hl[1] % r + r;

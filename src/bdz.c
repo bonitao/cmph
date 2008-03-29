@@ -634,31 +634,34 @@ cmph_uint32 bdz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 ke
 void bdz_pack(cmph_t *mphf, void *packed_mphf)
 {
 	bdz_data_t *data = (bdz_data_t *)mphf->data;
-	cmph_uint32 * ptr = packed_mphf;
+	cmph_uint8 * ptr = packed_mphf;
+
+	// packing hl type
+	CMPH_HASH hl_type = hash_get_type(data->hl);
+	*((cmph_uint32 *) ptr) = hl_type;
+	ptr += sizeof(cmph_uint32);
 
 	// packing hl
 	hash_state_pack(data->hl, ptr);
+	ptr += hash_state_packed_size(hl_type);
 
-	
-	ptr += (hash_state_packed_size(data->hl) >> 2); // (hash_state_packed_size(data->hl) / 4);
-		
 	// packing r
-	*ptr++ = data->r;
+	*((cmph_uint32 *) ptr) = data->r;
+	ptr += sizeof(data->r);
 
 	// packing ranktablesize
-	*ptr++ = data->ranktablesize;
+	*((cmph_uint32 *) ptr) = data->ranktablesize;
+	ptr += sizeof(data->ranktablesize);
 
 	// packing ranktable
 	memcpy(ptr, data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize));
-	ptr += data->ranktablesize;
+	ptr += sizeof(cmph_uint32)*(data->ranktablesize);
 
-	cmph_uint8 * ptr8 = (cmph_uint8 *) ptr;
-	
 	// packing b
-	*ptr8++ = data->b;
+	*ptr++ = data->b;
 
 	// packing g
-	memcpy(ptr8, data->g,  sizeof(cmph_uint8)*((data->n >> 2) +1));
+	memcpy(ptr, data->g,  sizeof(cmph_uint8)*((data->n >> 2) +1));
 }
 
 /** \fn cmph_uint32 bdz_packed_size(cmph_t *mphf);
@@ -669,7 +672,10 @@ void bdz_pack(cmph_t *mphf, void *packed_mphf)
 cmph_uint32 bdz_packed_size(cmph_t *mphf)
 {
 	bdz_data_t *data = (bdz_data_t *)mphf->data;
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(data->hl) + (sizeof(cmph_uint32) << 1) + sizeof(cmph_uint32)*(data->ranktablesize) + sizeof(cmph_uint8) + sizeof(cmph_uint8)*((data->n >> 2) +1));
+
+	CMPH_HASH hl_type = hash_get_type(data->hl); 
+
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 3*sizeof(cmph_uint32) + sizeof(cmph_uint32)*(data->ranktablesize) + sizeof(cmph_uint8) + sizeof(cmph_uint8)*((data->n >> 2) +1));
 }
 
 /** cmph_uint32 bdz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
@@ -681,21 +687,20 @@ cmph_uint32 bdz_packed_size(cmph_t *mphf)
  */
 cmph_uint32 bdz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	register cmph_uint32 vertex;
-	register cmph_uint32 *hl_ptr = (cmph_uint32 *)packed_mphf;
-	register cmph_uint32 hl_size =  *hl_ptr;
-	register cmph_uint32 *ptr = hl_ptr + (hl_size >> 2); // h2_ptr + h2_size/4
-
-	register cmph_uint32 r = *ptr++;
-	register cmph_uint32 ranktablesize = *ptr++;
-	register cmph_uint32 *ranktable = ptr;
-	ptr += ranktablesize;
 	
-	register cmph_uint8 * g = (cmph_uint8 *)ptr;
+	register cmph_uint32 vertex;
+	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
+	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf + 4);
+
+	register cmph_uint32 *ranktable = (cmph_uint32*)(hl_ptr + hash_state_packed_size(hl_type));
+	
+	register cmph_uint32 r = *ranktable++;
+	register cmph_uint32 ranktablesize = *ranktable++;
+	register cmph_uint8 * g = (cmph_uint8 *)(ranktable + ranktablesize);
 	register cmph_uint8 b = *g++;
 
 	cmph_uint32 hl[3];
-	hash_vector_packed(hl_ptr, key, keylen, hl);
+	hash_vector_packed(hl_ptr, hl_type, key, keylen, hl);
 	hl[0] = hl[0] % r;
 	hl[1] = hl[1] % r + r;
 	hl[2] = hl[2] % r + (r << 1);
