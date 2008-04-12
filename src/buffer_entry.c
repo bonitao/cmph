@@ -46,8 +46,8 @@ cmph_uint32 buffer_entry_get_capacity(buffer_entry_t * buffer_entry)
 void buffer_entry_load(buffer_entry_t * buffer_entry)
 {
 	free(buffer_entry->buff);
-	buffer_entry->buff = (cmph_uint8 *)calloc(buffer_entry->capacity, sizeof(cmph_uint8));
-	buffer_entry->nbytes = fread(buffer_entry->buff, 1, buffer_entry->capacity, buffer_entry->fd);
+	buffer_entry->buff = (cmph_uint8 *)calloc((size_t)buffer_entry->capacity, sizeof(cmph_uint8));
+	buffer_entry->nbytes = fread(buffer_entry->buff, (size_t)1, (size_t)buffer_entry->capacity, buffer_entry->fd);
 	if (buffer_entry->nbytes != buffer_entry->capacity) buffer_entry->eof = 1;
 	buffer_entry->pos = 0;
 }
@@ -66,10 +66,10 @@ cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * 
 	{
 		copied_bytes = buffer_entry->nbytes - buffer_entry->pos;
 		lacked_bytes = (buffer_entry->pos + lacked_bytes) - buffer_entry->nbytes;
-		if (copied_bytes != 0) memcpy(keylen, buffer_entry->buff + buffer_entry->pos, copied_bytes);
+		if (copied_bytes != 0) memcpy(keylen, buffer_entry->buff + buffer_entry->pos, (size_t)copied_bytes);
 		buffer_entry_load(buffer_entry);
 	}
-	memcpy(keylen + copied_bytes, buffer_entry->buff + buffer_entry->pos, lacked_bytes);
+	memcpy(keylen + copied_bytes, buffer_entry->buff + buffer_entry->pos, (size_t)lacked_bytes);
 	buffer_entry->pos += lacked_bytes;
 	
 	lacked_bytes = *keylen;
@@ -80,11 +80,11 @@ cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * 
 		copied_bytes = buffer_entry->nbytes - buffer_entry->pos;
 		lacked_bytes = (buffer_entry->pos + lacked_bytes) - buffer_entry->nbytes;
 		if (copied_bytes != 0) {
-			memcpy(buf + sizeof(*keylen), buffer_entry->buff + buffer_entry->pos, copied_bytes);
+			memcpy(buf + sizeof(*keylen), buffer_entry->buff + buffer_entry->pos, (size_t)copied_bytes);
                 }
 		buffer_entry_load(buffer_entry);
 	}        
-	memcpy(buf+sizeof(*keylen)+copied_bytes, buffer_entry->buff + buffer_entry->pos, lacked_bytes);
+	memcpy(buf+sizeof(*keylen)+copied_bytes, buffer_entry->buff + buffer_entry->pos, (size_t)lacked_bytes);
 	buffer_entry->pos += lacked_bytes;
 	return buf;
 }

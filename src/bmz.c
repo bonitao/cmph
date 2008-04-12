@@ -54,7 +54,7 @@ void bmz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-cmph_t *bmz_new(cmph_config_t *mph, float c)
+cmph_t *bmz_new(cmph_config_t *mph, double c)
 {
 	cmph_t *mphf = NULL;
 	bmz_data_t *bmzf = NULL;
@@ -131,12 +131,12 @@ cmph_t *bmz_new(cmph_config_t *mph, float c)
 		fprintf(stderr, "\tTraversing critical vertices.\n");
 	  }
 	  DEBUGP("Searching step\n");
-	  visited = (cmph_uint8 *)malloc(bmz->n/8 + 1);
-	  memset(visited, 0, bmz->n/8 + 1);
-	  used_edges = (cmph_uint8 *)malloc(bmz->m/8 + 1);
-	  memset(used_edges, 0, bmz->m/8 + 1);
+	  visited = (cmph_uint8 *)malloc((size_t)bmz->n/8 + 1);
+	  memset(visited, 0, (size_t)bmz->n/8 + 1);
+	  used_edges = (cmph_uint8 *)malloc((size_t)bmz->m/8 + 1);
+	  memset(used_edges, 0, (size_t)bmz->m/8 + 1);
 	  free(bmz->g);
-	  bmz->g = (cmph_uint32 *)calloc(bmz->n, sizeof(cmph_uint32));
+	  bmz->g = (cmph_uint32 *)calloc((size_t)bmz->n, sizeof(cmph_uint32));
 	  assert(bmz->g);
 	  for (i = 0; i < bmz->n; ++i) // critical nodes
 	  {
@@ -450,24 +450,24 @@ int bmz_dump(cmph_t *mphf, FILE *fd)
 	bmz_data_t *data = (bmz_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
-	fwrite(&two, sizeof(cmph_uint32), 1, fd);
+	fwrite(&two, sizeof(cmph_uint32), (size_t)1, fd);
 
 	hash_state_dump(data->hashes[0], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
 	hash_state_dump(data->hashes[1], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint32), 1, fd);
+	fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
 	
-	fwrite(data->g, sizeof(cmph_uint32)*(data->n), 1, fd);
+	fwrite(data->g, sizeof(cmph_uint32)*(data->n), (size_t)1, fd);
 	#ifdef DEBUG
 	cmph_uint32 i;
 	fprintf(stderr, "G: ");
@@ -487,28 +487,28 @@ void bmz_load(FILE *f, cmph_t *mphf)
 
 	DEBUGP("Loading bmz mphf\n");
 	mphf->data = bmz;
-	fread(&nhashes, sizeof(cmph_uint32), 1, f);
+	fread(&nhashes, sizeof(cmph_uint32), (size_t)1, f);
 	bmz->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
 	bmz->hashes[nhashes] = NULL;
 	DEBUGP("Reading %u hashes\n", nhashes);
 	for (i = 0; i < nhashes; ++i)
 	{
 		hash_state_t *state = NULL;
-		fread(&buflen, sizeof(cmph_uint32), 1, f);
+		fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 		DEBUGP("Hash state has %u bytes\n", buflen);
-		buf = (char *)malloc(buflen);
-		fread(buf, buflen, 1, f);
+		buf = (char *)malloc((size_t)buflen);
+		fread(buf, (size_t)buflen, (size_t)1, f);
 		state = hash_state_load(buf, buflen);
 		bmz->hashes[i] = state;
 		free(buf);
 	}
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bmz->n), sizeof(cmph_uint32), 1, f);	
-	fread(&(bmz->m), sizeof(cmph_uint32), 1, f);	
+	fread(&(bmz->n), sizeof(cmph_uint32), (size_t)1, f);	
+	fread(&(bmz->m), sizeof(cmph_uint32), (size_t)1, f);	
 
 	bmz->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*bmz->n);
-	fread(bmz->g, bmz->n*sizeof(cmph_uint32), 1, f);
+	fread(bmz->g, bmz->n*sizeof(cmph_uint32), (size_t)1, f);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < bmz->n; ++i) fprintf(stderr, "%u ", bmz->g[i]);

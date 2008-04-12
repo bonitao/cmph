@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     hash = cmph_load(mphf_fd);
     while (i < nkeys) {
        const char *key = vector[i];
-	   unsigned int id = cmph_search(hash, key, strlen(key));
+	   unsigned int id = cmph_search(hash, key, (cmph_uint32)strlen(key));
 	   fprintf(stderr, "key:%s -- hash:%u\n", key, id);
        i++;
     }

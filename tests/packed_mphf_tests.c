@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	{
 		mphf_file = (char *)malloc(strlen(keys_file) + 5);
 		memcpy(mphf_file, keys_file, strlen(keys_file));
-		memcpy(mphf_file + strlen(keys_file), ".mph\0", 5);
+		memcpy(mphf_file + strlen(keys_file), ".mph\0", (size_t)5);
 	}	
 
 	keys_fd = fopen(keys_file, "r");
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	}
 	cmph_uint32 siz = cmph_size(mphf);
 	hashtable = (cmph_uint8*)malloc(siz*sizeof(cmph_uint8));
-	memset(hashtable, 0, siz);
+	memset(hashtable, 0, (size_t)siz);
 			
 	// packing the function
 	/* Determine how much space is needed to pack the mphf. */
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "packed_size = %u\n", packed_size);
 	
 	/* Make sure that we have enough space to pack the mphf. */
-	cmph_uint8 * packed_mphf = calloc(packed_size,1);
+	cmph_uint8 * packed_mphf = calloc((size_t)packed_size,(size_t)1);
 
 	/* Pack the mphf. */
 	cmph_pack(mphf, packed_mphf);

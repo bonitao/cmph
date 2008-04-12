@@ -18,8 +18,8 @@ buffer_manage_t * buffer_manage_new(cmph_uint32 memory_avail, cmph_uint32 nentri
 	buffer_manage_t *buff_manage = (buffer_manage_t *)malloc(sizeof(buffer_manage_t));
 	assert(buff_manage);
 	buff_manage->memory_avail = memory_avail;
-	buff_manage->buffer_entries = (buffer_entry_t **)calloc(nentries, sizeof(buffer_entry_t *));
-	buff_manage->memory_avail_list = (cmph_uint32 *)calloc(nentries, sizeof(cmph_uint32));
+	buff_manage->buffer_entries = (buffer_entry_t **)calloc((size_t)nentries, sizeof(buffer_entry_t *));
+	buff_manage->memory_avail_list = (cmph_uint32 *)calloc((size_t)nentries, sizeof(cmph_uint32));
 	buff_manage->pos_avail_list = -1;
 	buff_manage->nentries = nentries;
 	memory_avail_entry = buff_manage->memory_avail/buff_manage->nentries + 1;

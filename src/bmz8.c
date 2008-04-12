@@ -15,8 +15,8 @@
 #include "debug.h"
 
 static int bmz8_gen_edges(cmph_config_t *mph);
-static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_uint8 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
-static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz8, cmph_uint8 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
+static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_uint32 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
+static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz8, cmph_uint32 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited);
 static void bmz8_traverse_non_critical_nodes(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmph_uint8 * visited);
 
 bmz8_config_data_t *bmz8_config_new()
@@ -53,7 +53,7 @@ void bmz8_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-cmph_t *bmz8_new(cmph_config_t *mph, float c)
+cmph_t *bmz8_new(cmph_config_t *mph, double c)
 {
 	cmph_t *mphf = NULL;
 	bmz8_data_t *bmz8f = NULL;
@@ -137,12 +137,12 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 		fprintf(stderr, "\tTraversing critical vertices.\n");
 	  }
 	  DEBUGP("Searching step\n");
-	  visited = (cmph_uint8 *)malloc(bmz8->n/8 + 1);
-	  memset(visited, 0, bmz8->n/8 + 1);
-	  used_edges = (cmph_uint8 *)malloc(bmz8->m/8 + 1);
-	  memset(used_edges, 0, bmz8->m/8 + 1);
+	  visited = (cmph_uint8 *)malloc((size_t)bmz8->n/8 + 1);
+	  memset(visited, 0, (size_t)bmz8->n/8 + 1);
+	  used_edges = (cmph_uint8 *)malloc((size_t)bmz8->m/8 + 1);
+	  memset(used_edges, 0, (size_t)bmz8->m/8 + 1);
 	  free(bmz8->g);
-	  bmz8->g = (cmph_uint8 *)calloc(bmz8->n, sizeof(cmph_uint8));
+	  bmz8->g = (cmph_uint8 *)calloc((size_t)bmz8->n, sizeof(cmph_uint8));
 	  assert(bmz8->g);
 	  for (i = 0; i < bmz8->n; ++i) // critical nodes
 	  {
@@ -196,7 +196,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, float c)
 	return mphf;
 }
 
-static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_uint8 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited)
+static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_uint32 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited)
 {
         cmph_uint8 next_g;
 	cmph_uint32 u;   /* Auxiliary vertex */
@@ -263,7 +263,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes(bmz8_config_data_t *bmz8, cmph_ui
 	return 0;
 }
 
-static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz8, cmph_uint8 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited)
+static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz8, cmph_uint32 v, cmph_uint8 * biggest_g_value, cmph_uint8 * biggest_edge_value, cmph_uint8 * used_edges, cmph_uint8 * visited)
 {
         cmph_uint8 next_g;
 	cmph_uint32 u;   
@@ -360,7 +360,7 @@ static cmph_uint8 bmz8_traverse_critical_nodes_heuristic(bmz8_config_data_t *bmz
 	return 0;  
 }
 
-static cmph_uint8 next_unused_edge(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmph_uint8 unused_edge_index)
+static cmph_uint8 next_unused_edge(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmph_uint32 unused_edge_index)
 {
        while(1)
        {
@@ -371,7 +371,7 @@ static cmph_uint8 next_unused_edge(bmz8_config_data_t *bmz8, cmph_uint8 * used_e
        return unused_edge_index;
 }
 
-static void bmz8_traverse(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmph_uint8 v, cmph_uint8 * unused_edge_index, cmph_uint8 * visited)
+static void bmz8_traverse(bmz8_config_data_t *bmz8, cmph_uint8 * used_edges, cmph_uint32 v, cmph_uint8 * unused_edge_index, cmph_uint8 * visited)
 {
 	graph_iterator_t it = graph_neighbors_it(bmz8->graph, v);
 	cmph_uint32 neighbor = 0;
@@ -460,24 +460,24 @@ int bmz8_dump(cmph_t *mphf, FILE *fd)
 	bmz8_data_t *data = (bmz8_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
-	fwrite(&two, sizeof(cmph_uint8), 1, fd);
+	fwrite(&two, sizeof(cmph_uint8), (size_t)1, fd);
 
 	hash_state_dump(data->hashes[0], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
 	hash_state_dump(data->hashes[1], &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint8), 1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint8), 1, fd);
+	fwrite(&(data->n), sizeof(cmph_uint8), (size_t)1, fd);
+	fwrite(&(data->m), sizeof(cmph_uint8), (size_t)1, fd);
 	
-	fwrite(data->g, sizeof(cmph_uint8)*(data->n), 1, fd);
+	fwrite(data->g, sizeof(cmph_uint8)*(data->n), (size_t)1, fd);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < data->n; ++i) fprintf(stderr, "%u ", data->g[i]);
@@ -496,28 +496,28 @@ void bmz8_load(FILE *f, cmph_t *mphf)
 
 	DEBUGP("Loading bmz8 mphf\n");
 	mphf->data = bmz8;
-	fread(&nhashes, sizeof(cmph_uint8), 1, f);
+	fread(&nhashes, sizeof(cmph_uint8), (size_t)1, f);
 	bmz8->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*(nhashes + 1));
 	bmz8->hashes[nhashes] = NULL;
 	DEBUGP("Reading %u hashes\n", nhashes);
 	for (i = 0; i < nhashes; ++i)
 	{
 		hash_state_t *state = NULL;
-		fread(&buflen, sizeof(cmph_uint32), 1, f);
+		fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 		DEBUGP("Hash state has %u bytes\n", buflen);
-		buf = (char *)malloc(buflen);
-		fread(buf, buflen, 1, f);
+		buf = (char *)malloc((size_t)buflen);
+		fread(buf, (size_t)buflen, (size_t)1, f);
 		state = hash_state_load(buf, buflen);
 		bmz8->hashes[i] = state;
 		free(buf);
 	}
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bmz8->n), sizeof(cmph_uint8), 1, f);	
-	fread(&(bmz8->m), sizeof(cmph_uint8), 1, f);	
+	fread(&(bmz8->n), sizeof(cmph_uint8), (size_t)1, f);	
+	fread(&(bmz8->m), sizeof(cmph_uint8), (size_t)1, f);	
 
 	bmz8->g = (cmph_uint8 *)malloc(sizeof(cmph_uint8)*bmz8->n);
-	fread(bmz8->g, bmz8->n*sizeof(cmph_uint8), 1, f);
+	fread(bmz8->g, bmz8->n*sizeof(cmph_uint8), (size_t)1, f);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < bmz8->n; ++i) fprintf(stderr, "%u ", bmz8->g[i]);
