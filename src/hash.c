@@ -54,6 +54,7 @@ void hash_vector(hash_state_t *state, const char *key, cmph_uint32 keylen, cmph_
 void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	char *algobuf;
+	size_t len;
 	switch (state->hashfunc)
 	{
 		case CMPH_HASH_JENKINS:
@@ -66,7 +67,8 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 	*buf = (char *)malloc(strlen(cmph_hash_names[state->hashfunc]) + 1 + *buflen);
 	memcpy(*buf, cmph_hash_names[state->hashfunc], strlen(cmph_hash_names[state->hashfunc]) + 1);
 	DEBUGP("Algobuf is %u\n", *(cmph_uint32 *)algobuf);
-	memcpy(*buf + strlen(cmph_hash_names[state->hashfunc]) + 1, algobuf, *buflen);
+	len = *buflen;
+	memcpy(*buf + strlen(cmph_hash_names[state->hashfunc]) + 1, algobuf, len);
 	*buflen  = (cmph_uint32)strlen(cmph_hash_names[state->hashfunc]) + 1 + *buflen;
 	free(algobuf);
 	return;

@@ -220,7 +220,7 @@ void jenkins_hash_vector_(jenkins_state_t *state, const char *k, cmph_uint32 key
 void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buflen = sizeof(cmph_uint32);
-	*buf = (char *)malloc(*buflen);
+	*buf = (char *)malloc(sizeof(cmph_uint32));
 	if (!*buf) 
 	{
 		*buflen = UINT_MAX;

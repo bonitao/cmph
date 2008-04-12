@@ -230,7 +230,8 @@ int graph_is_cyclic(graph_t *g)
 	cmph_uint32 i;
 	cmph_uint32 v;
 	char *deleted = (char *)malloc((g->nedges*sizeof(char))/8 + 1);
-	memset(deleted, 0, g->nedges/8 + 1);
+	size_t deleted_len = g->nedges/8 + 1;
+	memset(deleted, 0, deleted_len);
 
 	DEBUGP("Looking for cycles in graph with %u vertices and %u edges\n", g->nnodes, g->nedges);
 	for (v = 0; v < g->nnodes; ++v)
@@ -260,7 +261,8 @@ void graph_obtain_critical_nodes(graph_t *g) /* included -- Fabiano*/
         cmph_uint32 i;
 	cmph_uint32 v;
 	char *deleted = (char *)malloc((g->nedges*sizeof(char))/8+1);
-	memset(deleted, 0, g->nedges/8 + 1);
+	size_t deleted_len = g->nedges/8 + 1;
+	memset(deleted, 0, deleted_len);
 	free(g->critical_nodes);
 	g->critical_nodes = (cmph_uint8 *)malloc((g->nnodes*sizeof(cmph_uint8))/8 + 1);
 	g->ncritical_nodes = 0;

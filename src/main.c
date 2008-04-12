@@ -57,7 +57,7 @@ void usage_long(const char *prg)
 
 int main(int argc, char **argv)
 {
-	char verbosity = 0;
+	cmph_uint32 verbosity = 0;
 	char generate = 0;
 	char *mphf_file = NULL;
 	FILE *mphf_fd = stdout;
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	cmph_uint32 nhashes = 0;
 	cmph_uint32 i;
 	CMPH_ALGO mph_algo = CMPH_CHM;
-	float c = 0;
+	double c = 0;
 	cmph_config_t *config = NULL;
 	cmph_t *mphf = NULL;
 	char * tmp_dir = NULL;
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 	{
 		mphf_file = (char *)malloc(strlen(keys_file) + 5);
 		memcpy(mphf_file, keys_file, strlen(keys_file));
-		memcpy(mphf_file + strlen(keys_file), ".mph\0", 5);
+		memcpy(mphf_file + strlen(keys_file), ".mph\0", (size_t)5);
 	}	
 
 	keys_fd = fopen(keys_file, "r");
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
 		}
 		cmph_uint32 siz = cmph_size(mphf);
 		hashtable = (cmph_uint8*)malloc(siz*sizeof(cmph_uint8));
-		memset(hashtable, 0, siz);
+		memset(hashtable, 0,(size_t) siz);
 		//check all keys
 		for (i = 0; i < source->nkeys; ++i)
 		{
