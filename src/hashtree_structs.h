@@ -6,7 +6,7 @@
 struct __hashtree_data_t
 {
 	cmph_uint32 m; //edges (words) count
-	cmph_float32 c; //constant c
+	double c; //constant c
 	cmph_uint8 *size; //size[i] stores the number of edges represented by g[i]
 	cmph_uint32 **g;
 	cmph_uint32 k; //number of components

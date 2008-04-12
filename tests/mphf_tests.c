@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	{
 		mphf_file = (char *)malloc(strlen(keys_file) + 5);
 		memcpy(mphf_file, keys_file, strlen(keys_file));
-		memcpy(mphf_file + strlen(keys_file), ".mph\0", 5);
+		memcpy(mphf_file + strlen(keys_file), ".mph\0", (size_t)5);
 	}	
 
 	keys_fd = fopen(keys_file, "r");
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 	}
 	cmph_uint32 siz = cmph_size(mphf);
 	hashtable = (cmph_uint8*)malloc(siz*sizeof(cmph_uint8));
-	memset(hashtable, 0, siz);
+	memset(hashtable, 0, (size_t)siz);
 	//check all keys
 	for (i = 0; i < source->nkeys; ++i)
 	{

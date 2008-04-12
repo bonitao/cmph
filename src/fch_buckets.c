@@ -117,7 +117,7 @@ fch_buckets_t * fch_buckets_new(cmph_uint32 nbuckets)
 	cmph_uint32 i;
 	fch_buckets_t *buckets = (fch_buckets_t *)malloc(sizeof(fch_buckets_t));
 	assert(buckets);
-	buckets->values = (fch_bucket_t *)calloc(nbuckets, sizeof(fch_bucket_t));
+	buckets->values = (fch_bucket_t *)calloc((size_t)nbuckets, sizeof(fch_bucket_t));
 	for (i = 0; i < nbuckets; i++) fch_bucket_new(buckets->values + i); 
 	assert(buckets->values);
 	buckets->nbuckets = nbuckets;
@@ -174,8 +174,8 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 {
 	int i = 0;
 	cmph_uint32 sum = 0, value;
-	cmph_uint32 *nbuckets_size = (cmph_uint32 *) calloc(buckets->max_size + 1, sizeof(cmph_uint32));
-	cmph_uint32 * sorted_indexes = (cmph_uint32 *) calloc(buckets->nbuckets, sizeof(cmph_uint32));
+	cmph_uint32 *nbuckets_size = (cmph_uint32 *) calloc((size_t)buckets->max_size + 1, sizeof(cmph_uint32));
+	cmph_uint32 * sorted_indexes = (cmph_uint32 *) calloc((size_t)buckets->nbuckets, sizeof(cmph_uint32));
 	
 	// collect how many buckets for each size.
 	for(i = 0; i < buckets->nbuckets; i++) nbuckets_size[fch_bucket_size(buckets->values + i)] ++;

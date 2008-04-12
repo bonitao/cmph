@@ -81,9 +81,11 @@ static int key_byte_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
 	cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
 	cmph_uint8 **keys_vd = (cmph_uint8 **)cmph_vector->vector;
+	size_t size;
 	memcpy(keylen, keys_vd[cmph_vector->position], sizeof(*keylen));
-	*key = (char *)malloc(*keylen);
-	memcpy(*key, keys_vd[cmph_vector->position] + sizeof(*keylen), *keylen);
+	size = *keylen;
+	*key = (char *)malloc(size);
+	memcpy(*key, keys_vd[cmph_vector->position] + sizeof(*keylen), size);
 	cmph_vector->position = cmph_vector->position + 1;
 	return *keylen;
 
@@ -93,9 +95,11 @@ static int key_struct_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
     cmph_struct_vector_t *cmph_struct_vector = (cmph_struct_vector_t *)data;
     char *keys_vd = (char *)cmph_struct_vector->vector;
+    size_t size;
     *keylen = cmph_struct_vector->key_len;
-    *key = (char *)malloc(*keylen);
-	memcpy(*key, (keys_vd + (cmph_struct_vector->position * cmph_struct_vector->struct_size) + cmph_struct_vector->key_offset), *keylen);
+    size = *keylen;
+    *key = (char *)malloc(size);
+    memcpy(*key, (keys_vd + (cmph_struct_vector->position * cmph_struct_vector->struct_size) + cmph_struct_vector->key_offset), size);
 	cmph_struct_vector->position = cmph_struct_vector->position + 1;
 	return *keylen;
 }
@@ -104,8 +108,10 @@ static int key_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
         cmph_vector_t *cmph_vector = (cmph_vector_t *)data;
         char **keys_vd = (char **)cmph_vector->vector;
+	size_t size;
         *keylen = strlen(keys_vd[cmph_vector->position]);
-        *key = (char *)malloc(*keylen + 1);
+	size = *keylen;
+        *key = (char *)malloc(size + 1);
         strcpy(*key, keys_vd[cmph_vector->position]);
         cmph_vector->position = cmph_vector->position + 1;
 	return *keylen;
@@ -365,7 +371,7 @@ void cmph_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd)
 	}
 }
 
-void cmph_config_set_b(cmph_config_t *mph, cmph_uint8 b)
+void cmph_config_set_b(cmph_config_t *mph, cmph_uint32 b)
 {
 	if (mph->algo == CMPH_BRZ) 
 	{
@@ -455,7 +461,7 @@ void cmph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 	return;
 }
-void cmph_config_set_graphsize(cmph_config_t *mph, float c)
+void cmph_config_set_graphsize(cmph_config_t *mph, double c)
 {
 	mph->c = c;
 	return;
@@ -464,7 +470,7 @@ void cmph_config_set_graphsize(cmph_config_t *mph, float c)
 cmph_t *cmph_new(cmph_config_t *mph)
 {
 	cmph_t *mphf = NULL;
-	float c = mph->c;
+	double c = mph->c;
 
 	DEBUGP("Creating mph with algorithm %s\n", cmph_names[mph->algo]);
 	switch (mph->algo)	

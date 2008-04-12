@@ -67,12 +67,12 @@ static void bdz_alloc_graph3(bdz_graph3_t * graph3, cmph_uint32 nedges, cmph_uin
 {
 	graph3->edges=malloc(nedges*sizeof(bdz_edge_t));
 	graph3->first_edge=malloc(nvertices*sizeof(cmph_uint32));
-	graph3->vert_degree=malloc(nvertices);	
+	graph3->vert_degree=malloc((size_t)nvertices);	
 };
 static void bdz_init_graph3(bdz_graph3_t * graph3, cmph_uint32 nedges, cmph_uint32 nvertices)
 {
 	memset(graph3->first_edge,0xff,nvertices*sizeof(cmph_uint32));
-	memset(graph3->vert_degree,0,nvertices);
+	memset(graph3->vert_degree,0,(size_t)nvertices);
 	graph3->nedges=0;
 };
 static void bdz_free_graph3(bdz_graph3_t *graph3)
@@ -161,8 +161,8 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 	cmph_uint32 queue_head=0,queue_tail=0;
 	cmph_uint32 curr_edge;
 	cmph_uint32 tmp_edge;
-	cmph_uint8 * marked_edge =malloc((nedges >> 3) + 1);
-	memset(marked_edge, 0, (nedges >> 3) + 1);
+	cmph_uint8 * marked_edge =malloc((size_t)(nedges >> 3) + 1);
+	memset(marked_edge, 0, (size_t)(nedges >> 3) + 1);
 
 	for(i=0;i<nedges;i++){
 		v0=graph3->edges[i].vertices[0];
@@ -214,7 +214,7 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 static int bdz_mapping(cmph_config_t *mph, bdz_graph3_t* graph3, bdz_queue_t queue);
 static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t queue);
 static void ranking(bdz_config_data_t *bdz);
-static cmph_uint32 rank(cmph_uint8 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex);
+static cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex);
 
 bdz_config_data_t *bdz_config_new()
 {
@@ -239,7 +239,7 @@ void bdz_config_destroy(cmph_config_t *mph)
 	free(data);
 }
 
-void bdz_config_set_b(cmph_config_t *mph, cmph_uint8 b)
+void bdz_config_set_b(cmph_config_t *mph, cmph_uint32 b)
 {
 	bdz_config_data_t *bdz = (bdz_config_data_t *)mph->data;
 	if (b <= 2 || b > 10) b = 7; // validating restrictions over parameter b.
@@ -261,7 +261,7 @@ void bdz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-cmph_t *bdz_new(cmph_config_t *mph, float c)
+cmph_t *bdz_new(cmph_config_t *mph, double c)
 {
 	cmph_t *mphf = NULL;
 	bdz_data_t *bdzf = NULL;
@@ -278,7 +278,7 @@ cmph_t *bdz_new(cmph_config_t *mph, float c)
 	bdz->k = (1 << bdz->b);
 	DEBUGP("b: %u -- k: %u\n", bdz->b, bdz->k);
 	
-	bdz->ranktablesize = bdz->n/bdz->k + 2;
+	bdz->ranktablesize = ceil(bdz->n/(double)bdz->k);
 	DEBUGP("ranktablesize: %u\n", bdz->ranktablesize);
 
 	
@@ -398,10 +398,11 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 	cmph_uint32 nedges=graph3->nedges;
 	cmph_uint32 curr_edge;
 	cmph_uint32 v0,v1,v2;
-	cmph_uint8 * marked_vertices =malloc((bdz->n >> 3) + 1);
-	bdz->g = (cmph_uint8 *)calloc((bdz->n >> 2)+1, sizeof(cmph_uint8));	
-	memset(marked_vertices, 0, (bdz->n >> 3) + 1);
-	memset(bdz->g, 0xff, (bdz->n >> 2) + 1);
+	cmph_uint8 * marked_vertices =malloc((size_t)(bdz->n >> 3) + 1);
+        cmph_uint32 sizeg = ceil(bdz->n/4.0);
+	bdz->g = (cmph_uint8 *)calloc((size_t)(sizeg), sizeof(cmph_uint8));	
+	memset(marked_vertices, 0, (size_t)(bdz->n >> 3) + 1);
+	memset(bdz->g, 0xff, (size_t)(sizeg));
 
 	for(i=nedges-1;i+1>=1;i--){
 		curr_edge=queue[i];
@@ -442,23 +443,21 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 
 static void ranking(bdz_config_data_t *bdz)
 {
-	cmph_uint32 i, j, offset = 0, count = 0, size = (bdz->k >> 2), nbytes_total = (bdz->n >> 2)+1, nbytes;
-	bdz->ranktable = (cmph_uint32 *)calloc(bdz->ranktablesize, sizeof(cmph_uint32));
+	cmph_uint32 i, j, offset = 0, count = 0, size = (bdz->k >> 2), nbytes_total = ceil(bdz->n/4.0), nbytes;
+	bdz->ranktable = (cmph_uint32 *)calloc((size_t)bdz->ranktablesize, sizeof(cmph_uint32));
 	// ranktable computation
 	bdz->ranktable[0] = 0;	
 	i = 1;
 	while(1)
 	{
+		if(i == bdz->ranktablesize) break;
 		nbytes = size < nbytes_total? size : nbytes_total;
 		for(j = 0; j < nbytes; j++)
 		{
 			count += bdz_lookup_table[*(bdz->g + offset + j)];
 		}
-		if(i == bdz->ranktablesize) fprintf(stderr, "i:%u == bdz->ranktablesize:%u\n", i, bdz->ranktablesize);
-		assert(i < bdz->ranktablesize); 
 		bdz->ranktable[i] = count;
 		offset += nbytes;
-		if(size >= nbytes_total) break;
 		nbytes_total -= size;
 		i++;
 	}
@@ -474,21 +473,22 @@ int bdz_dump(cmph_t *mphf, FILE *fd)
 
 	hash_state_dump(data->hl, &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->r), sizeof(cmph_uint32), 1, fd);
+	fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
 	
-	fwrite(data->g, sizeof(cmph_uint8)*((data->n >> 2) +1), 1, fd);
+	cmph_uint32 sizeg = ceil(data->n/4.0);
+	fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
 
-	fwrite(&(data->k), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->b), sizeof(cmph_uint8), 1, fd);
-	fwrite(&(data->ranktablesize), sizeof(cmph_uint32), 1, fd);
+	fwrite(&(data->k), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->b), sizeof(cmph_uint8), (size_t)1, fd);
+	fwrite(&(data->ranktablesize), sizeof(cmph_uint32), (size_t)1, fd);
 
-	fwrite(data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize), 1, fd);
+	fwrite(data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize), (size_t)1, fd);
 	#ifdef DEBUG
 	cmph_uint32 i;
 	fprintf(stderr, "G: ");
@@ -501,34 +501,34 @@ int bdz_dump(cmph_t *mphf, FILE *fd)
 void bdz_load(FILE *f, cmph_t *mphf)
 {
 	char *buf = NULL;
-	cmph_uint32 buflen;
+	cmph_uint32 buflen, sizeg;
 	bdz_data_t *bdz = (bdz_data_t *)malloc(sizeof(bdz_data_t));
 
 	DEBUGP("Loading bdz mphf\n");
 	mphf->data = bdz;
 
-	fread(&buflen, sizeof(cmph_uint32), 1, f);
+	fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 	DEBUGP("Hash state has %u bytes\n", buflen);
-	buf = (char *)malloc(buflen);
-	fread(buf, buflen, 1, f);
+	buf = (char *)malloc((size_t)buflen);
+	fread(buf, (size_t)buflen, (size_t)1, f);
 	bdz->hl = hash_state_load(buf, buflen);
 	free(buf);
 	
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bdz->n), sizeof(cmph_uint32), 1, f);	
-	fread(&(bdz->m), sizeof(cmph_uint32), 1, f);	
-	fread(&(bdz->r), sizeof(cmph_uint32), 1, f);	
+	fread(&(bdz->n), sizeof(cmph_uint32), (size_t)1, f);	
+	fread(&(bdz->m), sizeof(cmph_uint32), (size_t)1, f);	
+	fread(&(bdz->r), sizeof(cmph_uint32), (size_t)1, f);	
+	sizeg = ceil(bdz->n/4.0);
+	bdz->g = (cmph_uint8 *)calloc((size_t)(sizeg), sizeof(cmph_uint8));
+	fread(bdz->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
-	bdz->g = (cmph_uint8 *)calloc((bdz->n >> 2) + 1, sizeof(cmph_uint8));
-	fread(bdz->g, ((bdz->n >> 2) + 1)*sizeof(cmph_uint8), 1, f);
+	fread(&(bdz->k), sizeof(cmph_uint32), (size_t)1, f);
+	fread(&(bdz->b), sizeof(cmph_uint8), (size_t)1, f);
+	fread(&(bdz->ranktablesize), sizeof(cmph_uint32), (size_t)1, f);
 
-	fread(&(bdz->k), sizeof(cmph_uint32), 1, f);
-	fread(&(bdz->b), sizeof(cmph_uint8), 1, f);
-	fread(&(bdz->ranktablesize), sizeof(cmph_uint32), 1, f);
-
-	bdz->ranktable = (cmph_uint32 *)calloc(bdz->ranktablesize, sizeof(cmph_uint32));
-	fread(bdz->ranktable, sizeof(cmph_uint32)*(bdz->ranktablesize), 1, f);
+	bdz->ranktable = (cmph_uint32 *)calloc((size_t)bdz->ranktablesize, sizeof(cmph_uint32));
+	fread(bdz->ranktable, sizeof(cmph_uint32)*(bdz->ranktablesize), (size_t)1, f);
 
 	#ifdef DEBUG
 	cmph_uint32  i = 0;
@@ -553,7 +553,7 @@ cmph_uint32 bdz_search_ph(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	return vertex;
 }
 
-static inline cmph_uint32 rank(cmph_uint8 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex)
+static inline cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex)
 {
 	register cmph_uint32 index = vertex >> b;
 	register cmph_uint32 base_rank = ranktable[index];
@@ -661,7 +661,8 @@ void bdz_pack(cmph_t *mphf, void *packed_mphf)
 	*ptr++ = data->b;
 
 	// packing g
-	memcpy(ptr, data->g,  sizeof(cmph_uint8)*((data->n >> 2) +1));
+	cmph_uint32 sizeg = ceil(data->n/4.0);
+	memcpy(ptr, data->g,  sizeof(cmph_uint8)*sizeg);
 }
 
 /** \fn cmph_uint32 bdz_packed_size(cmph_t *mphf);
@@ -675,7 +676,7 @@ cmph_uint32 bdz_packed_size(cmph_t *mphf)
 
 	CMPH_HASH hl_type = hash_get_type(data->hl); 
 
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 3*sizeof(cmph_uint32) + sizeof(cmph_uint32)*(data->ranktablesize) + sizeof(cmph_uint8) + sizeof(cmph_uint8)*((data->n >> 2) +1));
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 3*sizeof(cmph_uint32) + sizeof(cmph_uint32)*(data->ranktablesize) + sizeof(cmph_uint8) + sizeof(cmph_uint8)*(ceil(data->n/4.0)));
 }
 
 /** cmph_uint32 bdz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
@@ -690,7 +691,7 @@ cmph_uint32 bdz_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	
 	register cmph_uint32 vertex;
 	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
-	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf + 4);
+	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf) + 4;
 
 	register cmph_uint32 *ranktable = (cmph_uint32*)(hl_ptr + hash_state_packed_size(hl_type));
 	

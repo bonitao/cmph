@@ -1,4 +1,4 @@
-#include "bdz_ph.h"
+		#include "bdz_ph.h"
 #include "cmph_structs.h"
 #include "bdz_structs_ph.h"
 #include "hash.h"
@@ -54,12 +54,12 @@ static void bdz_ph_alloc_graph3(bdz_ph_graph3_t * graph3, cmph_uint32 nedges, cm
 {
 	graph3->edges=malloc(nedges*sizeof(bdz_ph_edge_t));
 	graph3->first_edge=malloc(nvertices*sizeof(cmph_uint32));
-	graph3->vert_degree=malloc(nvertices);	
+	graph3->vert_degree=malloc((size_t)nvertices);	
 };
 static void bdz_ph_init_graph3(bdz_ph_graph3_t * graph3, cmph_uint32 nedges, cmph_uint32 nvertices)
 {
 	memset(graph3->first_edge,0xff,nvertices*sizeof(cmph_uint32));
-	memset(graph3->vert_degree,0,nvertices);
+	memset(graph3->vert_degree,0,(size_t)nvertices);
 	graph3->nedges=0;
 };
 static void bdz_ph_free_graph3(bdz_ph_graph3_t *graph3)
@@ -148,8 +148,8 @@ static int bdz_ph_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_
 	cmph_uint32 queue_head=0,queue_tail=0;
 	cmph_uint32 curr_edge;
 	cmph_uint32 tmp_edge;
-	cmph_uint8 * marked_edge =malloc((nedges >> 3) + 1);
-	memset(marked_edge, 0, (nedges >> 3) + 1);
+	cmph_uint8 * marked_edge =malloc((size_t)(nedges >> 3) + 1);
+	memset(marked_edge, 0, (size_t)(nedges >> 3) + 1);
 
 	for(i=0;i<nedges;i++){
 		v0=graph3->edges[i].vertices[0];
@@ -234,7 +234,7 @@ void bdz_ph_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-cmph_t *bdz_ph_new(cmph_config_t *mph, float c)
+cmph_t *bdz_ph_new(cmph_config_t *mph, double c)
 {
 	cmph_t *mphf = NULL;
 	bdz_ph_data_t *bdz_phf = NULL;
@@ -364,10 +364,11 @@ static void assigning(bdz_ph_config_data_t *bdz_ph, bdz_ph_graph3_t* graph3, bdz
 	cmph_uint32 nedges=graph3->nedges;
 	cmph_uint32 curr_edge;
 	cmph_uint32 v0,v1,v2;
-	cmph_uint8 * marked_vertices =malloc((bdz_ph->n >> 3) + 1);
-	bdz_ph->g = (cmph_uint8 *)calloc((bdz_ph->n >> 2)+1, sizeof(cmph_uint8));	
-	memset(marked_vertices, 0, (bdz_ph->n >> 3) + 1);
-	//memset(bdz_ph->g, 0xff, (bdz_ph->n >> 2) + 1);
+	cmph_uint8 * marked_vertices =malloc((size_t)(bdz_ph->n >> 3) + 1);
+	cmph_uint32 sizeg = ceil(bdz_ph->n/4.0);
+	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));	
+	memset(marked_vertices, 0, (size_t)(bdz_ph->n >> 3) + 1);
+	//memset(bdz_ph->g, 0xff, sizeg);
 
 	for(i=nedges-1;i+1>=1;i--){
 		curr_edge=queue[i];
@@ -409,7 +410,8 @@ static void bdz_ph_optimization(bdz_ph_config_data_t *bdz_ph)
 {
 	cmph_uint32 i;
 	cmph_uint8 byte = 0;
-	cmph_uint8 * new_g = (cmph_uint8 *)calloc((bdz_ph->n/5)+1, sizeof(cmph_uint8));	
+	cmph_uint32 sizeg = ceil(bdz_ph->n/5.0);
+	cmph_uint8 * new_g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));	
 	cmph_uint8 value;
 	cmph_uint32 idx;
 	for(i = 0; i < bdz_ph->n; i++) 
@@ -429,20 +431,21 @@ int bdz_ph_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
+	cmph_uint32 sizeg = 0;
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
 	hash_state_dump(data->hl, &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), 1, fd);
-	fwrite(buf, buflen, 1, fd);
+	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint32), 1, fd);
-	fwrite(&(data->r), sizeof(cmph_uint32), 1, fd);
-	
-	fwrite(data->g, sizeof(cmph_uint8)*((data->n/5)+1), 1, fd);
+	fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
+	fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
+	sizeg = ceil(data->n/5.0);	
+	fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
 
 	#ifdef DEBUG
 	cmph_uint32 i;
@@ -457,26 +460,27 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
+	cmph_uint32 sizeg = 0;
 	bdz_ph_data_t *bdz_ph = (bdz_ph_data_t *)malloc(sizeof(bdz_ph_data_t));
 
 	DEBUGP("Loading bdz_ph mphf\n");
 	mphf->data = bdz_ph;
 
-	fread(&buflen, sizeof(cmph_uint32), 1, f);
+	fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 	DEBUGP("Hash state has %u bytes\n", buflen);
-	buf = (char *)malloc(buflen);
-	fread(buf, buflen, 1, f);
+	buf = (char *)malloc((size_t)buflen);
+	fread(buf, (size_t)buflen, (size_t)1, f);
 	bdz_ph->hl = hash_state_load(buf, buflen);
 	free(buf);
 	
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bdz_ph->n), sizeof(cmph_uint32), 1, f);	
-	fread(&(bdz_ph->m), sizeof(cmph_uint32), 1, f);	
-	fread(&(bdz_ph->r), sizeof(cmph_uint32), 1, f);	
-
-	bdz_ph->g = (cmph_uint8 *)calloc((bdz_ph->n/5)+1, sizeof(cmph_uint8));
-	fread(bdz_ph->g, ((bdz_ph->n/5)+1)*sizeof(cmph_uint8), 1, f);
+	fread(&(bdz_ph->n), sizeof(cmph_uint32), (size_t)1, f);	
+	fread(&(bdz_ph->m), sizeof(cmph_uint32), (size_t)1, f);	
+	fread(&(bdz_ph->r), sizeof(cmph_uint32), (size_t)1, f);	
+	sizeg = ceil(bdz_ph->n/5.0);
+	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));
+	fread(bdz_ph->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
 /*	#ifdef DEBUG
 	cmph_uint32 i;
@@ -585,7 +589,8 @@ void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
 	ptr += sizeof(data->r);
 
 	// packing g
-	memcpy(ptr, data->g,  sizeof(cmph_uint8)*((data->n/5)+1));
+	cmph_uint32 sizeg = ceil(data->n/5.0);
+	memcpy(ptr, data->g,  sizeof(cmph_uint8)*sizeg);
 }
 
 /** \fn cmph_uint32 bdz_ph_packed_size(cmph_t *mphf);
@@ -597,8 +602,8 @@ cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
 {
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
 	CMPH_HASH hl_type = hash_get_type(data->hl); 
-
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 2*sizeof(cmph_uint32) + sizeof(cmph_uint8)*((data->n/5)+1));
+	cmph_uint32 sizeg = ceil(data->n/5.0);
+	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 2*sizeof(cmph_uint32) + sizeof(cmph_uint8)*sizeg);
 }
 
 /** cmph_uint32 bdz_ph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
@@ -612,7 +617,7 @@ cmph_uint32 bdz_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32
 {
 	
 	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
-	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf + 4);
+	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf) + 4;
 	
 	register cmph_uint8 * ptr = hl_ptr + hash_state_packed_size(hl_type);
 
