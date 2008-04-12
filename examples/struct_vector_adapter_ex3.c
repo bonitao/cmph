@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 	unsigned int nkeys = 10;
     FILE* mphf_fd = fopen("temp_struct_vector.mph", "w");
 	// Source of keys
-	cmph_io_adapter_t *source = cmph_io_struct_vector_adapter(vector, sizeof(rec_t), sizeof(cmph_uint32), 11, nkeys); 
+	cmph_io_adapter_t *source = cmph_io_struct_vector_adapter(vector, (cmph_uint32)sizeof(rec_t), (cmph_uint32)sizeof(cmph_uint32), 11, nkeys); 
 
 	//Create minimal perfect hash function using the default (chm) algorithm.
 	cmph_config_t *config = cmph_config_new(source);

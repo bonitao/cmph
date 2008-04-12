@@ -22,7 +22,7 @@ int main(int argc, char **argv)
    
 	//Find key
 	const char *key = "jjjjjjjjjj";
-	unsigned int id = cmph_search(hash, key, strlen(key));
+	unsigned int id = cmph_search(hash, key, (cmph_uint32)strlen(key));
 	fprintf(stderr, "Id:%u\n", id);
 	//Destroy hash
 	cmph_destroy(hash);

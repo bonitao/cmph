@@ -10,7 +10,7 @@ hashtree_config_data_t *hashtree_config_new();
 void hashtree_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs);
 void hashtree_config_set_leaf_algo(cmph_config_t *mph, CMPH_ALGO leaf_algo);
 void hashtree_config_destroy(cmph_config_t *mph);
-cmph_t *hashtree_new(cmph_config_t *mph, float c);
+cmph_t *hashtree_new(cmph_config_t *mph, double c);
 
 void hashtree_load(FILE *f, cmph_t *mphf);
 int hashtree_dump(cmph_t *mphf, FILE *f);

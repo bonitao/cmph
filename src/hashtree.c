@@ -46,7 +46,7 @@ void hashtree_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	}
 }
 
-cmph_t *hashtree_new(cmph_config_t *mph, float c)
+cmph_t *hashtree_new(cmph_config_t *mph, double c)
 {
 	cmph_t *mphf = NULL;
 	hashtree_data_t *hashtreef = NULL;
