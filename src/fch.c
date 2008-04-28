@@ -411,33 +411,6 @@ void fch_destroy(cmph_t *mphf)
 	free(mphf);
 }
 
-/** cmph_uint32 fch_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 fch_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
-{
-	register fch_data_t *fch = mphf->data;
-	
-	hash_vector(fch->h1, key, keylen, fingerprint);
-	register cmph_uint32 h1 = fingerprint[2] % fch->m;
-
-	hash_vector(fch->h2, key, keylen, fingerprint);
-	register cmph_uint32 h2 = fingerprint[2] % fch->m;
-
-	h1 = mixh10h11h12 (fch->b, fch->p1, fch->p2, h1);
-	//DEBUGP("key: %s h1: %u h2: %u  g[h1]: %u\n", key, h1, h2, fch->g[h1]);
-	return (h2 + fch->g[h1]) % fch->m;
-}
-
 /** \fn void fch_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf
