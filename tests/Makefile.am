@@ -1,4 +1,4 @@
-noinst_PROGRAMS = graph_tests packed_mphf_tests mphf_tests mphf_fingerprint_tests
+noinst_PROGRAMS = graph_tests packed_mphf_tests mphf_tests
 
 INCLUDES = -I../src/
 
@@ -10,6 +10,3 @@ packed_mphf_tests_LDADD = ../src/libcmph.la
 
 mphf_tests_SOURCES = mphf_tests.c
 mphf_tests_LDADD = ../src/libcmph.la
-
-mphf_fingerprint_tests_SOURCES = mphf_fingerprint_tests.c
-mphf_fingerprint_tests_LDADD = ../src/libcmph.la

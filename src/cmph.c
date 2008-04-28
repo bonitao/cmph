@@ -612,54 +612,6 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	return 0;
 }
 
-
-
-/** cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
-{
-   	DEBUGP("mphf algorithm: %u \n", mphf->algo);
-	switch(mphf->algo)
-	{
-		case CMPH_CHM:
-			return chm_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_BMZ: /* included -- Fabiano */
-		        DEBUGP("bmz algorithm search\n");		         
-		        return bmz_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_BMZ8: /* included -- Fabiano */
-		        DEBUGP("bmz8 algorithm search\n");		         
-		        return bmz8_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_BRZ: /* included -- Fabiano */
-		        DEBUGP("brz algorithm search\n");		         
-		        return brz_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_FCH: /* included -- Fabiano */
-		        DEBUGP("fch algorithm search\n");		         
-		        return fch_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_BDZ: /* included -- Fabiano */
-		        DEBUGP("bdz algorithm search\n");		         
-		        return bdz_search_fingerprint(mphf, key, keylen, fingerprint);
-		case CMPH_BDZ_PH: /* included -- Fabiano */
-		        DEBUGP("bdz_ph algorithm search\n");		         
-		        return bdz_ph_search_fingerprint(mphf, key, keylen, fingerprint);
-		default:
-			assert(0);
-	}
-	assert(0);
-	return 0;
-}
-
-
-
 cmph_uint32 cmph_size(cmph_t *mphf)
 {
 	return mphf->size;
