@@ -22,7 +22,7 @@ static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 *
 
 bmz_config_data_t *bmz_config_new()
 {
-	bmz_config_data_t *bmz;
+	bmz_config_data_t *bmz = NULL;
 	bmz = (bmz_config_data_t *)malloc(sizeof(bmz_config_data_t));
 	assert(bmz);
 	memset(bmz, 0, sizeof(bmz_config_data_t));
@@ -537,35 +537,6 @@ void bmz_destroy(cmph_t *mphf)
 	free(data->hashes);
 	free(data);
 	free(mphf);
-}
-
-/** cmph_uint32 bmz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 bmz_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
-{
-	bmz_data_t *bmz = mphf->data;
-	cmph_uint32 h1, h2;
-	
-	hash_vector(bmz->hashes[0], key, keylen, fingerprint);
-	h1 = fingerprint[2] % bmz->n;
-
-	hash_vector(bmz->hashes[1], key, keylen, fingerprint);
-	h2 = fingerprint[2] % bmz->n;
-	
-	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
-	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
-	return bmz->g[h1] + bmz->g[h2];
 }
 
 /** \fn void bmz_pack(cmph_t *mphf, void *packed_mphf);

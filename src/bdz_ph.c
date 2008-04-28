@@ -527,44 +527,6 @@ void bdz_ph_destroy(cmph_t *mphf)
 	free(mphf);
 }
 
-/** cmph_uint32 bdz_ph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 bdz_ph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
-{
-	register bdz_ph_data_t *bdz_ph = mphf->data;
-	cmph_uint32 hl[3];
-	register cmph_uint8 byte0, byte1, byte2;
-	register cmph_uint32 vertex;
-
-	hash_vector(bdz_ph->hl, key, keylen,hl);
-	memcpy(fingerprint, hl, sizeof(hl));
-
-	hl[0] = hl[0] % bdz_ph->r;
-	hl[1] = hl[1] % bdz_ph->r + bdz_ph->r;
-	hl[2] = hl[2] % bdz_ph->r + (bdz_ph->r << 1);
-
-	byte0 = bdz_ph->g[hl[0]/5];
-	byte1 = bdz_ph->g[hl[1]/5];
-	byte2 = bdz_ph->g[hl[2]/5];
-	
-	byte0 = lookup_table[hl[0]%5][byte0];
-	byte1 = lookup_table[hl[1]%5][byte1];
-	byte2 = lookup_table[hl[2]%5][byte2];
-	vertex = hl[(byte0 + byte1 + byte2)%3];
-
-	return vertex;
-}
-
 /** \fn void bdz_ph_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf

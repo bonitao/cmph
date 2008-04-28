@@ -19,10 +19,10 @@ static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint3
 
 chm_config_data_t *chm_config_new()
 {
-	chm_config_data_t *chm;
+	chm_config_data_t *chm = NULL;
 	chm = (chm_config_data_t *)malloc(sizeof(chm_config_data_t));
 	assert(chm);
-	memset(chm,0,sizeof(chm_config_data_t));
+	memset(chm, 0, sizeof(chm_config_data_t));
 	chm->hashfuncs[0] = CMPH_HASH_JENKINS;
 	chm->hashfuncs[1] = CMPH_HASH_JENKINS;
 	chm->g = NULL;
@@ -291,36 +291,6 @@ void chm_destroy(cmph_t *mphf)
 	free(data->hashes);
 	free(data);
 	free(mphf);
-}
-
-
-/** cmph_uint32 chm_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 chm_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
-{
-	chm_data_t *chm = mphf->data;
-	cmph_uint32 h1, h2; 
-	
-	hash_vector(chm->hashes[0], key, keylen, fingerprint);
-	h1 = fingerprint[2] % chm->n;	
-	
-	hash_vector(chm->hashes[1], key, keylen, fingerprint);
-	h2 = fingerprint[2] % chm->n;	
-
-	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
-	if (h1 == h2 && ++h2 >= chm->n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, chm->g[h1], chm->g[h2], chm->m);
-	return (chm->g[h1] + chm->g[h2]) % chm->m;
 }
 
 /** \fn void chm_pack(cmph_t *mphf, void *packed_mphf);
