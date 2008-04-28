@@ -69,22 +69,6 @@ cmph_t *cmph_new(cmph_config_t *mph);
  */
 cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen);
 
-/** cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
- *  \brief Computes the mphf value and a fingerprint of 12 bytes (i.e., 
- *  \brief figerprint should be a prealocated area to fit three 4-byte integers). 
- *  \param mphf pointer to the resulting function
- *  \param key is the key to be hashed
- *  \param keylen is the key legth in bytes
- *  \return The mphf value
- * 
- * Computes the mphf value and a fingerprint of 12 bytes. The figerprint pointer should be 
- * a prealocated area to fit three 4-byte integers. You don't need to use all the 12 bytes
- * as fingerprint. According to the application, just few bits can be enough, once mphf does
- * not allow collisions for the keys previously known.
- */
-cmph_uint32 cmph_search_fingerprint(cmph_t *mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint);
-
-
 cmph_uint32 cmph_size(cmph_t *mphf);
 void cmph_destroy(cmph_t *mphf);
 

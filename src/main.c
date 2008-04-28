@@ -1,5 +1,5 @@
 #ifdef WIN32
-#include "../wingetopt.h"
+#include "wingetopt.h"
 #else
 #include <getopt.h>
 #endif
