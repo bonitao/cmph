@@ -741,7 +741,7 @@ void brz_pack(cmph_t *mphf, void *packed_mphf)
 	ptr += sizeof(data->k);
 
 	// packing c
-	*((cmph_uint32 *)ptr) = (cmph_uint32)data->c; 
+	*((cmph_uint64 *)ptr) = (cmph_uint64)data->c; 
 	ptr += sizeof(data->c);
 
 	// packing h1 type
@@ -856,8 +856,8 @@ static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *
 	
 	register cmph_uint32 k = *packed_mphf++;
 
-	register double c = (double)(*packed_mphf);
-	packed_mphf++;
+	register double c = (double)(*((cmph_uint64*)packed_mphf));
+	packed_mphf += 2;
 
 	register CMPH_HASH h1_type = *packed_mphf++; 
 	
@@ -911,8 +911,8 @@ static cmph_uint32 brz_fch_search_packed(cmph_uint32 *packed_mphf, const char *k
 	
 	register cmph_uint32 k = *packed_mphf++;
 
-	register double c = (double)(*packed_mphf);
-	packed_mphf++;
+	register double c = (double)(*((cmph_uint64*)packed_mphf));
+	packed_mphf += 2;
 
 	register CMPH_HASH h1_type = *packed_mphf++; 
 
