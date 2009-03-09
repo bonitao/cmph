@@ -238,7 +238,7 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 			}
 			//getchar();
 		}              
-	} while(restart  && (searching_iterations < 10));
+	} while(restart  && (searching_iterations < 10) && (iteration_to_generate_h2 < 1000));
 	free(map_table);
 	free(random_table);
 	return restart;
