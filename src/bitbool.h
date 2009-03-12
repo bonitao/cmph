@@ -1,7 +1,11 @@
 #ifndef _CMPH_BITBOOL_H__
 #define _CMPH_BITBOOL_H__
 #include "cmph_types.h" 
-extern const cmph_uint8 bitmask[];
+
+static const cmph_uint8 bitmask[] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
+
+// extern const cmph_uint8 bitmask[];
 
 
 /** \def GETBIT(array, i)
