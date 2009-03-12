@@ -32,8 +32,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = i686-pc-linux-gnu
-host_triplet = i686-pc-linux-gnu
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
 bin_PROGRAMS = cmph$(EXEEXT)
 subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
@@ -57,10 +57,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcmph_la_LIBADD =
-am_libcmph_la_OBJECTS = bitbool.lo hash.lo jenkins_hash.lo vstack.lo \
-	vqueue.lo graph.lo cmph.lo cmph_structs.lo chm.lo bmz.lo \
-	bmz8.lo bdz.lo bdz_ph.lo buffer_manager.lo buffer_entry.lo \
-	brz.lo fch.lo fch_buckets.lo
+am_libcmph_la_OBJECTS = hash.lo jenkins_hash.lo vstack.lo vqueue.lo \
+	graph.lo cmph.lo cmph_structs.lo chm.lo bmz.lo bmz8.lo bdz.lo \
+	bdz_ph.lo buffer_manager.lo buffer_entry.lo brz.lo fch.lo \
+	fch_buckets.lo
 libcmph_la_OBJECTS = $(am_libcmph_la_OBJECTS)
 libcmph_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -89,34 +89,29 @@ HEADERS = $(include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run aclocal-1.10
-AMTAR = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run tar
+ACLOCAL = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run aclocal-1.10
+AMTAR = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run tar
 AR = ar
-AUTOCONF = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run automake-1.10
+AUTOCONF = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run automake-1.10
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -O3 
 CPP = gcc -E
 CPPFLAGS = 
-CXX = g++
-CXXCPP = g++ -E
-CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DSYMUTIL = 
-ECHO = echo
+DUMPBIN = 
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
 EGREP = /bin/grep -E
 EXEEXT = 
-F77 = gfortran
-FFLAGS = -g -O2
+FGREP = /bin/grep -F
 GETCONF = getconf
 GREP = /bin/grep
 INSTALL = /usr/bin/install -c
@@ -124,16 +119,22 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
+LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = -lm  
+LIBM = -lm
 LIBOBJS = 
 LIBS =  
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
+LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/davi/cvs/cmph2/cmph/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
+NM = /usr/bin/nm -B
 NMEDIT = 
 OBJEXT = o
+OTOOL = 
+OTOOL64 = 
 PACKAGE = cmph
 PACKAGE_BUGREPORT = 
 PACKAGE_NAME = 
@@ -144,51 +145,51 @@ PATH_SEPARATOR = :
 RANLIB = ranlib
 SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.8
-abs_builddir = /home/davi/cvs/cmph2/cmph/src
-abs_srcdir = /home/davi/cvs/cmph2/cmph/src
-abs_top_builddir = /home/davi/cvs/cmph2/cmph
-abs_top_srcdir = /home/davi/cvs/cmph2/cmph
+abs_builddir = /home/fbotelho/papers/conferences/djamel/cmph/src
+abs_srcdir = /home/fbotelho/papers/conferences/djamel/cmph/src
+abs_top_builddir = /home/fbotelho/papers/conferences/djamel/cmph
+abs_top_srcdir = /home/fbotelho/papers/conferences/djamel/cmph
 ac_ct_CC = gcc
-ac_ct_CXX = g++
-ac_ct_F77 = gfortran
+ac_ct_DUMPBIN = 
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build = i686-pc-linux-gnu
+build = x86_64-unknown-linux-gnu
 build_alias = 
-build_cpu = i686
+build_cpu = x86_64
 build_os = linux-gnu
-build_vendor = pc
+build_vendor = unknown
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = i686-pc-linux-gnu
+host = x86_64-unknown-linux-gnu
 host_alias = 
-host_cpu = i686
+host_cpu = x86_64
 host_os = linux-gnu
-host_vendor = pc
+host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = $(SHELL) /home/davi/cvs/cmph2/cmph/install-sh
+install_sh = $(SHELL) /home/fbotelho/papers/conferences/djamel/cmph/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
+lt_ECHO = echo
 mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr
+prefix = /usr/local
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -201,7 +202,7 @@ top_srcdir = ..
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h
 libcmph_la_SOURCES = debug.h\
-				  bitbool.h bitbool.c\
+				  bitbool.h\
 				  cmph_types.h\
 				  hash.h hash_state.h hash.c\
 				  jenkins_hash.h jenkins_hash.c\
@@ -326,7 +327,6 @@ distclean-compile:
 
 include ./$(DEPDIR)/bdz.Plo
 include ./$(DEPDIR)/bdz_ph.Plo
-include ./$(DEPDIR)/bitbool.Plo
 include ./$(DEPDIR)/bmz.Plo
 include ./$(DEPDIR)/bmz8.Plo
 include ./$(DEPDIR)/brz.Plo
