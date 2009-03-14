@@ -24,8 +24,9 @@ void __config_destroy(cmph_config_t *mph)
 
 void __cmph_dump(cmph_t *mphf, FILE *fd)
 {
-	fwrite(cmph_names[mphf->algo], (size_t)(strlen(cmph_names[mphf->algo]) + 1), (size_t)1, fd);
-	fwrite(&(mphf->size), sizeof(mphf->size), (size_t)1, fd);
+	register cmph_uint32 nbytes;
+	nbytes = fwrite(cmph_names[mphf->algo], (size_t)(strlen(cmph_names[mphf->algo]) + 1), (size_t)1, fd);
+	nbytes = fwrite(&(mphf->size), sizeof(mphf->size), (size_t)1, fd);
 }
 cmph_t *__cmph_load(FILE *f) 
 {
@@ -34,7 +35,8 @@ cmph_t *__cmph_load(FILE *f)
 	char algo_name[BUFSIZ];
 	char *ptr = algo_name;
 	CMPH_ALGO algo = CMPH_COUNT;
-
+	register cmph_uint32 nbytes;
+	
 	DEBUGP("Loading mphf\n");
 	while(1)
 	{
@@ -57,7 +59,7 @@ cmph_t *__cmph_load(FILE *f)
 	}
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = algo;
-	fread(&(mphf->size), sizeof(mphf->size), (size_t)1, f);
+	nbytes = fread(&(mphf->size), sizeof(mphf->size), (size_t)1, f);
 	mphf->data = NULL;
 	DEBUGP("Algorithm is %s and mphf is sized %u\n", cmph_names[algo],  mphf->size);
 

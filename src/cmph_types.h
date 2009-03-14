@@ -1,8 +1,13 @@
 #ifndef __CMPH_TYPES_H__
 #define __CMPH_TYPES_H__
 
+typedef char cmph_int8;
 typedef unsigned char cmph_uint8;
+
+typedef short cmph_int16;
 typedef unsigned short cmph_uint16;
+
+typedef int cmph_int32;
 typedef unsigned int cmph_uint32;
 
 #if defined(__ia64) || defined(__x86_64__)
