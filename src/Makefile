@@ -60,7 +60,7 @@ libcmph_la_LIBADD =
 am_libcmph_la_OBJECTS = hash.lo jenkins_hash.lo vstack.lo vqueue.lo \
 	graph.lo cmph.lo cmph_structs.lo chm.lo bmz.lo bmz8.lo bdz.lo \
 	bdz_ph.lo buffer_manager.lo buffer_entry.lo brz.lo fch.lo \
-	fch_buckets.lo
+	fch_buckets.lo select.lo
 libcmph_la_OBJECTS = $(am_libcmph_la_OBJECTS)
 libcmph_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -98,7 +98,7 @@ AUTOMAKE = ${SHELL} /home/fbotelho/papers/conferences/djamel/cmph/missing --run 
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -O3 
+CFLAGS = -O3 -Wall -Werror -lm 
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo
@@ -120,8 +120,8 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
-LDFLAGS = -lm  
-LIBM = -lm
+LDFLAGS =   
+LIBM = 
 LIBOBJS = 
 LIBS =  
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
@@ -201,26 +201,13 @@ top_builddir = ..
 top_srcdir = ..
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h
-libcmph_la_SOURCES = debug.h\
-				  bitbool.h\
-				  cmph_types.h\
-				  hash.h hash_state.h hash.c\
-				  jenkins_hash.h jenkins_hash.c\
-				  vstack.h vstack.c\
-				  vqueue.h vqueue.c\
-				  graph.h graph.c\
-				  cmph.h cmph.c\
-				  cmph_structs.h cmph_structs.c\
-				  chm.h chm_structs.h chm.c\
-				  bmz.h bmz_structs.h bmz.c\
-				  bmz8.h bmz8_structs.h bmz8.c\
-				  bdz.h bdz_structs.h bdz.c\
-				  bdz_ph.h bdz_structs_ph.h bdz_ph.c\
-				  buffer_manager.h buffer_manager.c\
-				  buffer_entry.h buffer_entry.c\
-				  brz.h brz_structs.h brz.c\
-				  fch.h fch_structs.h fch.c\
-				  fch_buckets.h fch_buckets.c
+libcmph_la_SOURCES = hash.c jenkins_hash.c\
+		      vstack.c vqueue.c\
+		      graph.c cmph.c  cmph_structs.c\
+		      chm.c bmz.c bmz8.c bdz.c bdz_ph.c\
+		      buffer_manager.c buffer_entry.c\
+		      brz.c fch.c fch_buckets.c \
+		      select.c 
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 cmph_SOURCES = main.c wingetopt.h wingetopt.c
@@ -341,6 +328,7 @@ include ./$(DEPDIR)/graph.Plo
 include ./$(DEPDIR)/hash.Plo
 include ./$(DEPDIR)/jenkins_hash.Plo
 include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/select.Plo
 include ./$(DEPDIR)/vqueue.Plo
 include ./$(DEPDIR)/vstack.Plo
 include ./$(DEPDIR)/wingetopt.Po

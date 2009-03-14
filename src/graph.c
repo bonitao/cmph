@@ -199,7 +199,7 @@ static int find_degree1_edge(graph_t *g, cmph_uint32 v, char *deleted, cmph_uint
 static void cyclic_del_edge(graph_t *g, cmph_uint32 v, char *deleted)
 {
 
-	cmph_uint32 e;
+	cmph_uint32 e = 0;
 	char degree1;
 	cmph_uint32 v1 = v;
 	cmph_uint32 v2 = 0;
