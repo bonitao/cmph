@@ -432,20 +432,21 @@ int bdz_ph_dump(cmph_t *mphf, FILE *fd)
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 sizeg = 0;
+	register cmph_uint32 nbytes;
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
 	hash_state_dump(data->hl, &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(buf, (size_t)buflen, (size_t)1, fd);
+	nbytes = fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
 	sizeg = ceil(data->n/5.0);	
-	fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
+	nbytes = fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
 
 	#ifdef DEBUG
 	cmph_uint32 i;
@@ -461,26 +462,27 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 sizeg = 0;
+	register cmph_uint32 nbytes;
 	bdz_ph_data_t *bdz_ph = (bdz_ph_data_t *)malloc(sizeof(bdz_ph_data_t));
 
 	DEBUGP("Loading bdz_ph mphf\n");
 	mphf->data = bdz_ph;
 
-	fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 	DEBUGP("Hash state has %u bytes\n", buflen);
 	buf = (char *)malloc((size_t)buflen);
-	fread(buf, (size_t)buflen, (size_t)1, f);
+	nbytes = fread(buf, (size_t)buflen, (size_t)1, f);
 	bdz_ph->hl = hash_state_load(buf, buflen);
 	free(buf);
 	
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bdz_ph->n), sizeof(cmph_uint32), (size_t)1, f);	
-	fread(&(bdz_ph->m), sizeof(cmph_uint32), (size_t)1, f);	
-	fread(&(bdz_ph->r), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz_ph->n), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz_ph->m), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz_ph->r), sizeof(cmph_uint32), (size_t)1, f);	
 	sizeg = ceil(bdz_ph->n/5.0);
 	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));
-	fread(bdz_ph->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
+	nbytes = fread(bdz_ph->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
 /*	#ifdef DEBUG
 	cmph_uint32 i;
