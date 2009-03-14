@@ -468,27 +468,28 @@ int bdz_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
+	register cmph_uint32 nbytes;
 	bdz_data_t *data = (bdz_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
 	hash_state_dump(data->hl, &buf, &buflen);
 	DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
-	fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(buf, (size_t)buflen, (size_t)1, fd);
+	nbytes = fwrite(&buflen, sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(buf, (size_t)buflen, (size_t)1, fd);
 	free(buf);
 
-	fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
 	
 	cmph_uint32 sizeg = ceil(data->n/4.0);
-	fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
+	nbytes = fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
 
-	fwrite(&(data->k), sizeof(cmph_uint32), (size_t)1, fd);
-	fwrite(&(data->b), sizeof(cmph_uint8), (size_t)1, fd);
-	fwrite(&(data->ranktablesize), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->k), sizeof(cmph_uint32), (size_t)1, fd);
+	nbytes = fwrite(&(data->b), sizeof(cmph_uint8), (size_t)1, fd);
+	nbytes = fwrite(&(data->ranktablesize), sizeof(cmph_uint32), (size_t)1, fd);
 
-	fwrite(data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize), (size_t)1, fd);
+	nbytes = fwrite(data->ranktable, sizeof(cmph_uint32)*(data->ranktablesize), (size_t)1, fd);
 	#ifdef DEBUG
 	cmph_uint32 i;
 	fprintf(stderr, "G: ");
@@ -502,33 +503,34 @@ void bdz_load(FILE *f, cmph_t *mphf)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen, sizeg;
+	register cmph_uint32 nbytes;
 	bdz_data_t *bdz = (bdz_data_t *)malloc(sizeof(bdz_data_t));
 
 	DEBUGP("Loading bdz mphf\n");
 	mphf->data = bdz;
 
-	fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&buflen, sizeof(cmph_uint32), (size_t)1, f);
 	DEBUGP("Hash state has %u bytes\n", buflen);
 	buf = (char *)malloc((size_t)buflen);
-	fread(buf, (size_t)buflen, (size_t)1, f);
+	nbytes = fread(buf, (size_t)buflen, (size_t)1, f);
 	bdz->hl = hash_state_load(buf, buflen);
 	free(buf);
 	
 
 	DEBUGP("Reading m and n\n");
-	fread(&(bdz->n), sizeof(cmph_uint32), (size_t)1, f);	
-	fread(&(bdz->m), sizeof(cmph_uint32), (size_t)1, f);	
-	fread(&(bdz->r), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz->n), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz->m), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bdz->r), sizeof(cmph_uint32), (size_t)1, f);	
 	sizeg = ceil(bdz->n/4.0);
 	bdz->g = (cmph_uint8 *)calloc((size_t)(sizeg), sizeof(cmph_uint8));
-	fread(bdz->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
+	nbytes = fread(bdz->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
-	fread(&(bdz->k), sizeof(cmph_uint32), (size_t)1, f);
-	fread(&(bdz->b), sizeof(cmph_uint8), (size_t)1, f);
-	fread(&(bdz->ranktablesize), sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&(bdz->k), sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&(bdz->b), sizeof(cmph_uint8), (size_t)1, f);
+	nbytes = fread(&(bdz->ranktablesize), sizeof(cmph_uint32), (size_t)1, f);
 
 	bdz->ranktable = (cmph_uint32 *)calloc((size_t)bdz->ranktablesize, sizeof(cmph_uint32));
-	fread(bdz->ranktable, sizeof(cmph_uint32)*(bdz->ranktablesize), (size_t)1, f);
+	nbytes = fread(bdz->ranktable, sizeof(cmph_uint32)*(bdz->ranktablesize), (size_t)1, f);
 
 	#ifdef DEBUG
 	cmph_uint32  i = 0;

@@ -150,11 +150,12 @@ static void key_vector_rewind(void *data)
 static cmph_uint32 count_nlfile_keys(FILE *fd)
 {
 	cmph_uint32 count = 0;
+	register char * ptr;
 	rewind(fd);
 	while(1)
 	{
 		char buf[BUFSIZ];
-		fgets(buf, BUFSIZ, fd); 
+		ptr = fgets(buf, BUFSIZ, fd); 
 		if (feof(fd)) break;
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		++count;
