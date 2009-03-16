@@ -7,7 +7,7 @@ libcmph_la_SOURCES =  hash.c jenkins_hash.c\
 		      chm.c bmz.c bmz8.c bdz.c bdz_ph.c\
 		      buffer_manager.c buffer_entry.c\
 		      brz.c fch.c fch_buckets.c \
-		      select.c 
+		      select.c compressed_seq.c 
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 

@@ -68,9 +68,9 @@ int main(int argc, char **argv)
 	char * select_packed = NULL;
 	cmph_uint32 select_pack_size = 0;
 	
-	select_init(&sel, n, m);
-	select_generate(&sel, keys_vec);
-	fprintf(stderr, "Space usage = %f\n", select_get_space_usage(&sel));
+	select_init(&sel);
+	select_generate(&sel, keys_vec, n, m);
+	fprintf(stderr, "Space usage = %u\n", select_get_space_usage(&sel));
 	print_values(&sel);
 	
 	fprintf(stderr, "Dumping select structure\n");
@@ -87,6 +87,7 @@ int main(int argc, char **argv)
 	
 	select_packed = (char *) calloc(select_pack_size, sizeof(char));
 	select_pack(&sel, select_packed);
+	select_destroy(&sel);
 	
 	fprintf(stderr, "Querying the packed select structure\n");
 	print_values_packed(select_packed);
