@@ -22,15 +22,17 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-m file.mph]  keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-t keys_per_bin] [-k nkeys] [-m file.mph]  keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-m file.mph] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-t keys_per_bin] [-k nkeys] [-m file.mph] keysfile\n", prg);   
 	fprintf(stderr, "Packed MPHFs testing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -V\t print version number and exit\n");
 	fprintf(stderr, "  -v\t increase verbosity (may be used multiple times)\n");
+	fprintf(stderr, "  -t\t set the number of keys per bin for a t-perfect hashing function.\n");	
+	fprintf(stderr, "    \t A t-perfect hashing function allows at most t collisions in a given bin.\n");
 	fprintf(stderr, "  -k\t number of keys\n");
 	fprintf(stderr, "  -m\t minimum perfect hash function file \n");
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
@@ -47,9 +49,11 @@ int main(int argc, char **argv)
 	cmph_uint32 i = 0;
 	cmph_t *mphf = NULL;
 	cmph_io_adapter_t *source;
+	cmph_uint32 keys_per_bin = 1;
+
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvk:m:");
+		char ch = getopt(argc, argv, "hVvt:k:m:");
 		if (ch == -1) break;
 		switch (ch)
 		{
@@ -68,6 +72,16 @@ int main(int argc, char **argv)
 				break;
 			case 'v':
 				++verbosity;
+				break;
+			case 't':
+				{
+					char *cptr;
+					keys_per_bin = strtoul(optarg, &cptr, 10);
+					if(*cptr != 0) {
+						fprintf(stderr, "Parameter t was not found: %s\n", optarg);
+						exit(1);
+					}
+				}
 				break;
 			case 'V':
 				printf("%s\n", VERSION);
@@ -124,7 +138,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	cmph_uint32 siz = cmph_size(mphf);
-	hashtable = (cmph_uint8*)malloc(siz*sizeof(cmph_uint8));
+	hashtable = (cmph_uint8*)calloc(siz, sizeof(cmph_uint8));
 	memset(hashtable, 0, (size_t)siz);
 			
 	// packing the function
@@ -152,11 +166,12 @@ int main(int argc, char **argv)
 		{
 			fprintf(stderr, "Unknown key %*s in the input.\n", buflen, buf);
 			ret = 1;
-		} else if(hashtable[h])
+		} else if(hashtable[h] >= keys_per_bin)
 		{
+			fprintf(stderr, "More than %u keys were mapped to bin %u\n", keys_per_bin, h);
 			fprintf(stderr, "Duplicated or unknown key %*s in the input\n", buflen, buf);
 			ret = 1;
-		} else hashtable[h] = 1;
+		} else hashtable[h]++;
 
 		if (verbosity)
 		{
