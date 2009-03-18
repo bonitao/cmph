@@ -105,6 +105,10 @@ void brz_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd)
 void brz_config_set_b(cmph_config_t *mph, cmph_uint32 b)
 {
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
+	if(b <= 64 || b >= 175) 
+	{
+		b =  128;
+	}
 	brz->b = b;
 }
 
