@@ -484,13 +484,6 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));
 	nbytes = fread(bdz_ph->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
-/*	#ifdef DEBUG
-	cmph_uint32 i;
-	fprintf(stderr, "G: ");
-	for (i = 0; i < bdz_ph->n; ++i) fprintf(stderr, "%u ", GETVALUE(bdz_ph->g,i));
-	fprintf(stderr, "\n");
-	#endif
-*/	
 	return;
 }
 		
