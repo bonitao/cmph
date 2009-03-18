@@ -179,7 +179,7 @@ void chd_ph_config_set_b(cmph_config_t *mph, cmph_uint32 keys_per_bucket)
 {
 	assert(mph);
 	chd_ph_config_data_t *chd_ph = (chd_ph_config_data_t *)mph->data;
-	if(keys_per_bucket <= 1 || keys_per_bucket >= 15)
+	if(keys_per_bucket < 1 || keys_per_bucket >= 15)
 	{
 	    keys_per_bucket = 4;
 	}
@@ -542,7 +542,7 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	
 	if(mph->verbosity && chd_ph->keys_per_bin == 1)
 	{
-		fprintf(stderr, "space lower bound is %.3f bits per key", chd_ph_space_lower_bound(chd_ph->m, chd_ph->n));
+		fprintf(stderr, "space lower bound is %.3f bits per key\n", chd_ph_space_lower_bound(chd_ph->m, chd_ph->n));
 	}
 
        	// We allocate the working tables

@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	cmph_io_adapter_t *source;
 	cmph_uint32 memory_availability = 0;
 	cmph_uint32 b = 0;
-	cmph_uint32 keys_per_bin = 0;
+	cmph_uint32 keys_per_bin = 1;
 	while (1)
 	{
 		char ch = getopt(argc, argv, "hVvgc:k:a:M:b:t:f:m:d:s:");
@@ -299,7 +299,7 @@ int main(int argc, char **argv)
 			return -1;
 		}
 		cmph_uint32 siz = cmph_size(mphf);
-		hashtable = (cmph_uint8*)malloc(siz*sizeof(cmph_uint8));
+		hashtable = (cmph_uint8*)calloc(siz, sizeof(cmph_uint8));
 		memset(hashtable, 0,(size_t) siz);
 		//check all keys
 		for (i = 0; i < source->nkeys; ++i)
@@ -313,11 +313,12 @@ int main(int argc, char **argv)
 			{
 				fprintf(stderr, "Unknown key %*s in the input.\n", buflen, buf);
 				ret = 1;
-			} else if(hashtable[h])
+			} else if(hashtable[h] >= keys_per_bin)
 			{
+				fprintf(stderr, "More than %u keys were mapped to bin %u\n", keys_per_bin, h);
 				fprintf(stderr, "Duplicated or unknown key %*s in the input\n", buflen, buf);
 				ret = 1;
-			} else hashtable[h] = 1;
+			} else hashtable[h]++;
 
 			if (verbosity)
 			{
