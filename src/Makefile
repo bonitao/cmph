@@ -60,7 +60,8 @@ libcmph_la_LIBADD =
 am_libcmph_la_OBJECTS = hash.lo jenkins_hash.lo vstack.lo vqueue.lo \
 	graph.lo cmph.lo cmph_structs.lo chm.lo bmz.lo bmz8.lo bdz.lo \
 	bdz_ph.lo buffer_manager.lo buffer_entry.lo brz.lo fch.lo \
-	fch_buckets.lo select.lo compressed_seq.lo
+	fch_buckets.lo select.lo compressed_seq.lo chd_ph.lo \
+	miller_rabin.lo
 libcmph_la_OBJECTS = $(am_libcmph_la_OBJECTS)
 libcmph_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -207,7 +208,8 @@ libcmph_la_SOURCES = hash.c jenkins_hash.c\
 		      chm.c bmz.c bmz8.c bdz.c bdz_ph.c\
 		      buffer_manager.c buffer_entry.c\
 		      brz.c fch.c fch_buckets.c \
-		      select.c compressed_seq.c 
+		      select.c compressed_seq.c \
+		      chd_ph.c miller_rabin.c
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 cmph_SOURCES = main.c wingetopt.h wingetopt.c
@@ -319,6 +321,7 @@ include ./$(DEPDIR)/bmz8.Plo
 include ./$(DEPDIR)/brz.Plo
 include ./$(DEPDIR)/buffer_entry.Plo
 include ./$(DEPDIR)/buffer_manager.Plo
+include ./$(DEPDIR)/chd_ph.Plo
 include ./$(DEPDIR)/chm.Plo
 include ./$(DEPDIR)/cmph.Plo
 include ./$(DEPDIR)/cmph_structs.Plo
@@ -329,6 +332,7 @@ include ./$(DEPDIR)/graph.Plo
 include ./$(DEPDIR)/hash.Plo
 include ./$(DEPDIR)/jenkins_hash.Plo
 include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/miller_rabin.Plo
 include ./$(DEPDIR)/select.Plo
 include ./$(DEPDIR)/vqueue.Plo
 include ./$(DEPDIR)/vstack.Plo

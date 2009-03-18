@@ -22,17 +22,18 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
 }
 void usage_long(const char *prg)
 {
 	cmph_uint32 i;
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
 	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -c\t c value determines:\n");
 	fprintf(stderr, "    \t   the number of vertices in the graph for the algorithms BMZ and CHM\n");
 	fprintf(stderr, "    \t   the number of bits per key required in the FCH algorithm\n");
+	fprintf(stderr, "    \t   the load factor in the CHD_PH algorithm\n");
 	fprintf(stderr, "  -a\t algorithm - valid values are\n");
 	for (i = 0; i < CMPH_COUNT; ++i) fprintf(stderr, "    \t  * %s\n", cmph_names[i]);
 	fprintf(stderr, "  -f\t hash function (may be used multiple times) - valid values are\n");
@@ -51,7 +52,12 @@ void usage_long(const char *prg)
 	fprintf(stderr, "    \t In this case its value should be an integer in the range [64,175].\n");
 	fprintf(stderr, "    \t If BDZ algorithm is selected in option -a, than it is used to\n");
 	fprintf(stderr, "    \t determine the size of some precomputed rank information and\n");
-	fprintf(stderr, "    \t its value should be an integer in the range [3,10]\n");
+	fprintf(stderr, "    \t its value should be an integer in the range [3,10].\n");
+	fprintf(stderr, "    \t If CHD_PH algorithm is selected in option -a, than it is used to\n");
+	fprintf(stderr, "    \t set average number of keys per bucket and its value should be an\n");
+	fprintf(stderr, "    \t an integer in the range [1,32].\n");
+	fprintf(stderr, "  -t\t set the number of keys per bin for a t-perfect hashing function.\n");	
+	fprintf(stderr, "    \t A t-perfect hashing function allows at most t collisions in a given bin.\n");
 	fprintf(stderr, "  keysfile\t line separated file with keys\n");
 }
 
@@ -75,10 +81,11 @@ int main(int argc, char **argv)
 	char * tmp_dir = NULL;
 	cmph_io_adapter_t *source;
 	cmph_uint32 memory_availability = 0;
-	cmph_uint32 b = 128;
+	cmph_uint32 b = 0;
+	cmph_uint32 keys_per_bin = 0;
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvgc:k:a:M:b:f:m:d:s:");
+		char ch = getopt(argc, argv, "hVvgc:k:a:M:b:t:f:m:d:s:");
 		if (ch == -1) break;
 		switch (ch)
 		{
@@ -137,6 +144,16 @@ int main(int argc, char **argv)
 					b = strtoul(optarg, &cptr, 10);
 					if(*cptr != 0) {
 						fprintf(stderr, "Parameter b was not found: %s\n", optarg);
+						exit(1);
+					}
+				}
+				break;
+			case 't':
+				{
+					char *cptr;
+					keys_per_bin = strtoul(optarg, &cptr, 10);
+					if(*cptr != 0) {
+						fprintf(stderr, "Parameter t was not found: %s\n", optarg);
 						exit(1);
 					}
 				}
@@ -237,6 +254,8 @@ int main(int argc, char **argv)
 		cmph_config_set_mphf_fd(config, mphf_fd);
 		cmph_config_set_memory_availability(config, memory_availability);
 		cmph_config_set_b(config, b);
+		cmph_config_set_keys_per_bin(config, keys_per_bin);
+		
 		//if((mph_algo == CMPH_BMZ || mph_algo == CMPH_BRZ) && c >= 2.0) c=1.15;
 		if(mph_algo == CMPH_BMZ  && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
