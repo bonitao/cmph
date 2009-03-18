@@ -164,14 +164,13 @@ int main(int argc, char **argv)
 		}
 		source->dispose(source->data, buf, buflen);
 	}
-	
 	free(packed_mphf);
-	cmph_destroy(mphf);
+	cmph_destroy(mphf);	
 	free(hashtable);
 
 	fclose(keys_fd);
 	free(mphf_file);
-    cmph_io_nlfile_adapter_destroy(source);
+	cmph_io_nlfile_adapter_destroy(source);
 	return ret;
   
 }
