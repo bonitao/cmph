@@ -101,6 +101,10 @@ cmph_uint32 cmph_packed_size(cmph_t *mphf);
  */
 cmph_uint32 cmph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen);
 
+// TIMING functions. To use the macro CMPH_TIMING must be defined
+#include "cmph_time.h"
+
+
 #ifdef __cplusplus
 }
 #endif

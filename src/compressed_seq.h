@@ -38,13 +38,13 @@ void compressed_seq_destroy(compressed_seq_t * cs);
 void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cmph_uint32 n);
 
 
-/** \fn cmph_int32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx);
+/** \fn cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx);
  *  \brief Returns the value stored at index @see idx of the compressed sequence structure.
  *  \param cs points to the compressed sequence structure
  *  \param idx index to retrieve the value from
  *  \return the value stored at index @see idx of the compressed sequence structure
  */
-cmph_int32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx);
+cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx);
 
 
 /** \fn cmph_uint32 compressed_seq_get_space_usage(compressed_seq_t * cs);
@@ -73,12 +73,12 @@ void compressed_seq_pack(compressed_seq_t *cs, void *cs_packed);
 cmph_uint32 compressed_seq_packed_size(compressed_seq_t *cs);
 
 
-/** \fn cmph_int32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx);
+/** \fn cmph_uint32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx);
  *  \brief Returns the value stored at index @see idx of the packed compressed sequence structure.
  *  \param cs_packed is a pointer to a contiguous memory area
  *  \param idx is the index to retrieve the value from
  *  \return the value stored at index @see idx of the packed compressed sequence structure
  */
-cmph_int32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx);
+cmph_uint32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx);
 
 #endif

@@ -904,7 +904,6 @@ static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *
 	if (h1 == h2 && ++h2 >= n) h2 = 0;
 	mphf_bucket = g[h1] + g[h2]; 
 	DEBUGP("key: %s h1: %u h2: %u h0: %u\n", key, h1, h2, h0);
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u offset[h0]: %u edges: %u\n", key, g[h1], g[h2], >offset[h0], m);
 	DEBUGP("Address: %u\n", mphf_bucket + offset[h0]);
 	return (mphf_bucket + offset[h0]);	
 }

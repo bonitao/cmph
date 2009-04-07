@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	cmph_uint32 i = 0;
 	cmph_uint32 n = 20;
 	cmph_uint32 keys_vec[] = {  0,   1,   1,   1,   2,   2,   2,   3,   5,   5,
-	                            6,   6,   9,   9,   9,  12,  12,  13,  17,  10017};
+	                            6,   6,   9,   9,   9,  12,  12,  13,  17,  1077};
 	char *buf = NULL;
 	cmph_uint32 buflen = 0;
 	char * cs_packed = NULL;

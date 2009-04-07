@@ -10,7 +10,7 @@
 // #define DEBUG
 #include "debug.h"
 
-static inline cmph_uint32 i_log2(cmph_uint32 x)
+static inline cmph_uint32 compressed_seq_i_log2(cmph_uint32 x)
 {
 	register cmph_uint32 res = 0;
 	
@@ -61,7 +61,7 @@ void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cm
 		}
 		else
 		{
-			lengths[i] = i_log2(vals_table[i] + 1);
+			lengths[i] = compressed_seq_i_log2(vals_table[i] + 1);
 			cs->total_length += lengths[i];
 		};
 	};
@@ -82,7 +82,12 @@ void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cm
 		cs->total_length += lengths[i];
 	};
 	
-	cs->rem_r = i_log2(cs->total_length/cs->n);
+	cs->rem_r = compressed_seq_i_log2(cs->total_length/cs->n);
+	
+	if(cs->rem_r == 0)
+	{
+		cs->rem_r = 1;
+	}
 	
 	if(cs->length_rems)
 	{
@@ -118,7 +123,7 @@ cmph_uint32 compressed_seq_get_space_usage(compressed_seq_t * cs)
 	return  4 * sizeof(cmph_uint32) * 8 + space_usage;
 }
 
-cmph_int32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
+cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
 {
 	register cmph_uint32 enc_idx, enc_length;
 	register cmph_uint32 rems_mask;
@@ -156,7 +161,7 @@ cmph_int32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
 
 void compressed_seq_dump(compressed_seq_t * cs, char ** buf, cmph_uint32 * buflen)
 {
-	register cmph_uint32 sel_size = select_get_space_usage(&cs->sel) >> 3;
+	register cmph_uint32 sel_size = select_packed_size(&(cs->sel));
 	register cmph_uint32 length_rems_size = BITS_TABLE_SIZE(cs->n, cs->rem_r) * 4;
 	register cmph_uint32 store_table_size = ((cs->total_length + 31) >> 5) * 4;
 	register cmph_uint32 pos = 0;
@@ -325,7 +330,7 @@ cmph_uint32 compressed_seq_packed_size(compressed_seq_t *cs)
 }
 
 
-cmph_int32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx)
+cmph_uint32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx)
 {
 	// unpacking cs_packed
 	register cmph_uint32 *ptr = (cmph_uint32 *)cs_packed;

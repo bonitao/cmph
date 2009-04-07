@@ -60,8 +60,8 @@ libcmph_la_LIBADD =
 am_libcmph_la_OBJECTS = hash.lo jenkins_hash.lo vstack.lo vqueue.lo \
 	graph.lo cmph.lo cmph_structs.lo chm.lo bmz.lo bmz8.lo bdz.lo \
 	bdz_ph.lo buffer_manager.lo buffer_entry.lo brz.lo fch.lo \
-	fch_buckets.lo select.lo compressed_seq.lo chd_ph.lo \
-	miller_rabin.lo
+	fch_buckets.lo select.lo compressed_seq.lo chd.lo chd_ph.lo \
+	miller_rabin.lo compressed_rank.lo
 libcmph_la_OBJECTS = $(am_libcmph_la_OBJECTS)
 libcmph_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -209,7 +209,8 @@ libcmph_la_SOURCES = hash.c jenkins_hash.c\
 		      buffer_manager.c buffer_entry.c\
 		      brz.c fch.c fch_buckets.c \
 		      select.c compressed_seq.c \
-		      chd_ph.c miller_rabin.c
+		      chd.c chd_ph.c miller_rabin.c \
+		      compressed_rank.c 
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 cmph_SOURCES = main.c wingetopt.h wingetopt.c
@@ -321,10 +322,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brz.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/buffer_entry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/buffer_manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chd_ph.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmph.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmph_structs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compressed_rank.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compressed_seq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fch_buckets.Plo@am__quote@
