@@ -615,8 +615,6 @@ cmph_uint32 bmz_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	
 	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n; 
 	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n; 
-	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 > n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, g_ptr[h1], g_ptr[h2], m);
 	return (g_ptr[h1] + g_ptr[h2]);	
 }

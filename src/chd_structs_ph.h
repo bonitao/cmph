@@ -24,9 +24,6 @@ struct __chd_ph_config_data_t
 	cmph_uint8 use_h;	// flag to indicate the of use of a heuristic (use_h = 1)
 	cmph_uint32 keys_per_bin;//maximum number of keys per bin 
 	cmph_uint32 keys_per_bucket; // average number of keys per bucket
-
-	//The following fields are used just for statistics
-	cmph_uint32 space_usage;
-	double entropy;
+	cmph_uint8 *occup_table;     // table that indicates occupied positions	
 };
 #endif

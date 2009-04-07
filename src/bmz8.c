@@ -479,11 +479,11 @@ int bmz8_dump(cmph_t *mphf, FILE *fd)
 	nbytes = fwrite(&(data->m), sizeof(cmph_uint8), (size_t)1, fd);
 	
 	nbytes = fwrite(data->g, sizeof(cmph_uint8)*(data->n), (size_t)1, fd);
-	#ifdef DEBUG
+/*	#ifdef DEBUG
 	fprintf(stderr, "G: ");
 	for (i = 0; i < data->n; ++i) fprintf(stderr, "%u ", data->g[i]);
 	fprintf(stderr, "\n");
-	#endif
+	#endif*/
 	return 1;
 }
 
@@ -625,6 +625,5 @@ cmph_uint8 bmz8_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register cmph_uint8 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n; 
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 > n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, g_ptr[h1], g_ptr[h2], m);
 	return (g_ptr[h1] + g_ptr[h2]);	
 }

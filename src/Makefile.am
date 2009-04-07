@@ -8,7 +8,8 @@ libcmph_la_SOURCES =  hash.c jenkins_hash.c\
 		      buffer_manager.c buffer_entry.c\
 		      brz.c fch.c fch_buckets.c \
 		      select.c compressed_seq.c \
-		      chd_ph.c miller_rabin.c
+		      chd.c chd_ph.c miller_rabin.c \
+		      compressed_rank.c 
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 
