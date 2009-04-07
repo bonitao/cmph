@@ -154,6 +154,12 @@ int main(int argc, char **argv)
 
 	// testing the packed function
 	//check all keys
+	#ifdef CMPH_TIMING
+	double evaluation_time_begin = 0.0;
+	double evaluation_time = 0.0;
+	ELAPSED_TIME_IN_SECONDS(&evaluation_time_begin);
+	#endif
+
 	for (i = 0; i < source->nkeys; ++i)
 	{
 		cmph_uint32 h;
@@ -179,6 +185,12 @@ int main(int argc, char **argv)
 		}
 		source->dispose(source->data, buf, buflen);
 	}
+	#ifdef CMPH_TIMING
+	ELAPSED_TIME_IN_SECONDS(&evaluation_time);
+	evaluation_time = evaluation_time - evaluation_time_begin;
+	fprintf(stdout, "%u\t%.2f\n", source->nkeys, evaluation_time);
+	#endif
+
 	free(packed_mphf);
 	cmph_destroy(mphf);	
 	free(hashtable);

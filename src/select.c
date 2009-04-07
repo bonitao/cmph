@@ -164,7 +164,7 @@ void select_generate(select_t * sel, cmph_uint32 * keys_vec, cmph_uint32 n, cmph
 	select_generate_sel_table(sel);
 };
 
-static inline cmph_int32 _select_query(cmph_uint8 * bits_table, cmph_uint32 * select_table, cmph_uint32 one_idx)
+static inline cmph_uint32 _select_query(cmph_uint8 * bits_table, cmph_uint32 * select_table, cmph_uint32 one_idx)
 {
 	register cmph_uint32 vec_bit_idx ,vec_byte_idx;
 	register cmph_uint32 part_sum, old_part_sum;
@@ -187,13 +187,13 @@ static inline cmph_int32 _select_query(cmph_uint8 * bits_table, cmph_uint32 * se
 	return select_lookup_table[bits_table[vec_byte_idx - 1]][one_idx - old_part_sum] + ((vec_byte_idx-1) << 3);
 }
 
-cmph_int32 select_query(select_t * sel, cmph_uint32 one_idx)
+cmph_uint32 select_query(select_t * sel, cmph_uint32 one_idx)
 {
 	return _select_query((cmph_uint8 *)sel->bits_vec, sel->select_table, one_idx);
 };
 
 
-static inline cmph_int32 _select_next_query(cmph_uint8 * bits_table, cmph_uint32 vec_bit_idx)
+static inline cmph_uint32 _select_next_query(cmph_uint8 * bits_table, cmph_uint32 vec_bit_idx)
 {
 	register cmph_uint32 vec_byte_idx, one_idx;
 	register cmph_uint32 part_sum, old_part_sum;
@@ -214,7 +214,7 @@ static inline cmph_int32 _select_next_query(cmph_uint8 * bits_table, cmph_uint32
 	return select_lookup_table[bits_table[(vec_byte_idx - 1)]][(one_idx - old_part_sum)] + ((vec_byte_idx - 1) << 3);
 }
 
-cmph_int32 select_next_query(select_t * sel, cmph_uint32 vec_bit_idx)
+cmph_uint32 select_next_query(select_t * sel, cmph_uint32 vec_bit_idx)
 {
 	return _select_next_query((cmph_uint8 *)sel->bits_vec, vec_bit_idx);
 };
@@ -315,12 +315,7 @@ cmph_uint32 select_packed_size(select_t *sel)
 
 
 
-/** \fn cmph_int32 select_query_packed(void * sel_packed, cmph_uint32 idx);
- *  \param sel_packed is a pointer to a contiguous memory area
- *  \param idx is the rank for which we want to calculate the inverse function select
- *  \return an integer that represents the select value of rank idx.
- */
-cmph_int32 select_query_packed(void * sel_packed, cmph_uint32 one_idx)
+cmph_uint32 select_query_packed(void * sel_packed, cmph_uint32 one_idx)
 {
 	register cmph_uint32 *ptr = (cmph_uint32 *)sel_packed;
 	register cmph_uint32 n = *ptr++;
@@ -334,12 +329,7 @@ cmph_int32 select_query_packed(void * sel_packed, cmph_uint32 one_idx)
 }
 
 
-/** \fn cmph_int32 select_next_query_packed(void * sel_packed, cmph_uint32 vec_bit_idx);
- *  \param sel_packed is a pointer to a contiguous memory area
- *  \param vec_bit_idx is a value prior computed by @see select_query_packed
- *  \return an integer that represents the next select value greater than @see vec_bit_idx.
- */
-cmph_int32 select_next_query_packed(void * sel_packed, cmph_uint32 vec_bit_idx)
+cmph_uint32 select_next_query_packed(void * sel_packed, cmph_uint32 vec_bit_idx)
 {
 	register cmph_uint8 * bits_vec = (cmph_uint8 *)sel_packed;
 	bits_vec += 8; // skipping n and m

@@ -269,6 +269,13 @@ cmph_t *bdz_new(cmph_config_t *mph, double c)
 	bdz_queue_t edges;
 	bdz_graph3_t graph3;
 	bdz_config_data_t *bdz = (bdz_config_data_t *)mph->data;
+	#ifdef CMPH_TIMING
+	double construction_time_begin = 0.0;
+	double construction_time = 0.0;
+	ELAPSED_TIME_IN_SECONDS(&construction_time_begin);
+	#endif
+
+
 	if (c == 0) c = 1.23; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bdz->m = mph->key_source->nkeys;	
@@ -338,7 +345,9 @@ cmph_t *bdz_new(cmph_config_t *mph, double c)
 		fprintf(stderr, "Entering ranking step for mph creation of %u keys with graph sized %u\n", bdz->m, bdz->n);
 	}
 	ranking(bdz);
-
+	#ifdef CMPH_TIMING	
+	ELAPSED_TIME_IN_SECONDS(&construction_time);
+	#endif
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
 	bdzf = (bdz_data_t *)malloc(sizeof(bdz_data_t));
@@ -362,6 +371,14 @@ cmph_t *bdz_new(cmph_config_t *mph, double c)
 	{
 		fprintf(stderr, "Successfully generated minimal perfect hash function\n");
 	}
+
+
+	#ifdef CMPH_TIMING	
+	register cmph_uint32 space_usage = bdz_packed_size(mphf)*8;
+	register cmph_uint32 keys_per_bucket = 1;
+	construction_time = construction_time - construction_time_begin;
+	fprintf(stdout, "%u\t%.2f\t%u\t%.4f\t%.4f\n", bdz->m, bdz->m/(double)bdz->n, keys_per_bucket, construction_time, space_usage/(double)bdz->m);
+	#endif	
 
 	return mphf;
 }
