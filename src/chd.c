@@ -9,7 +9,7 @@
 #include "cmph_structs.h"
 #include "chd_structs.h"
 #include "chd.h"
-
+#include "bitbool.h"
 //#define DEBUG
 #include "debug.h"
 
@@ -78,7 +78,7 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 
 	register cmph_uint32 i, idx, nkeys, nvals, nbins;
 	cmph_uint32 * vals_table = NULL;
-	register cmph_uint8 * occup_table = NULL;
+	register cmph_uint32 * occup_table = NULL;
 	#ifdef CMPH_TIMING
 	double construction_time_begin = 0.0;
 	double construction_time = 0.0;
@@ -123,11 +123,11 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	nvals =  nbins - nkeys; 
 	
 	vals_table = (cmph_uint32 *)calloc(nvals, sizeof(cmph_uint32));
-	occup_table = chd_ph->occup_table;
+	occup_table = (cmph_uint32 *)chd_ph->occup_table;
 	
 	for(i = 0, idx = 0; i < nbins; i++)
 	{
-		if(occup_table[i] == 0)
+		if(!GETBIT32(occup_table, i))
 		{
 			vals_table[idx++] = i;
 		}
