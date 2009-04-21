@@ -38,11 +38,11 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  * 
  * UNSETBIT(array, i) is a macro that sets 0 to an 1-bit integer stored in an array.
  */
-#define UNSETBIT(array, i) (array[i >> 3] &= (~(bitmask[i & 0x00000007])))
+#define UNSETBIT(array, i) (array[i >> 3] ^= ((bitmask[i & 0x00000007])))
 
 //#define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8])
 //#define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8])
-//#define UNSETBIT(array, i) (array[(i) / 8] &= (~(bitmask[(i) % 8])))
+//#define UNSETBIT(array, i) (array[(i) / 8] ^= ((bitmask[(i) % 8])))
 
 
 /** \def SETVALUE1(array, i, v)
@@ -98,6 +98,15 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  * GETBIT32(array, i) is a macro that gets the value of an 1-bit integer stored in an array of 32-bit words.
  */
 #define GETBIT32(array, i) (array[i >> 5] & bitmask32[i & 0x0000001f])
+
+/** \def UNSETBIT32(array, i)
+ *  \brief set 0 to an 1-bit integer stored in an array of 32-bit words. 
+ *  \param array to store 1-bit integer values. The entries ar 32-bit words
+ *  \param i is the index in array to set the the bit to 0
+ * 
+ * UNSETBIT32(array, i) is a macro that sets 0 to an 1-bit integer stored in an array of 32-bit words.
+ */
+#define UNSETBIT32(array, i) (array[i >> 5] ^= ((bitmask32[i & 0x0000001f])))
 
 #define BITS_TABLE_SIZE(n, bits_length) ((n * bits_length + 31) >> 5)
 
