@@ -279,7 +279,8 @@ cmph_t *bdz_new(cmph_config_t *mph, double c)
 	if (c == 0) c = 1.23; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bdz->m = mph->key_source->nkeys;	
-	bdz->r = ceil((c * mph->key_source->nkeys)/3);	
+	bdz->r = ceil((c * mph->key_source->nkeys)/3);
+	if ((bdz->r % 2) == 0) bdz->r+=1;
 	bdz->n = 3*bdz->r;
 
 	bdz->k = (1 << bdz->b);

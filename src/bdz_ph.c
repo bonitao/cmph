@@ -1,4 +1,4 @@
-		#include "bdz_ph.h"
+#include "bdz_ph.h"
 #include "cmph_structs.h"
 #include "bdz_structs_ph.h"
 #include "hash.h"
@@ -253,6 +253,7 @@ cmph_t *bdz_ph_new(cmph_config_t *mph, double c)
 	DEBUGP("c: %f\n", c);
 	bdz_ph->m = mph->key_source->nkeys;	
 	bdz_ph->r = ceil((c * mph->key_source->nkeys)/3);	
+	if ((bdz_ph->r % 2) == 0) bdz_ph->r += 1;
 	bdz_ph->n = 3*bdz_ph->r;
 
 	
