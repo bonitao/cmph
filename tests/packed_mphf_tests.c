@@ -53,14 +53,14 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvt:k:m:");
+		char ch = (char)getopt(argc, argv, "hVvt:k:m:");
 		if (ch == -1) break;
 		switch (ch)
 		{
 			case 'k':
 			        {
 					char *endptr;
-					nkeys = strtoul(optarg, &endptr, 10);
+					nkeys = (cmph_uint32)strtoul(optarg, &endptr, 10);
 					if(*endptr != 0) {
 						fprintf(stderr, "Invalid number of keys %s\n", optarg);
 						exit(1);
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 			case 't':
 				{
 					char *cptr;
-					keys_per_bin = strtoul(optarg, &cptr, 10);
+					keys_per_bin = (cmph_uint32)strtoul(optarg, &cptr, 10);
 					if(*cptr != 0) {
 						fprintf(stderr, "Parameter t was not found: %s\n", optarg);
 						exit(1);

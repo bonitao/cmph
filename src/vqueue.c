@@ -15,13 +15,13 @@ vqueue_t * vqueue_new(cmph_uint32 capacity)
   assert(q);
   q->values = (cmph_uint32 *)calloc(capacity_plus_one, sizeof(cmph_uint32));
   q->beg = q->end = 0;
-  q->capacity = capacity_plus_one;
+  q->capacity = (cmph_uint32) capacity_plus_one;
   return q;
 }
 
 cmph_uint8 vqueue_is_empty(vqueue_t * q)
 {
-  return (q->beg == q->end);
+  return (cmph_uint8)(q->beg == q->end);
 }
 
 void vqueue_insert(vqueue_t * q, cmph_uint32 val)

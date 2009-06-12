@@ -69,7 +69,7 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	if (c == 0) c = 1.15; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;	
-	bmz->n = ceil(c * mph->key_source->nkeys);	
+	bmz->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);	
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", bmz->m, bmz->n, c);
 	bmz->graph = graph_new(bmz->n, bmz->m);
 	DEBUGP("Created graph\n");
@@ -448,7 +448,7 @@ int bmz_dump(cmph_t *mphf, FILE *fd)
 	cmph_uint32 buflen;
 	cmph_uint32 two = 2; //number of hash functions
 	bmz_data_t *data = (bmz_data_t *)mphf->data;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	__cmph_dump(mphf, fd);
 
 	nbytes = fwrite(&two, sizeof(cmph_uint32), (size_t)1, fd);
@@ -485,7 +485,7 @@ void bmz_load(FILE *f, cmph_t *mphf)
 	cmph_uint32 buflen;
 	cmph_uint32 i;
 	bmz_data_t *bmz = (bmz_data_t *)malloc(sizeof(bmz_data_t));
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	DEBUGP("Loading bmz mphf\n");
 	mphf->data = bmz;
 	nbytes = fread(&nhashes, sizeof(cmph_uint32), (size_t)1, f);
@@ -588,7 +588,7 @@ cmph_uint32 bmz_packed_size(cmph_t *mphf)
 	CMPH_HASH h1_type = hash_get_type(data->hashes[0]); 
 	CMPH_HASH h2_type = hash_get_type(data->hashes[1]); 
 
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
 			3*sizeof(cmph_uint32) + sizeof(cmph_uint32)*data->n);
 }
 
