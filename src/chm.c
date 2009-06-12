@@ -61,7 +61,7 @@ cmph_t *chm_new(cmph_config_t *mph, double c)
 	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
 	chm->m = mph->key_source->nkeys;
 	if (c == 0) c = 2.09;
-	chm->n = ceil(c * mph->key_source->nkeys);	
+	chm->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);	
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", chm->m, chm->n, c);
 	chm->graph = graph_new(chm->n, chm->m);
 	DEBUGP("Created graph\n");
@@ -204,7 +204,7 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 	cmph_uint32 buflen;
 	cmph_uint32 two = 2; //number of hash functions
 	chm_data_t *data = (chm_data_t *)mphf->data;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	
 	__cmph_dump(mphf, fd);
 
@@ -240,7 +240,7 @@ void chm_load(FILE *f, cmph_t *mphf)
 	cmph_uint32 buflen;
 	cmph_uint32 i;
 	chm_data_t *chm = (chm_data_t *)malloc(sizeof(chm_data_t));
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	DEBUGP("Loading chm mphf\n");
 	mphf->data = chm;
 	nbytes = fread(&nhashes, sizeof(cmph_uint32), (size_t)1, f);
@@ -346,7 +346,7 @@ cmph_uint32 chm_packed_size(cmph_t *mphf)
 	CMPH_HASH h1_type = hash_get_type(data->hashes[0]); 
 	CMPH_HASH h2_type = hash_get_type(data->hashes[1]); 
 
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
 			4*sizeof(cmph_uint32) + sizeof(cmph_uint32)*data->n);
 }
 

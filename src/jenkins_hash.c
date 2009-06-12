@@ -88,7 +88,7 @@ jenkins_state_t *jenkins_state_new(cmph_uint32 size) //size of hash table
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
 	DEBUGP("Initializing jenkins hash\n");
-	state->seed = rand() % size;
+	state->seed = ((cmph_uint32)rand() % size);
 	return state;
 }
 void jenkins_state_destroy(jenkins_state_t *state)
@@ -110,9 +110,9 @@ inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 k
 	/*---------------------------------------- handle most of the key */
 	while (len >= 12)
 	{
-		hashes[0] += (k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
-		hashes[1] += (k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
-		hashes[2] += (k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
+		hashes[0] += ((cmph_uint32)k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
+		hashes[1] += ((cmph_uint32)k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
+		hashes[2] += ((cmph_uint32)k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
 		mix(hashes[0],hashes[1],hashes[2]);
 		k += 12; len -= 12;
 	}
@@ -134,8 +134,8 @@ inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 k
 			hashes[1] +=((cmph_uint32)k[6]<<16);
 		case 6 : 
 			hashes[1] +=((cmph_uint32)k[5]<<8);
-		case 5 : 
-			hashes[1] +=k[4];
+		case 5 :
+			hashes[1] +=(cmph_uint8) k[4];
 		case 4 : 
 			hashes[0] +=((cmph_uint32)k[3]<<24);
 		case 3 : 
@@ -143,7 +143,7 @@ inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 k
 		case 2 : 
 			hashes[0] +=((cmph_uint32)k[1]<<8);
 		case 1 : 
-			hashes[0] +=k[0];
+			hashes[0] +=(cmph_uint8)k[0];
 			/* case 0: nothing left to add */
 	}
 

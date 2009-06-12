@@ -174,7 +174,7 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 
 void chd_load(FILE *fd, cmph_t *mphf)
 {
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	chd_data_t *chd = (chd_data_t *)malloc(sizeof(chd_data_t));
 
 	DEBUGP("Loading chd mphf\n");
@@ -193,7 +193,7 @@ void chd_load(FILE *fd, cmph_t *mphf)
 
 int chd_dump(cmph_t *mphf, FILE *fd)
 {
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	chd_data_t *data = (chd_data_t *)mphf->data;
 	
 	__cmph_dump(mphf, fd);
@@ -255,7 +255,7 @@ void chd_pack(cmph_t *mphf, void *packed_mphf)
 cmph_uint32 chd_packed_size(cmph_t *mphf)
 {
 	register chd_data_t *data = (chd_data_t *)mphf->data;
-	return (sizeof(CMPH_ALGO) + 2*sizeof(cmph_uint32) + data->packed_cr_size + data->packed_chd_phf_size);
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + 2*sizeof(cmph_uint32) + data->packed_cr_size + data->packed_chd_phf_size);
 
 }
 
