@@ -15,8 +15,8 @@
 #define NULL_EDGE 0xffffffff
 
 
-static int pow3_table[5] = {1,3,9,27,81};
-static int lookup_table[5][256] = {
+static cmph_uint8 pow3_table[5] = {1,3,9,27,81};
+static cmph_uint8 lookup_table[5][256] = {
  {0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0},
  {0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 1},
  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1},
@@ -195,7 +195,7 @@ static int bdz_ph_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_
 		};
 	};
 	free(marked_edge);
-	return queue_head-nedges;/* returns 0 if successful otherwies return negative number*/
+	return (int)queue_head - (int)nedges;/* returns 0 if successful otherwies return negative number*/
 };
 
 static int bdz_ph_mapping(cmph_config_t *mph, bdz_ph_graph3_t* graph3, bdz_ph_queue_t queue);
@@ -252,7 +252,7 @@ cmph_t *bdz_ph_new(cmph_config_t *mph, double c)
 	if (c == 0) c = 1.23; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
 	bdz_ph->m = mph->key_source->nkeys;	
-	bdz_ph->r = ceil((c * mph->key_source->nkeys)/3);	
+	bdz_ph->r = (cmph_uint32)ceil((c * mph->key_source->nkeys)/3);	
 	if ((bdz_ph->r % 2) == 0) bdz_ph->r += 1;
 	bdz_ph->n = 3*bdz_ph->r;
 
@@ -382,7 +382,7 @@ static void assigning(bdz_ph_config_data_t *bdz_ph, bdz_ph_graph3_t* graph3, bdz
 	cmph_uint32 curr_edge;
 	cmph_uint32 v0,v1,v2;
 	cmph_uint8 * marked_vertices =malloc((size_t)(bdz_ph->n >> 3) + 1);
-	cmph_uint32 sizeg = ceil(bdz_ph->n/4.0);
+	cmph_uint32 sizeg = (cmph_uint32)ceil(bdz_ph->n/4.0);
 	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));	
 	memset(marked_vertices, 0, (size_t)(bdz_ph->n >> 3) + 1);
 	//memset(bdz_ph->g, 0xff, sizeg);
@@ -427,18 +427,18 @@ static void bdz_ph_optimization(bdz_ph_config_data_t *bdz_ph)
 {
 	cmph_uint32 i;
 	cmph_uint8 byte = 0;
-	cmph_uint32 sizeg = ceil(bdz_ph->n/5.0);
+	cmph_uint32 sizeg = (cmph_uint32)ceil(bdz_ph->n/5.0);
 	cmph_uint8 * new_g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));	
 	cmph_uint8 value;
 	cmph_uint32 idx;
 	for(i = 0; i < bdz_ph->n; i++) 
 	{	
-		idx = i/5;
-		byte = new_g[idx];
-		value = GETVALUE(bdz_ph->g, i);
-		byte += value*pow3_table[i%5];
-		new_g[idx] = byte;
-	}
+            idx = i/5;
+            byte = new_g[idx];
+            value = GETVALUE(bdz_ph->g, i);
+            byte = (cmph_uint8) (byte + value*pow3_table[i%5U]);
+            new_g[idx] = byte;
+        }
 	free(bdz_ph->g);
 	bdz_ph->g = new_g;
 }
@@ -449,7 +449,7 @@ int bdz_ph_dump(cmph_t *mphf, FILE *fd)
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 sizeg = 0;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
@@ -462,7 +462,7 @@ int bdz_ph_dump(cmph_t *mphf, FILE *fd)
 	nbytes = fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(&(data->r), sizeof(cmph_uint32), (size_t)1, fd);
-	sizeg = ceil(data->n/5.0);	
+	sizeg = (cmph_uint32)ceil(data->n/5.0);	
 	nbytes = fwrite(data->g, sizeof(cmph_uint8)*sizeg, (size_t)1, fd);
 
 	#ifdef DEBUG
@@ -479,7 +479,7 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	cmph_uint32 sizeg = 0;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	bdz_ph_data_t *bdz_ph = (bdz_ph_data_t *)malloc(sizeof(bdz_ph_data_t));
 
 	DEBUGP("Loading bdz_ph mphf\n");
@@ -497,7 +497,7 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 	nbytes = fread(&(bdz_ph->n), sizeof(cmph_uint32), (size_t)1, f);	
 	nbytes = fread(&(bdz_ph->m), sizeof(cmph_uint32), (size_t)1, f);	
 	nbytes = fread(&(bdz_ph->r), sizeof(cmph_uint32), (size_t)1, f);	
-	sizeg = ceil(bdz_ph->n/5.0);
+	sizeg = (cmph_uint32)ceil(bdz_ph->n/5.0);
 	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));
 	nbytes = fread(bdz_ph->g, sizeg*sizeof(cmph_uint8), (size_t)1, f);
 
@@ -521,9 +521,9 @@ cmph_uint32 bdz_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	byte1 = bdz_ph->g[hl[1]/5];
 	byte2 = bdz_ph->g[hl[2]/5];
 	
-	byte0 = lookup_table[hl[0]%5][byte0];
-	byte1 = lookup_table[hl[1]%5][byte1];
-	byte2 = lookup_table[hl[2]%5][byte2];
+	byte0 = lookup_table[hl[0]%5U][byte0];
+	byte1 = lookup_table[hl[1]%5U][byte1];
+	byte2 = lookup_table[hl[2]%5U][byte2];
 	vertex = hl[(byte0 + byte1 + byte2)%3];
 		
 	return vertex;
@@ -563,7 +563,7 @@ void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
 	ptr += sizeof(data->r);
 
 	// packing g
-	cmph_uint32 sizeg = ceil(data->n/5.0);
+	cmph_uint32 sizeg = (cmph_uint32)ceil(data->n/5.0);
 	memcpy(ptr, data->g,  sizeof(cmph_uint8)*sizeg);
 }
 
@@ -576,8 +576,8 @@ cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
 {
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
 	CMPH_HASH hl_type = hash_get_type(data->hl); 
-	cmph_uint32 sizeg = ceil(data->n/5.0);
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 2*sizeof(cmph_uint32) + sizeof(cmph_uint8)*sizeg);
+	cmph_uint32 sizeg = (cmph_uint32)ceil(data->n/5.0);
+	return (cmph_uint32) (sizeof(CMPH_ALGO) + hash_state_packed_size(hl_type) + 2*sizeof(cmph_uint32) + sizeof(cmph_uint8)*sizeg);
 }
 
 /** cmph_uint32 bdz_ph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);

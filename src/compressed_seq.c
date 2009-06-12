@@ -77,7 +77,7 @@ void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cm
 	{
 		if(vals_table[i] == 0)
 			continue;
-		stored_value = vals_table[i] - ((1 << lengths[i]) - 1);
+		stored_value = vals_table[i] - ((1U << lengths[i]) - 1U);
 		set_bits_at_pos(cs->store_table, cs->total_length, stored_value, lengths[i]);
 		cs->total_length += lengths[i];
 	};
@@ -96,7 +96,7 @@ void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cm
 	
 	cs->length_rems = (cmph_uint32 *) calloc(BITS_TABLE_SIZE(cs->n, cs->rem_r), sizeof(cmph_uint32));
 	
-	rems_mask = (1 << cs->rem_r) - 1;
+	rems_mask = (1U << cs->rem_r) - 1U;
 	cs->total_length = 0;
 	
 	for(i = 0; i < cs->n; i++)
@@ -118,9 +118,9 @@ void compressed_seq_generate(compressed_seq_t * cs, cmph_uint32 * vals_table, cm
 cmph_uint32 compressed_seq_get_space_usage(compressed_seq_t * cs)
 {
 	register cmph_uint32 space_usage = select_get_space_usage(&cs->sel);
-	space_usage += ((cs->total_length + 31) >> 5) * sizeof(cmph_uint32) * 8;
-	space_usage += BITS_TABLE_SIZE(cs->n, cs->rem_r) * sizeof(cmph_uint32) * 8;
-	return  4 * sizeof(cmph_uint32) * 8 + space_usage;
+	space_usage += ((cs->total_length + 31) >> 5) * (cmph_uint32)sizeof(cmph_uint32) * 8;
+	space_usage += BITS_TABLE_SIZE(cs->n, cs->rem_r) * (cmph_uint32)sizeof(cmph_uint32) * 8;
+	return  4 * (cmph_uint32)sizeof(cmph_uint32) * 8 + space_usage;
 }
 
 cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
@@ -132,7 +132,7 @@ cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
 
 	assert(idx < cs->n); // FABIANO ADDED
 
-	rems_mask = (1 << cs->rem_r) - 1;
+	rems_mask = (1U << cs->rem_r) - 1U;
 	
 	if(idx == 0)
 	{
@@ -156,7 +156,7 @@ cmph_uint32 compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
 		return 0;
 		
 	stored_value = get_bits_at_pos(cs->store_table, enc_idx, enc_length);
-	return stored_value + ((1 << enc_length) - 1);
+	return stored_value + ((1U << enc_length) - 1U);
 };
 
 void compressed_seq_dump(compressed_seq_t * cs, char ** buf, cmph_uint32 * buflen)
@@ -168,7 +168,7 @@ void compressed_seq_dump(compressed_seq_t * cs, char ** buf, cmph_uint32 * bufle
 	char * buf_sel = 0;
 	cmph_uint32 buflen_sel = 0;
 	
-	*buflen = 4*sizeof(cmph_uint32) + sel_size +  length_rems_size + store_table_size;
+	*buflen = 4*(cmph_uint32)sizeof(cmph_uint32) + sel_size +  length_rems_size + store_table_size;
 	
 	DEBUGP("sel_size = %u\n", sel_size);
 	DEBUGP("length_rems_size = %u\n", length_rems_size);
@@ -183,22 +183,22 @@ void compressed_seq_dump(compressed_seq_t * cs, char ** buf, cmph_uint32 * bufle
 	
 	// dumping n, rem_r and total_length
 	memcpy(*buf, &(cs->n), sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("n = %u\n", cs->n);
 	
 	memcpy(*buf + pos, &(cs->rem_r), sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("rem_r = %u\n", cs->rem_r);
 
 	memcpy(*buf + pos, &(cs->total_length), sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("total_length = %u\n", cs->total_length);
 
 	
 	// dumping sel
 	select_dump(&cs->sel, &buf_sel, &buflen_sel);
 	memcpy(*buf + pos, &buflen_sel, sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("buflen_sel = %u\n", buflen_sel);
 
 	memcpy(*buf + pos, buf_sel, buflen_sel);
@@ -244,20 +244,20 @@ void compressed_seq_load(compressed_seq_t * cs, const char * buf, cmph_uint32 bu
 	
 	// loading n, rem_r and total_length
 	memcpy(&(cs->n), buf, sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("n = %u\n", cs->n);
 
 	memcpy(&(cs->rem_r), buf + pos, sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("rem_r = %u\n", cs->rem_r);
 
 	memcpy(&(cs->total_length), buf + pos, sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("total_length = %u\n", cs->total_length);
 	
 	// loading sel
 	memcpy(&buflen_sel, buf + pos, sizeof(cmph_uint32));
-	pos += sizeof(cmph_uint32);
+	pos += (cmph_uint32)sizeof(cmph_uint32);
 	DEBUGP("buflen_sel = %u\n", buflen_sel);
 
 	select_load(&cs->sel, buf + pos, buflen_sel);
@@ -324,9 +324,9 @@ void compressed_seq_pack(compressed_seq_t *cs, void *cs_packed)
 cmph_uint32 compressed_seq_packed_size(compressed_seq_t *cs)
 {
 	register cmph_uint32 sel_size = select_packed_size(&cs->sel);
-	register cmph_uint32 store_table_size = ((cs->total_length + 31) >> 5) * sizeof(cmph_uint32);
-	register cmph_uint32 length_rems_size = BITS_TABLE_SIZE(cs->n, cs->rem_r) * sizeof(cmph_uint32);
-	return 4 * sizeof(cmph_uint32) + sel_size + store_table_size + length_rems_size;
+	register cmph_uint32 store_table_size = ((cs->total_length + 31) >> 5) * (cmph_uint32)sizeof(cmph_uint32);
+	register cmph_uint32 length_rems_size = BITS_TABLE_SIZE(cs->n, cs->rem_r) * (cmph_uint32)sizeof(cmph_uint32);
+	return 4 * (cmph_uint32)sizeof(cmph_uint32) + sel_size + store_table_size + length_rems_size;
 }
 
 
@@ -350,7 +350,7 @@ cmph_uint32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx)
 	register cmph_uint32 stored_value;
 	register cmph_uint32 sel_res;
 
-	rems_mask = (1 << rem_r) - 1;
+	rems_mask = (1U << rem_r) - 1U;
 	
 	if(idx == 0)
 	{
@@ -374,5 +374,5 @@ cmph_uint32 compressed_seq_query_packed(void * cs_packed, cmph_uint32 idx)
 		return 0;
 		
 	stored_value = get_bits_at_pos(store_table, enc_idx, enc_length);
-	return stored_value + ((1 << enc_length) - 1);
+	return stored_value + ((1U << enc_length) - 1U);
 }

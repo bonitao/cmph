@@ -149,7 +149,7 @@ static void permut(cmph_uint32 * vector, cmph_uint32 n)
 { 
   cmph_uint32 i, j, b;
   for (i = 0; i < n; i++) {
-    j = rand() % n;
+    j = (cmph_uint32) rand() % n;
     b = vector[i];
     vector[i] = vector[j];
     vector[j] = b;
@@ -316,7 +316,7 @@ int fch_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	
 	fch_data_t *data = (fch_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
@@ -352,7 +352,7 @@ void fch_load(FILE *f, cmph_t *mphf)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	fch_data_t *fch = (fch_data_t *)malloc(sizeof(fch_data_t));
 
 	//DEBUGP("Loading fch mphf\n");
@@ -474,7 +474,7 @@ cmph_uint32 fch_packed_size(cmph_t *mphf)
 	CMPH_HASH h1_type = hash_get_type(data->h1); 
 	CMPH_HASH h2_type = hash_get_type(data->h2); 
 
-	return (sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
 			4*sizeof(cmph_uint32) + 2*sizeof(double) + sizeof(cmph_uint32)*(data->b));
 }
 

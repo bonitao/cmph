@@ -379,7 +379,7 @@ static inline cmph_uint8 place_bucket_probe(chd_ph_config_data_t *chd_ph, chd_ph
 	{
 		for(i = 0; i < size; i++) // placement
 		{
-			position = (item->f + ((cmph_uint64)item->h)*probe0_num + probe1_num) % chd_ph->n;
+			position = (cmph_uint32)((item->f + ((cmph_uint64)item->h)*probe0_num + probe1_num) % chd_ph->n);
 			if(chd_ph->occup_table[position] >= chd_ph->keys_per_bin)
 			{
 				break;
@@ -391,7 +391,7 @@ static inline cmph_uint8 place_bucket_probe(chd_ph_config_data_t *chd_ph, chd_ph
 	{
 		for(i = 0; i < size; i++) // placement
 		{
-			position = (item->f + ((cmph_uint64)item->h)*probe0_num + probe1_num) % chd_ph->n;
+			position = (cmph_uint32)((item->f + ((cmph_uint64)item->h)*probe0_num + probe1_num) % chd_ph->n);
 			if(GETBIT32(((cmph_uint32 *)chd_ph->occup_table), position))
 			{
 				break;
@@ -411,7 +411,7 @@ static inline cmph_uint8 place_bucket_probe(chd_ph_config_data_t *chd_ph, chd_ph
 				{
 					break;
 				}
-				position = (item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n;
+				position = (cmph_uint32)((item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n);
 				(chd_ph->occup_table[position])--;
 				item++;
 				i--;
@@ -424,7 +424,7 @@ static inline cmph_uint8 place_bucket_probe(chd_ph_config_data_t *chd_ph, chd_ph
 				{
 					break;
 				}
-				position = (item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n;
+				position = (cmph_uint32)((item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n);
 				UNSETBIT32(((cmph_uint32*)chd_ph->occup_table), position);
 				
 // 				([position/32]^=(1<<(position%32));
@@ -594,7 +594,7 @@ static inline cmph_uint8 chd_ph_check_bin_hashing(chd_ph_config_data_t *chd_ph, 
 			for(; j > 0; j--)
 			{
 				m++;
-				position = (item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n;
+				position = (cmph_uint32)((item->f + ((cmph_uint64 )item->h) * probe0_num + probe1_num) % chd_ph->n);
 				if(chd_ph->keys_per_bin > 1)
 				{
 					if(chd_ph->occup_table[position] >= chd_ph->keys_per_bin)
@@ -834,7 +834,7 @@ void chd_ph_load(FILE *fd, cmph_t *mphf)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	chd_ph_data_t *chd_ph = (chd_ph_data_t *)malloc(sizeof(chd_ph_data_t));
 
 	DEBUGP("Loading chd_ph mphf\n");
@@ -865,7 +865,7 @@ int chd_ph_dump(cmph_t *mphf, FILE *fd)
 {
 	char *buf = NULL;
 	cmph_uint32 buflen;
-	register cmph_uint32 nbytes;
+	register size_t nbytes;
 	chd_ph_data_t *data = (chd_ph_data_t *)mphf->data;
 	
 	__cmph_dump(mphf, fd);
@@ -914,7 +914,7 @@ cmph_uint32 chd_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	disp = compressed_seq_query(chd_ph->cs, g);
 	probe0_num = disp % chd_ph->n;
 	probe1_num = disp/chd_ph->n;
-	position = (f + ((cmph_uint64 )h)*probe0_num + probe1_num) % chd_ph->n;
+	position = (cmph_uint32)((f + ((cmph_uint64 )h)*probe0_num + probe1_num) % chd_ph->n);
 	return position;
 }
 
@@ -953,7 +953,7 @@ cmph_uint32 chd_ph_packed_size(cmph_t *mphf)
 	register cmph_uint32 hash_state_pack_size =  hash_state_packed_size(hl_type);
 	register cmph_uint32 cs_pack_size = compressed_seq_packed_size(data->cs);
 	
-	return (sizeof(CMPH_ALGO) + hash_state_pack_size + cs_pack_size + 3*sizeof(cmph_uint32));
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_pack_size + cs_pack_size + 3*sizeof(cmph_uint32));
 
 }
 
@@ -980,7 +980,7 @@ cmph_uint32 chd_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32
 	disp = compressed_seq_query_packed(ptr, g);
 	probe0_num = disp % n;
 	probe1_num = disp/n;
-	position = (f + ((cmph_uint64 )h)*probe0_num + probe1_num) % n;
+	position = (cmph_uint32)((f + ((cmph_uint64 )h)*probe0_num + probe1_num) % n);
 	return position;
 }
 

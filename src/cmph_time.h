@@ -35,7 +35,7 @@
 			if (gettimeofday(&e_time, NULL) < 0) {
 				return;
 			}
-			*elapsed_time =  e_time.tv_sec*1000000 + e_time.tv_usec;
+			*elapsed_time =  (cmph_uint64)(e_time.tv_sec*1000000 + e_time.tv_usec);
 		}
 		static inline void dummy_elapsed_time_in_useconds()
 		{
