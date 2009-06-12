@@ -48,14 +48,14 @@ int main(int argc, char **argv)
 	cmph_io_adapter_t *source;
 	while (1)
 	{
-		char ch = getopt(argc, argv, "hVvk:m:");
+		char ch = (char)getopt(argc, argv, "hVvk:m:");
 		if (ch == -1) break;
 		switch (ch)
 		{
 			case 'k':
 			        {
 					char *endptr;
-					nkeys = strtoul(optarg, &endptr, 10);
+					nkeys = (cmph_uint32) strtoul(optarg, &endptr, 10);
 					if(*endptr != 0) {
 						fprintf(stderr, "Invalid number of keys %s\n", optarg);
 						exit(1);

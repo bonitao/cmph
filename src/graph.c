@@ -172,10 +172,10 @@ void graph_clear_edges(graph_t *g)
 	g->shrinking = 0;
 }
 
-static int find_degree1_edge(graph_t *g, cmph_uint32 v, char *deleted, cmph_uint32 *e)
+static cmph_uint8 find_degree1_edge(graph_t *g, cmph_uint32 v, cmph_uint8 *deleted, cmph_uint32 *e)
 {
 	cmph_uint32 edge = g->first[v];
-	char found = 0;
+	cmph_uint8 found = 0;
 	DEBUGP("Checking degree of vertex %u\n", v);
 	if (edge == EMPTY) return 0;
 	else if (!(GETBIT(deleted, abs_edge(edge, 0)))) 
@@ -196,11 +196,11 @@ static int find_degree1_edge(graph_t *g, cmph_uint32 v, char *deleted, cmph_uint
 	return found;
 }
 
-static void cyclic_del_edge(graph_t *g, cmph_uint32 v, char *deleted)
+static void cyclic_del_edge(graph_t *g, cmph_uint32 v, cmph_uint8 *deleted)
 {
 
 	cmph_uint32 e = 0;
-	char degree1;
+	cmph_uint8 degree1;
 	cmph_uint32 v1 = v;
 	cmph_uint32 v2 = 0;
 
@@ -229,7 +229,7 @@ int graph_is_cyclic(graph_t *g)
 {
 	cmph_uint32 i;
 	cmph_uint32 v;
-	char *deleted = (char *)malloc((g->nedges*sizeof(char))/8 + 1);
+	cmph_uint8 *deleted = (cmph_uint8 *)malloc((g->nedges*sizeof(cmph_uint8))/8 + 1);
 	size_t deleted_len = g->nedges/8 + 1;
 	memset(deleted, 0, deleted_len);
 
@@ -253,14 +253,14 @@ int graph_is_cyclic(graph_t *g)
 
 cmph_uint8 graph_node_is_critical(graph_t * g, cmph_uint32 v) /* included -- Fabiano */
 {
-        return GETBIT(g->critical_nodes,v);
+        return (cmph_uint8)GETBIT(g->critical_nodes,v);
 }
 
 void graph_obtain_critical_nodes(graph_t *g) /* included -- Fabiano*/
 {
         cmph_uint32 i;
 	cmph_uint32 v;
-	char *deleted = (char *)malloc((g->nedges*sizeof(char))/8+1);
+	cmph_uint8 *deleted = (cmph_uint8 *)malloc((g->nedges*sizeof(cmph_uint8))/8+1);
 	size_t deleted_len = g->nedges/8 + 1;
 	memset(deleted, 0, deleted_len);
 	free(g->critical_nodes);

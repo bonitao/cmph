@@ -71,7 +71,7 @@ static void fch_bucket_insert(fch_bucket_t *bucket, char *val, cmph_uint32 val_l
 static cmph_uint8 fch_bucket_is_empty(fch_bucket_t *bucket)
 {
 	assert(bucket);
-	return bucket->size == 0;
+	return (cmph_uint8)(bucket->size == 0);
 }
 
 static cmph_uint32 fch_bucket_size(fch_bucket_t *bucket)
@@ -183,7 +183,7 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 	// calculating offset considering a decreasing order of buckets size.
 	value = nbuckets_size[buckets->max_size];
 	nbuckets_size[buckets->max_size] = sum;
-	for(i = buckets->max_size - 1; i >= 0; i--)
+	for(i = (int)buckets->max_size - 1; i >= 0; i--)
 	{
 		sum += value;
 		value = nbuckets_size[i];
@@ -192,7 +192,7 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 	}
 	for(i = 0; i < buckets->nbuckets; i++) 
 	{
-		sorted_indexes[nbuckets_size[fch_bucket_size(buckets->values + i)]] = i;
+		sorted_indexes[nbuckets_size[fch_bucket_size(buckets->values + i)]] = (cmph_uint32)i;
 		nbuckets_size[fch_bucket_size(buckets->values + i)] ++;
 	}	
 	free(nbuckets_size);

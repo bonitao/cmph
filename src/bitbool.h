@@ -7,7 +7,7 @@ static const cmph_uint8 bitmask[] = { 1, 1 << 1,  1 << 2,  1 << 3, 1 << 4, 1 << 
 static const cmph_uint32 bitmask32[] = { 1,       1 << 1,  1 << 2,  1 << 3,  1 << 4,  1 << 5,  1 << 6, 1 << 7,
                                          1 << 8,  1 << 9,  1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15,
                                          1 << 16, 1 << 17, 1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23,
-                                         1 << 24, 1 << 25, 1 << 26, 1 << 27, 1 << 28, 1 << 29, 1 << 30, 1 << 31
+                                         1 << 24, 1 << 25, 1 << 26, 1 << 27, 1 << 28, 1 << 29, 1 << 30, 1U << 31
 				       };
 
 static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
@@ -55,7 +55,7 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  * The array should be initialized with all bits set to 1. For example:
  * memset(array, 0xff, arraySize);
  */
-#define SETVALUE1(array, i, v) (array[i >> 2] &= ((v << ((i & 0x00000003) << 1)) | valuemask[i & 0x00000003]))
+#define SETVALUE1(array, i, v) (array[i >> 2] &= (cmph_uint8)((v << ((i & 0x00000003) << 1)) | valuemask[i & 0x00000003]))
 
 /** \def SETVALUE0(array, i, v)
  *  \brief set a value for a 2-bit integer stored in an array initialized with 0s. 
@@ -67,7 +67,7 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  * The array should be initialized with all bits set to 0. For example:
  * memset(array, 0, arraySize);
  */
-#define SETVALUE0(array, i, v) (array[i >> 2] |= (v << ((i & 0x00000003) << 1)))
+#define SETVALUE0(array, i, v) (array[i >> 2] |= (cmph_uint8)(v << ((i & 0x00000003) << 1)))
 
 
 /** \def GETVALUE(array, i)
@@ -77,7 +77,7 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  * 
  * GETVALUE(array, i) is a macro that get a value for a 2-bit integer stored in an array.
  */
-#define GETVALUE(array, i) ((array[i >> 2] >> ((i & 0x00000003) << 1)) & 0x00000003)
+#define GETVALUE(array, i) ((cmph_uint8)((array[i >> 2] >> ((i & 0x00000003U) << 1U)) & 0x00000003U))
 
 
 
@@ -149,7 +149,7 @@ static inline void set_bits_at_pos(cmph_uint32 * bits_table, cmph_uint32 pos, cm
 	register cmph_uint32 word_idx = pos >> 5;
 	register cmph_uint32 shift1 = pos & 0x0000001f;
 	register cmph_uint32 shift2 = 32-shift1;
-	register cmph_uint32 string_mask = (1 << string_length) - 1;
+	register cmph_uint32 string_mask = (1U << string_length) - 1;
 	
 	bits_table[word_idx] &= ~((string_mask) << shift1);
 	bits_table[word_idx] |= bits_string << shift1;
@@ -165,7 +165,7 @@ static inline cmph_uint32 get_bits_at_pos(cmph_uint32 * bits_table,cmph_uint32 p
 	register cmph_uint32 word_idx = pos >> 5;
 	register cmph_uint32 shift1 = pos & 0x0000001f;
 	register cmph_uint32 shift2 = 32 - shift1;
-	register cmph_uint32 string_mask = (1 << string_length) - 1;
+	register cmph_uint32 string_mask = (1U << string_length) - 1;
 	register cmph_uint32 bits_string;
 	
 	bits_string = (bits_table[word_idx] >> shift1) & string_mask;

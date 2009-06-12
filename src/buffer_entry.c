@@ -47,7 +47,7 @@ void buffer_entry_load(buffer_entry_t * buffer_entry)
 {
 	free(buffer_entry->buff);
 	buffer_entry->buff = (cmph_uint8 *)calloc((size_t)buffer_entry->capacity, sizeof(cmph_uint8));
-	buffer_entry->nbytes = fread(buffer_entry->buff, (size_t)1, (size_t)buffer_entry->capacity, buffer_entry->fd);
+	buffer_entry->nbytes = (cmph_uint32)fread(buffer_entry->buff, (size_t)1, (size_t)buffer_entry->capacity, buffer_entry->fd);
 	if (buffer_entry->nbytes != buffer_entry->capacity) buffer_entry->eof = 1;
 	buffer_entry->pos = 0;
 }
