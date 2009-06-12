@@ -11,11 +11,11 @@ typedef int cmph_int32;
 typedef unsigned int cmph_uint32;
 
 #if defined(__ia64) || defined(__x86_64__)
-  /** \typedef long cmph_int64; 
+  /** \typedef long cmph_int64;
    *  \brief 64-bit integer for a 64-bit achitecture.
    */
   typedef long cmph_int64;
- 
+
   /** \typedef unsigned long cmph_uint64;
    *  \brief Unsigned 64-bit integer for a 64-bit achitecture.
    */
