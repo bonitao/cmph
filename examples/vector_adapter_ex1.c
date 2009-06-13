@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     // Source of keys
     cmph_io_adapter_t *source = cmph_io_vector_adapter((char **)vector, nkeys);
 
-    //Create minimal perfect hash function using the default (chm) algorithm.
+    //Create minimal perfect hash function using the brz algorithm.
     cmph_config_t *config = cmph_config_new(source);
     cmph_config_set_algo(config, CMPH_BRZ);
     cmph_config_set_mphf_fd(config, mphf_fd);

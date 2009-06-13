@@ -43,3 +43,5 @@ We only need to store the //g// function and a constant number of bytes for the 
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

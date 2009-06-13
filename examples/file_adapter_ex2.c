@@ -1,7 +1,7 @@
 #include <cmph.h>
 #include <stdio.h>
 #include <string.h>
- // Create minimal perfect hash function from in-disk keys using BMZ algorithm
+ // Create minimal perfect hash function from in-disk keys using BDZ algorithm
 int main(int argc, char **argv)
 {   
 	 //Open file with newline separated list of keys
@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	cmph_io_adapter_t *source = cmph_io_nlfile_adapter(keys_fd);
 
 	cmph_config_t *config = cmph_config_new(source);
-	cmph_config_set_algo(config, CMPH_BMZ);
+	cmph_config_set_algo(config, CMPH_BDZ);
 	hash = cmph_new(config);
 	cmph_config_destroy(config);
    
