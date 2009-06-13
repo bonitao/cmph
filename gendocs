@@ -1,6 +1,7 @@
 #!/bin/sh
 
 txt2tags -t html --mask-email -i README.t2t -o index.html
+txt2tags -t html -i CHD.t2t -o chd.html
 txt2tags -t html -i BDZ.t2t -o bdz.html
 txt2tags -t html -i BMZ.t2t -o bmz.html
 txt2tags -t html -i BRZ.t2t -o brz.html
@@ -14,6 +15,7 @@ txt2tags -t html -i NEWSLOG.t2t -o newslog.html
 txt2tags -t html -i EXAMPLES.t2t -o examples.html
 
 txt2tags -t txt --mask-email -i README.t2t -o README
+txt2tags -t txt -i CHD.t2t -o CHD
 txt2tags -t txt -i BDZ.t2t -o BDZ
 txt2tags -t txt -i BMZ.t2t -o BMZ
 txt2tags -t txt -i BRZ.t2t -o BRZ

@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+
+\usepackage{latexsym}
+\usepackage{url}
+
+\usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{graphics}
+\usepackage{multicol}
+\usepackage{epsfig}
+\usepackage{textcomp}
+\usepackage{url}
+
+% \usepackage{subfigure}
+% \usepackage{subfig}
+% \usepackage{wrapfig}
+
+
+\bibliographystyle{plain}
+% \bibliographystyle{sbc}
+% \bibliographystyle{abnt-alf}
+% \bibliographystyle{abnt-num}
+
+\begin{document}
+
+\sloppy
+
+% \renewcommand{\baselinestretch}{1.24}\normalsize % set the space between lines to 1.24
+
+% set headings
+% \pagestyle{fancy}
+% \lhead[\fancyplain{}{\footnotesize\thepage}]
+%       {\fancyplain{}{\footnotesize\rightmark}}
+% \rhead[\fancyplain{}{\footnotesize\leftmark}]
+%       {\fancyplain{}{\footnotesize\thepage}}
+% 
+% \cfoot{}
+
+\lstset{
+  language=C,
+  basicstyle=\fontsize{8}{8}\selectfont,
+  captionpos=t,
+  aboveskip=0mm,
+  belowskip=0mm,
+  abovecaptionskip=0.5mm,
+  belowcaptionskip=0.5mm,
+%  numbers = left,
+  mathescape=true,
+  escapechar=@,
+  extendedchars=true,
+  showstringspaces=false,
+%   columns=fixed,
+  basewidth=0.515em,
+  frame=single,
+  framesep=1mm,
+  xleftmargin=1mm,
+  xrightmargin=1mm,
+  framerule=0pt
+}
+
+\include{introduction} % Introducao
+\bibliography{chd}
+
+\end{document}
