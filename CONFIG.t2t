@@ -44,3 +44,8 @@
 %! PostProc(html): 'ALIGN="middle" SRC="figs/img248.png"(.*?)>' 'ALIGN="bottom" SRC="figs/img237.png"\1>'
 %! PostProc(html): 'ALIGN="middle" SRC="figs/img249.png"(.*?)>' 'ALIGN="bottom" SRC="figs/img249.png"\1>'
 %! PostProc(html): 'ALIGN="middle" SRC="figs/img250.png"(.*?)>' 'ALIGN="bottom" SRC="figs/img250.png"\1>'
+%! PostProc(html): 'ALIGN="middle" SRC="figs/bdz/img8.png"(.*?)>' 'ALIGN="bottom" SRC="figs/bdz/img8.png"\1>'
+% The ^ need to be escaped by \
+%!postproc(html):  \^\^(.*?)\^\^  <sup>\1</sup>
+%!postproc(html):  ,,(.*?),,      <sub>\1</sub>
+

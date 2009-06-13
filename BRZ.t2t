@@ -436,3 +436,5 @@ has smart policies for avoiding seeks and diminishing the average seek time
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

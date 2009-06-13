@@ -107,3 +107,5 @@ to [figs/img250.png] seconds for [figs/img6.png].
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

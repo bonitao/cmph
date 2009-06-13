@@ -84,3 +84,5 @@ Again we have:
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''
