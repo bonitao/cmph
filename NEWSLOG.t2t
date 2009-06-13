@@ -5,6 +5,15 @@ News Log
 
 ----------------------------------------
 
+==News for version 0.9==
+
+- [The CHD algorithm chd.html], which is an algorithm that can be tuned to generate MPHFs that require approximately 2.07 bits per key to be stored. The algorithm outperforms [the BDZ algorithm bdz.html] and therefore is the fastest one available in the literature for sets that can be treated in internal memory.
+- [The CHD_PH algorithm chd.html], which is an algorithm to generate PHFs with load factor up to //99 %//. It is actually the CHD algorithm without the ranking step. If we set the load factor to //81 %//, which is the maximum that can be obtained with [the BDZ algorithm bdz.html], the resulting functions can be stored in //1.40// bits per key. The space requirement increases with the load factor.
+- All reported bugs and suggestions have been corrected and included as well.
+
+
+----------------------------------------
+
 ==News for version 0.8==
 
 - [An algorithm to generate MPHFs that require around 2.6 bits per key to be stored bdz.html], which is referred to as BDZ algorithm. The algorithm is the fastest one available in the literature for sets that can be treated in internal memory.
@@ -61,3 +70,5 @@ News Log
 %!include: ALGORITHMS.t2t
 
 %!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''
