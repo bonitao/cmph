@@ -4,7 +4,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: alsa
+Name: cmph
 Description: minimal perfect hashing library
 Version: @VERSION@
 Libs: -L${libdir} -lcmph
