@@ -1,14 +1,14 @@
 #include "cmph.h"
 #include "cmph_structs.h"
 #include "chm.h"
-#include "bmz.h" /* included -- Fabiano */
-#include "bmz8.h" /* included -- Fabiano */
-#include "brz.h" /* included -- Fabiano */
-#include "fch.h" /* included -- Fabiano */
-#include "bdz.h" /* included -- Fabiano */
-#include "bdz_ph.h" /* included -- Fabiano */
-#include "chd_ph.h" /* included -- Fabiano */
-#include "chd.h" /* included -- Fabiano */
+#include "bmz.h" 
+#include "bmz8.h" 
+#include "brz.h" 
+#include "fch.h" 
+#include "bdz.h"
+#include "bdz_ph.h"
+#include "chd_ph.h"
+#include "chd.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -16,7 +16,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_names[] = {"bmz", "bmz8", "chm", "brz", "fch", "bdz", "bdz_ph", "chd_ph", "chd", NULL }; /* included -- Fabiano */
+const char *cmph_names[] = {"bmz", "bmz8", "chm", "brz", "fch", "bdz", "bdz_ph", "chd_ph", "chd", NULL };
 
 typedef struct 
 {
