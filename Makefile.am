@@ -1,5 +1,4 @@
-SUBDIRS = src tests examples man # cdb
-SUBDIRS = src tests examples man
+SUBDIRS = src tests examples man cxxmph # cdb
 EXTRA_DIST = cmph.spec configure.ac cmph.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig

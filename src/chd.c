@@ -63,6 +63,7 @@ void chd_config_set_keys_per_bin(cmph_config_t *mph, cmph_uint32 keys_per_bin)
 
 cmph_t *chd_new(cmph_config_t *mph, double c)
 {
+	DEBUGP("Creating new chd");
 	cmph_t *mphf = NULL;
 	chd_data_t *chdf = NULL;
 	chd_config_data_t *chd = (chd_config_data_t *)mph->data;
@@ -203,7 +204,7 @@ int chd_dump(cmph_t *mphf, FILE *fd)
 	nbytes = fwrite(&data->packed_chd_phf_size, sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(data->packed_chd_phf, data->packed_chd_phf_size, (size_t)1, fd);
 
-	DEBUGP("Dumping compressed rank structure with %u bytes to disk\n", buflen);
+	DEBUGP("Dumping compressed rank structure with %u bytes to disk\n", 1);
 	nbytes = fwrite(&data->packed_cr_size, sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(data->packed_cr, data->packed_cr_size, (size_t)1, fd);
 	
