@@ -1,3 +1,9 @@
+AC_DEFUN([AC_CHECK_SPOON], [
+	AC_ARG_WITH(spoon, [  --with-spoon=SPOON this is inocuous, since the truth is that there is no spoon ])
+	AC_MSG_CHECKING(if there is spoon)
+	AC_MSG_RESULT(no)
+])
+
 dnl By default, many hosts won't let programs access large files;
 dnl one must use special compiler options to get large-file access to work.
 dnl For more details about this brain damage please see:
@@ -7,7 +13,7 @@ dnl Written by Paul Eggert <eggert@twinsun.com>.
 
 dnl Internal subroutine of AC_SYS_EXTRA_LARGEFILE.
 dnl AC_SYS_EXTRA_LARGEFILE_FLAGS(FLAGSNAME)
-AC_DEFUN(AC_SYS_EXTRA_LARGEFILE_FLAGS,
+AC_DEFUN([AC_SYS_EXTRA_LARGEFILE_FLAGS],
   [AC_CACHE_CHECK([for $1 value to request large file support],
      ac_cv_sys_largefile_$1,
      [ac_cv_sys_largefile_$1=`($GETCONF LFS_$1) 2>/dev/null` || {
@@ -30,7 +36,7 @@ changequote([, ])dnl
 
 dnl Internal subroutine of AC_SYS_EXTRA_LARGEFILE.
 dnl AC_SYS_EXTRA_LARGEFILE_SPACE_APPEND(VAR, VAL)
-AC_DEFUN(AC_SYS_EXTRA_LARGEFILE_SPACE_APPEND,
+AC_DEFUN([AC_SYS_EXTRA_LARGEFILE_SPACE_APPEND],
   [case $2 in
    no) ;;
    ?*)
@@ -42,7 +48,7 @@ AC_DEFUN(AC_SYS_EXTRA_LARGEFILE_SPACE_APPEND,
 
 dnl Internal subroutine of AC_SYS_EXTRA_LARGEFILE.
 dnl AC_SYS_EXTRA_LARGEFILE_MACRO_VALUE(C-MACRO, CACHE-VAR, COMMENT, CODE-TO-SET-DEFAULT)
-AC_DEFUN(AC_SYS_EXTRA_LARGEFILE_MACRO_VALUE,
+AC_DEFUN([AC_SYS_EXTRA_LARGEFILE_MACRO_VALUE],
   [AC_CACHE_CHECK([for $1], $2,
      [$2=no
 changequote(, )dnl
@@ -61,7 +67,7 @@ changequote([, ])dnl
      AC_DEFINE_UNQUOTED([$1], [$]$2, [$3])
    fi])
 
-AC_DEFUN(AC_SYS_EXTRA_LARGEFILE,
+AC_DEFUN([AC_SYS_EXTRA_LARGEFILE],
   [AC_REQUIRE([AC_CANONICAL_HOST])
    AC_ARG_ENABLE(largefile,
      [  --disable-largefile     omit support for large files])
@@ -70,7 +76,7 @@ AC_DEFUN(AC_SYS_EXTRA_LARGEFILE,
      AC_SYS_EXTRA_LARGEFILE_FLAGS(CFLAGS)
      AC_SYS_EXTRA_LARGEFILE_FLAGS(LDFLAGS)
      AC_SYS_EXTRA_LARGEFILE_FLAGS(LIBS)
-	
+
      for ac_flag in $ac_cv_sys_largefile_CFLAGS no; do
        case "$ac_flag" in
        no) ;;
@@ -87,7 +93,7 @@ AC_DEFUN(AC_SYS_EXTRA_LARGEFILE,
      AC_SYS_EXTRA_LARGEFILE_SPACE_APPEND(LIBS, "$ac_cv_sys_largefile_LIBS")
      AC_SYS_EXTRA_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS,
        ac_cv_sys_file_offset_bits,
-       [[Number of bits in a file offset, on hosts where this is settable.]])
+       [Number of bits in a file offset, on hosts where this is settable.])
        [case "$host_os" in
 	# HP-UX 10.20 and later
 	hpux10.[2-9][0-9]* | hpux1[1-9]* | hpux[2-9][0-9]*)
@@ -111,11 +117,5 @@ AC_DEFUN(AC_SYS_EXTRA_LARGEFILE,
 	esac])
    fi
   ])
-
-AC_DEFUN([AC_CHECK_SPOON], [
-	AC_ARG_WITH(spoon, [  --with-spoon=SPOON this is inocuous, since the truth is that there is no spoon ])
-	AC_MSG_CHECKING(if there is spoon)
-	AC_MSG_RESULT(no)
-])
 
 
