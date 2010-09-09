@@ -88,6 +88,11 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 1.0==
+
+This is a bugfix only version, after which a revamp of the cmph code and
+algorithms will be done.
+
 ==News for version 0.9==
 
 - [The CHD algorithm chd.html], which is an algorithm that can be tuned to generate MPHFs that require approximately 2.07 bits per key to be stored. The algorithm outperforms [the BDZ algorithm bdz.html] and therefore is the fastest one available in the literature for sets that can be treated in internal memory.
