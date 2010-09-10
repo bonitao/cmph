@@ -1,299 +1,83 @@
+// Minimal perfect hash abstraction implementing the BDZ algorithm
+
+#include "trigraph.h"
 
 template <class Key>
 class MPHTable {
  public:
   typedef Key key_type;
-
-  MPHTable(cmph_t* mphf);
+  MPHTable();
   ~MPHTable();
 
   template <class Iterator>
-  bool reset(Iterator begin, Iterator end);
-
+  bool Reset(ForwardIterator begin, ForwardIterator end);
   cmph_uint32 index(const key_type& x) const;
 
  private:
-  MPHTable();
-  cmph_t* mphf;
+  typedef vector<cmph_uint32> Queue;
+  int GenerateQueue(
+     cmph_uint32 nedges, cmph_uint32 nvertices,
+     TriGraph* graph, Queue* queue);
 
   // Generates three hash values for k in a single pass.
   static hash_vector(cmph_uint32 seed, const char* k, cmph_uint32 keylen, cmph_uint32* hashes) ;
 };
 
-unsigned int MPHTable::index(const key_type& key) const {
-  cmph_uint32 keylen = sizeof(key);
-  chd_ph_data_t* chd = reinterpret_cast<chd_ph_data_t*>(mphf->data);
+int MPHTable::GenerateQueue(
+  cmph_uint32 nedges, cmph_uint32 nvertices,
+TriGraph* graph, Queue* queue) {
+  cmph_uint32 queue_head = 0, queue_tail = 0;
+  vector<bool> marked_edge((nedges >> 3) + 1, false);
+  queue->swap(Queue(nvertices, 0));
+  for (int i = 0; i < nedges; ++i) {
+    TriGraph::Edge e = graph.edges[i].vertices;
+    if (graph.vertex_degree_[e.vertices[0]] == 1 ||
+        graph.vertex_degree_[e.vertices[1]] == 1 ||
+        graph.vertex_degree[e.vertices[2]] == 1) {
+      if (!marked_edge[i]) {
+        (*queue)[queue_head++] = i;
+        marked_edge[i] = true;
+      }
+    }
+  }
+  while (queue_tail != queue_head) {
+    cmph_uint32 current_edge = (*queue)[queue_tail++];
+    graph->RemoveEdge(current_edge);
+    TriGraph::Edge e = graph->edges[current_edge];
+    for (int i = 0; i < 3; ++i) {
+      cmph_uint32 v = e.vertices[i];
+      if (graph->vertex_degree[v] == 1) {
+        cmph_uint32 first_edge = graph->first_edge_[v];
+        if (!marked_edge[first_edge) {
+          queue[queue_head++] = first_edge;
+          marked_edge[first_edge] = true;
+        }
+      }
+    }
+  }
+  marked_edge.swap(vector<bool>());
+  return queue_head - nedges;
+}
+
+int MPHTable::Mapping(TriGraph* graph, Queue* queue) {
+  int cycles = 0;
   cmph_uint32 hl[3];
-  cmph_uint32 dispatch, position;
-  cmph_uint32 probe0, probe1;
-  cmph_uint32 f,g,h;
-  hash_vector(chd_ph->hl, reinterpret_cast<const char*>(&key), keylen, hl);
-  g = hl[0] % chd_ph->nbuckets;
-  f = hl[1] % chd_ph->n;
-  g = hl[2] % (chd_ph->n - 1) + 1;
-  dispatch = compressed_seq_query(chd_ph->cs, g);
-  probe0_num = disp % chd_ph->n;
-  probe1_num = disp / chd_ph->n;
-  position = (cmph_uint32)((f + ((cmph_uint64)h)*probe0 + probe1) % chd_ph->n);
-  return position;
-}
-
-void MPHTable::hash_vector(cmph_uint32 seed, const char* k, cmph_uint32 keylen,
-                           cmph_uint32* hashes) {
-  cmph_uint32 len = keylen, length = keylen;
-  hashes[0] = hashes[1] = 0x9e3779b9;  // the golden ratio; an arbitrary value
-  hashes[2] = seed;  // the previous hash value - seed in our case 
-  // consume most of the key
-  while (len >= 12) {
-    hashes[0] += ((cmph_uint32)k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
-    hashes[1] += ((cmph_uint32)k[4] +((cmph_uint32)k[5]<<8) +((cmph_uint32)k[6]<<16) +((cmph_uint32)k[7]<<24));
-    hashes[2] += ((cmph_uint32)k[8] +((cmph_uint32)k[9]<<8) +((cmph_uint32)k[10]<<16)+((cmph_uint32)k[11]<<24));
-    mix(hashes[0],hashes[1],hashes[2]);
-    k += 12; len -= 12;
+  graph->Reset(m, n);
+  ForwardIterator it = begin;
+  for (cmph_uint32 e = 0; e < end - begin; ++e) {
+    cmph_uint32 h0, h1, h2;
+    StringPiece key = *it; 
+    hash_vector(bdz->hl, key.data(), key.len(), hl);
+    h0 = hl[0] % bdz->r;
+    h1 = hl[1] % bdz->r + bdz->r;
+    h2 = hl[2] % bdz->r + (bdz->r << 1);
+    AddEdge(graph, h0, h1, h2);
   }
-  // Consumes the remaining 11 bytes
-  hashes[2]  += length;
-  switch(len) { // all the case statements fall through
-    case 11: 
-      hashes[2] +=((cmph_uint32)k[10]<<24);
-    case 10: 
-      hashes[2] +=((cmph_uint32)k[9]<<16);
-    case 9: 
-      hashes[2] +=((cmph_uint32)k[8]<<8);
-    /* the first byte of hashes[2] is reserved for the length */
-    case 8: 
-      hashes[1] +=((cmph_uint32)k[7]<<24);
-    case 7: 
-      hashes[1] +=((cmph_uint32)k[6]<<16);
-    case 6: 
-      hashes[1] +=((cmph_uint32)k[5]<<8);
-    case 5:
-      hashes[1] +=(cmph_uint8) k[4];
-    case 4: 
-      hashes[0] +=((cmph_uint32)k[3]<<24);
-    case 3: 
-      hashes[0] +=((cmph_uint32)k[2]<<16);
-    case 2: 
-      hashes[0] +=((cmph_uint32)k[1]<<8);
-    case 1: 
-      hashes[0] +=(cmph_uint8)k[0];
-    /* case 0: nothing left to add */
-  }
-  mix(hashes[0],hashes[1],hashes[2]);
+  cycles = GenerateQueue(bdz->m, bdz->n, queue, graph);
+  return cycles == 0;
 }
 
-cmph_uint32 MPHTable::select_query(select_t* sel, cmph_uint32 one_idx) {
-  cmph_uint8* bits_table = sel->bits_vec;
-  cmph_uint32* select_table = sel->select_table;
-
-  cmph_uint32 vec_bit_idx, vec_byte_idx;
-  cmph_uint32 part_sum, old_part_sum;
-
-  vec_bit_idx = select_table[one_idx >> NBITS_STEP_SELECT_TABLE]; // one_idx >> NBITS_STEP_SELECT_TABLE = one_idx/STEP_SELECT_TABLE
-  vec_byte_idx = vec_bit_idx >> 3; // vec_bit_idx / 8
-
-  one_idx &= MASK_STEP_SELECT_TABLE; // one_idx %= STEP_SELECT_TABLE == one_idx &= MASK_STEP_SELECT_TABLE
-  one_idx += rank_lookup_table[bits_table[vec_byte_idx] & ((1 << (vec_bit_idx & 0x7)) - 1)];
-  part_sum = 0;
-	
-  do {
-    old_part_sum = part_sum; 
-    part_sum += rank_lookup_table[bits_table[vec_byte_idx]];
-    vec_byte_idx++;
-  } while (part_sum <= one_idx);
-  return select_lookup_table[bits_table[vec_byte_idx - 1]][one_idx - old_part_sum] + ((vec_byte_idx-1) << 3);
-}
-
-/*
-rank_lookup_table[i] simply gives the number of bits set to one in the byte of value i.
-For example if i = 01010101 in binary then we have :
-rank_lookup_table[i] = 4
-*/
-
-static cmph_uint8 rank_lookup_table[256] ={
-   0 , 1 , 1 , 2 , 1 , 2 , 2 , 3 , 1 , 2 , 2 , 3 , 2 , 3 , 3 , 4
-,  1 , 2 , 2 , 3 , 2 , 3 , 3 , 4 , 2 , 3 , 3 , 4 , 3 , 4 , 4 , 5
-,  1 , 2 , 2 , 3 , 2 , 3 , 3 , 4 , 2 , 3 , 3 , 4 , 3 , 4 , 4 , 5
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  1 , 2 , 2 , 3 , 2 , 3 , 3 , 4 , 2 , 3 , 3 , 4 , 3 , 4 , 4 , 5
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  3 , 4 , 4 , 5 , 4 , 5 , 5 , 6 , 4 , 5 , 5 , 6 , 5 , 6 , 6 , 7
-,  1 , 2 , 2 , 3 , 2 , 3 , 3 , 4 , 2 , 3 , 3 , 4 , 3 , 4 , 4 , 5
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  3 , 4 , 4 , 5 , 4 , 5 , 5 , 6 , 4 , 5 , 5 , 6 , 5 , 6 , 6 , 7
-,  2 , 3 , 3 , 4 , 3 , 4 , 4 , 5 , 3 , 4 , 4 , 5 , 4 , 5 , 5 , 6
-,  3 , 4 , 4 , 5 , 4 , 5 , 5 , 6 , 4 , 5 , 5 , 6 , 5 , 6 , 6 , 7
-,  3 , 4 , 4 , 5 , 4 , 5 , 5 , 6 , 4 , 5 , 5 , 6 , 5 , 6 , 6 , 7
-,  4 , 5 , 5 , 6 , 5 , 6 , 6 , 7 , 5 , 6 , 6 , 7 , 6 , 7 , 7 , 8 
- };
-
-/*
-select_lookup_table[i][j] simply gives the index of the j'th bit set to one in the byte of value i.
-For example if i=01010101 in binary then we have :
-select_lookup_table[i][0] = 0,   the first bit set to one is at position 0
-select_lookup_table[i][1] = 2,   the second bit set to one is at position 2
-select_lookup_table[i][2] = 4,   the third bit set to one is at position 4
-select_lookup_table[i][3] = 6,   the fourth bit set to one is at position 6
-select_lookup_table[i][4] = 255, there is no more than 4 bits set to one in i, so we return escape value 255. 
-*/
-static cmph_uint8 select_lookup_table[256][8]={
-{ 255 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 255 , 255 , 255 , 255 , 255 } ,
-{ 3 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 3 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 255 , 255 , 255 , 255 } ,
-{ 4 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 4 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 255 , 255 , 255 , 255 } ,
-{ 3 , 4 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 255 , 255 , 255 , 255 } ,
-{ 2 , 3 , 4 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 255 , 255 , 255 } ,
-{ 5 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 5 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 5 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 5 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 5 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 5 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 5 , 255 , 255 , 255 , 255 } ,
-{ 3 , 5 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 5 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 5 , 255 , 255 , 255 , 255 } ,
-{ 2 , 3 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 5 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 5 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 5 , 255 , 255 , 255 } ,
-{ 4 , 5 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 5 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 5 , 255 , 255 , 255 , 255 } ,
-{ 2 , 4 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 5 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 5 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 5 , 255 , 255 , 255 } ,
-{ 3 , 4 , 5 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 5 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 5 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 5 , 255 , 255 , 255 } ,
-{ 2 , 3 , 4 , 5 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 5 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 5 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 5 , 255 , 255 } ,
-{ 6 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 6 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 6 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 6 , 255 , 255 , 255 , 255 } ,
-{ 3 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 6 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 6 , 255 , 255 , 255 , 255 } ,
-{ 2 , 3 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 6 , 255 , 255 , 255 } ,
-{ 4 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 6 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 6 , 255 , 255 , 255 , 255 } ,
-{ 2 , 4 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 6 , 255 , 255 , 255 } ,
-{ 3 , 4 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 6 , 255 , 255 , 255 } ,
-{ 2 , 3 , 4 , 6 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 6 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 6 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 6 , 255 , 255 } ,
-{ 5 , 6 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 5 , 6 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 5 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 5 , 6 , 255 , 255 , 255 , 255 } ,
-{ 2 , 5 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 5 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 5 , 6 , 255 , 255 , 255 } ,
-{ 3 , 5 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 5 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 5 , 6 , 255 , 255 , 255 } ,
-{ 2 , 3 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 5 , 6 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 5 , 6 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 5 , 6 , 255 , 255 } ,
-{ 4 , 5 , 6 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 5 , 6 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 5 , 6 , 255 , 255 , 255 } ,
-{ 2 , 4 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 5 , 6 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 5 , 6 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 5 , 6 , 255 , 255 } ,
-{ 3 , 4 , 5 , 6 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 5 , 6 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 5 , 6 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 5 , 6 , 255 , 255 } ,
-{ 2 , 3 , 4 , 5 , 6 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 5 , 6 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 5 , 6 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 5 , 6 , 255 } ,
-{ 7 , 255 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 2 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 7 , 255 , 255 , 255 , 255 } ,
-{ 3 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 7 , 255 , 255 , 255 , 255 } ,
-{ 2 , 3 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 7 , 255 , 255 , 255 } ,
-{ 4 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 7 , 255 , 255 , 255 , 255 } ,
-{ 2 , 4 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 7 , 255 , 255 , 255 } ,
-{ 3 , 4 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 7 , 255 , 255 , 255 } ,
-{ 2 , 3 , 4 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 7 , 255 , 255 } ,
-{ 5 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 5 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 5 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 5 , 7 , 255 , 255 , 255 , 255 } ,
-{ 2 , 5 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 5 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 5 , 7 , 255 , 255 , 255 } ,
-{ 3 , 5 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 5 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 5 , 7 , 255 , 255 , 255 } ,
-{ 2 , 3 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 5 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 5 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 5 , 7 , 255 , 255 } ,
-{ 4 , 5 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 5 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 5 , 7 , 255 , 255 , 255 } ,
-{ 2 , 4 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 5 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 5 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 5 , 7 , 255 , 255 } ,
-{ 3 , 4 , 5 , 7 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 5 , 7 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 5 , 7 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 5 , 7 , 255 , 255 } ,
-{ 2 , 3 , 4 , 5 , 7 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 5 , 7 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 5 , 7 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 5 , 7 , 255 } ,
-{ 6 , 7 , 255 , 255 , 255 , 255 , 255 , 255 } , { 0 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } ,
-{ 1 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 1 , 6 , 7 , 255 , 255 , 255 , 255 } ,
-{ 2 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 2 , 6 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 2 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 2 , 6 , 7 , 255 , 255 , 255 } ,
-{ 3 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 3 , 6 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 3 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 3 , 6 , 7 , 255 , 255 , 255 } ,
-{ 2 , 3 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 3 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 3 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 3 , 6 , 7 , 255 , 255 } ,
-{ 4 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 4 , 6 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 4 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 4 , 6 , 7 , 255 , 255 , 255 } ,
-{ 2 , 4 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 4 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 4 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 4 , 6 , 7 , 255 , 255 } ,
-{ 3 , 4 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 3 , 4 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 3 , 4 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 3 , 4 , 6 , 7 , 255 , 255 } ,
-{ 2 , 3 , 4 , 6 , 7 , 255 , 255 , 255 } , { 0 , 2 , 3 , 4 , 6 , 7 , 255 , 255 } ,
-{ 1 , 2 , 3 , 4 , 6 , 7 , 255 , 255 } , { 0 , 1 , 2 , 3 , 4 , 6 , 7 , 255 } ,
-{ 5 , 6 , 7 , 255 , 255 , 255 , 255 , 255 } , { 0 , 5 , 6 , 7 , 255 , 255 , 255 , 255 } ,
-{ 1 , 5 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 1 , 5 , 6 , 7 , 255 , 255 , 255 } ,
-{ 2 , 5 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 2 , 5 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 2 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 2 , 5 , 6 , 7 , 255 , 255 } ,
-{ 3 , 5 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 3 , 5 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 3 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 3 , 5 , 6 , 7 , 255 , 255 } ,
-{ 2 , 3 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 2 , 3 , 5 , 6 , 7 , 255 , 255 } ,
-{ 1 , 2 , 3 , 5 , 6 , 7 , 255 , 255 } , { 0 , 1 , 2 , 3 , 5 , 6 , 7 , 255 } ,
-{ 4 , 5 , 6 , 7 , 255 , 255 , 255 , 255 } , { 0 , 4 , 5 , 6 , 7 , 255 , 255 , 255 } ,
-{ 1 , 4 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 1 , 4 , 5 , 6 , 7 , 255 , 255 } ,
-{ 2 , 4 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 2 , 4 , 5 , 6 , 7 , 255 , 255 } ,
-{ 1 , 2 , 4 , 5 , 6 , 7 , 255 , 255 } , { 0 , 1 , 2 , 4 , 5 , 6 , 7 , 255 } ,
-{ 3 , 4 , 5 , 6 , 7 , 255 , 255 , 255 } , { 0 , 3 , 4 , 5 , 6 , 7 , 255 , 255 } ,
-{ 1 , 3 , 4 , 5 , 6 , 7 , 255 , 255 } , { 0 , 1 , 3 , 4 , 5 , 6 , 7 , 255 } ,
-{ 2 , 3 , 4 , 5 , 6 , 7 , 255 , 255 } , { 0 , 2 , 3 , 4 , 5 , 6 , 7 , 255 } ,
-{ 1 , 2 , 3 , 4 , 5 , 6 , 7 , 255 } , { 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 } };
-
-cmph_uint32 MPHTable::compressed_seq_query(compressed_seq_t * cs, cmph_uint32 idx)
-{
-  cmph_uint32 enc_idx, enc_length;
-  cmph_uint32 rems_mask;
-  cmph_uint32 stored_value;
-  cmph_uint32 sel_res;
-
-  assert(idx < cs->n); // FABIANO ADDED
-
-  rems_mask = (1U << cs->rem_r) - 1U;
-	
-  if(idx == 0) {
-    enc_idx = 0;
-    sel_res = select_query(&cs->sel, idx);
-  } else {
-    sel_res = select_query(&cs->sel, idx - 1);
-    enc_idx = (sel_res - (idx - 1)) << cs->rem_r;
-    enc_idx += get_bits_value(cs->length_rems, idx-1, cs->rem_r, rems_mask);
-    sel_res = select_next_query(&cs->sel, sel_res);
-  };
-
-  enc_length = (sel_res - idx) << cs->rem_r;
-  enc_length += get_bits_value(cs->length_rems, idx, cs->rem_r, rems_mask);
-  enc_length -= enc_idx;
-  if(enc_length == 0) return 0;
-
-  stored_value = get_bits_at_pos(cs->store_table, enc_idx, enc_length);
-  return stored_value + ((1U << enc_length) - 1U);
-};
+void MPHTable::Assigning(TriGraph* graph, Queue* queue);
+void MPHTable::Ranking(TriGraph* graph, Queue* queue);
+cmph_uint32 MPHTable::Search(const StringPiece& key);
+cmph_uint32 MPHTable::Rank(const StringPiece& key);
