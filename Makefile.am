@@ -1,4 +1,4 @@
-SUBDIRS = src tests examples man
+SUBDIRS = src tests examples cxxmph man
 EXTRA_DIST = cmph.spec configure.ac cmph.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
