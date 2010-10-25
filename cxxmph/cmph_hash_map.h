@@ -2,8 +2,6 @@
 #include <vector>
 #include <utility>  // for std::pair
 
-#include <cmph.h>
-
 // Save on repetitive typing.
 #define CMPH_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc> 
 #define CMPH_CLASS_SPEC cmph_hash_map<Key, Data, HashFcn, EqualKey, Alloc>
