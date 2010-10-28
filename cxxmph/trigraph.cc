@@ -1,8 +1,11 @@
 #include <cassert>
 #include <limits>
+#include <iostream>
 
 #include "trigraph.h"
 
+using std::cerr;
+using std::endl;
 using std::vector;
 
 namespace {
@@ -11,9 +14,10 @@ static const cmph_uint8 kInvalidEdge = std::numeric_limits<cmph_uint8>::max();
 
 namespace cxxmph {
 
-TriGraph::TriGraph(cmph_uint32 nedges, cmph_uint32 nvertices)
+TriGraph::TriGraph(cmph_uint32 nvertices, cmph_uint32 nedges)
       : nedges_(0),
         edges_(nedges),
+        next_edge_(nedges),
         first_edge_(nvertices, kInvalidEdge),
         vertex_degree_(nvertices, 0) { }
 
@@ -25,7 +29,13 @@ void TriGraph::ExtractEdgesAndClear(vector<Edge>* edges) {
   edges->swap(edges_);
 }
 void TriGraph::AddEdge(const Edge& edge) { 
-  edges_[nedges_] = edge;
+  edges_[nedges_] = edge; 
+  assert(first_edge_.size() > edge[0]);
+  assert(first_edge_.size() > edge[1]);
+  assert(first_edge_.size() > edge[0]);
+  assert(first_edge_.size() > edge[1]);
+  assert(first_edge_.size() > edge[2]);
+  assert(next_edge_.size() > nedges_);
   next_edge_[nedges_] = Edge(
       first_edge_[edge[0]], first_edge_[edge[1]], first_edge_[edge[2]]);
    first_edge_[edge[0]] = first_edge_[edge[1]] = first_edge_[edge[2]] = nedges_;
@@ -36,7 +46,7 @@ void TriGraph::AddEdge(const Edge& edge) {
 }
 
 void TriGraph::RemoveEdge(cmph_uint32 current_edge) {
-  cmph_uint32 vertex, edge1, edge2;
+  cerr << "Removing edge " << current_edge << " from " << nedges_ << " existing edges " << endl;
   for (int i = 0; i < 3; ++i) {
     cmph_uint32 vertex = edges_[current_edge][i];
     cmph_uint32 edge1 = first_edge_[vertex];

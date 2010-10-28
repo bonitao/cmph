@@ -14,9 +14,14 @@
 namespace cxxmph {
 
 class TriGraph {
+ public:
   struct Edge {
     Edge() { }
-    Edge(cmph_uint32 v0, cmph_uint32 v1, cmph_uint32 v2);
+    Edge(cmph_uint32 v0, cmph_uint32 v1, cmph_uint32 v2) { 
+      vertices[0] = v0;
+      vertices[1] = v1;
+      vertices[2] = v2;
+    }
     cmph_uint32& operator[](cmph_uint8 v) { return vertices[v]; }
     const cmph_uint32& operator[](cmph_uint8 v) const { return vertices[v]; }
     cmph_uint32 vertices[3];

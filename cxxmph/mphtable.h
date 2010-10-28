@@ -3,7 +3,13 @@
 
 // Minimal perfect hash abstraction implementing the BDZ algorithm
 
+#include <cmath>
 #include <vector>
+
+#include <iostream>
+
+using std::cerr;
+using std::endl;
 
 #include "randomly_seeded_hash.h"
 #include "stringpiece.h"
@@ -11,13 +17,15 @@
 
 namespace cxxmph {
 
-template <class Key, class NewRandomlySeededHashFcn = RandomlySeededMurmur2>
 class MPHTable {
  public:
-  typedef Key key_type;
-  typedef NewRandomlySeededHashFcn hasher;
+  // This class could be a template for both key type and hash function, but we
+  // chose to go with simplicity.
+  typedef StringPiece key_type;
+  typedef RandomlySeededHashFunction<Murmur2StringPiece> hasher_type;
+
   MPHTable(double c = 1.23, cmph_uint8 b = 7) : c_(c), b_(b) { }
-  ~MPHTable();
+  ~MPHTable() {}
 
   template <class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end);
@@ -26,21 +34,23 @@ class MPHTable {
  private:
   template <class ForwardIterator>
   bool Mapping(ForwardIterator begin, ForwardIterator end,
-               vector<Edge>* edges, vector<cmph_uint32> queue);
-  bool GenerateQueue(TriGraph* graph, vector<cmph_uint32>* queue);
-  void Assigning(TriGraph* graph_builder, Queue* queue);
-  void Ranking(TriGraph* graph_builder, Queue* queue);
-  cmph_uint32 Search(const StringPiece& key);
-  cmph_uint32 Rank(const StringPiece& key);
+               std::vector<TriGraph::Edge>* edges,
+               std::vector<cmph_uint32>* queue);
+  bool GenerateQueue(TriGraph* graph, std::vector<cmph_uint32>* queue);
+  void Assigning(const std::vector<TriGraph::Edge>& edges,
+                 const std::vector<cmph_uint32>& queue);
+  void Ranking();
+  cmph_uint32 Search(const key_type& key) const;
+  cmph_uint32 Rank(cmph_uint32 vertex) const;
 
   // Algorithm parameters
-  cmph_uint8 b_;  // Number of bits of the kth index in the ranktable
   double c_;  // Number of bits per key (? is it right)
+  cmph_uint8 b_;  // Number of bits of the kth index in the ranktable
 
   // Values used during generation
   cmph_uint32 m_;  // edges count
   cmph_uint32 n_;  // vertex count
-  cmph_uint32 k_  // kth index in ranktable, $k = log_2(n=3r)\varepsilon$
+  cmph_uint32 k_;  // kth index in ranktable, $k = log_2(n=3r)\varepsilon$
 
   // Values used during search
 
@@ -52,10 +62,59 @@ class MPHTable {
   std::vector<cmph_uint32> ranktable_;
   // The selected hash function triplet for finding the edges in the minimal
   // perfect hash function graph.
-  hasher hash_function_[3];
+  hasher_type hash_function_[3];
   
 };
 
+// Template method needs to go in the header file.
+template <class ForwardIterator>
+bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
+  m_ = end - begin;
+  r_ = static_cast<cmph_uint32>(ceil((c_*m_)/3));
+  if ((r_ % 2) == 0) r_ += 1;
+  n_ = 3*r_;
+  k_ = 1U << b_;
+
+  cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
+
+  int iterations = 1000;
+  std::vector<TriGraph::Edge> edges;
+  std::vector<cmph_uint32> queue;
+  while (1) {
+    cerr << "Iterations missing: " << iterations << endl;
+    for (int i = 0; i < 3; ++i) hash_function_[i] = hasher_type();
+    if (Mapping(begin, end, &edges, &queue)) break;
+    else --iterations;
+    if (iterations == 0) break;
+  }
+  if (iterations == 0) return false;
+  Assigning(edges, queue);
+  std::vector<TriGraph::Edge>().swap(edges);
+  Ranking();
+  return true;
+}
+
+template <class ForwardIterator>
+bool MPHTable::Mapping(
+    ForwardIterator begin, ForwardIterator end,
+    std::vector<TriGraph::Edge>* edges, std::vector<cmph_uint32>* queue) {
+  TriGraph graph(n_, m_);
+  for (ForwardIterator it = begin; it != end; ++it) { 
+    cmph_uint32 h[3];
+    for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](*it);
+    cmph_uint32 v0 = h[0] % r_;
+    cmph_uint32 v1 = h[1] % r_ + r_;
+    cmph_uint32 v2 = h[2] % r_ + (r_ << 1);
+    cerr << "Key: " << *it << " vertex " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
+    graph.AddEdge(TriGraph::Edge(v0, v1, v2));
+  }
+  if (GenerateQueue(&graph, queue)) {
+     graph.ExtractEdgesAndClear(edges);
+     return true;
+  }
+  return false;
+}
+
 }  // namespace cxxmph
 
-#define // __CXXMPH_MPHTABLE_H__
+#endif // __CXXMPH_MPHTABLE_H__

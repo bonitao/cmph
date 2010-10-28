@@ -1,3 +1,6 @@
+#ifndef __CXXMPH_MURMUR_HASH2__
+#define __CXXMPH_MURMUR_HASH2__
+
 //-----------------------------------------------------------------------------
 // MurmurHash2, by Austin Appleby
 
@@ -11,6 +14,8 @@
 // 1. It will not work incrementally.
 // 2. It will not produce the same results on little-endian and big-endian
 //    machines.
+
+namespace {
 
 unsigned int MurmurHash2 ( const void * key, int len, unsigned int seed )
 {
@@ -62,3 +67,7 @@ unsigned int MurmurHash2 ( const void * key, int len, unsigned int seed )
 
 	return h;
 } 
+
+}
+
+#endif  // __CXXMPH_MURMUR_HASH2__
