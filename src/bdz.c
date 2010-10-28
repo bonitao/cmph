@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 #define UNASSIGNED 3U
 #define NULL_EDGE 0xffffffff
@@ -177,9 +177,11 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 			}
 		};
 	};
+        DEBUGP("Queue head %d Queue tail %d\n", queue_head, queue_tail);
 	while(queue_tail!=queue_head){
 		curr_edge=queue[queue_tail++];
 		bdz_remove_edge(graph3,curr_edge);
+		DEBUGP("Removing edge %d\n", curr_edge);
 		v0=graph3->edges[curr_edge].vertices[0];
 		v1=graph3->edges[curr_edge].vertices[1];
 		v2=graph3->edges[curr_edge].vertices[2];
@@ -403,6 +405,7 @@ static int bdz_mapping(cmph_config_t *mph, bdz_graph3_t* graph3, bdz_queue_t que
 		h0 = hl[0] % bdz->r;
 		h1 = hl[1] % bdz->r + bdz->r;
 		h2 = hl[2] % bdz->r + (bdz->r << 1);
+                DEBUGP("Key: %s (%u %u %u)\n", key, h0, h1, h2);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 		bdz_add_edge(graph3,h0,h1,h2);
 	}
@@ -427,7 +430,7 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 		v0=graph3->edges[curr_edge].vertices[0];
 		v1=graph3->edges[curr_edge].vertices[1];
 		v2=graph3->edges[curr_edge].vertices[2];
-		DEBUGP("B:%u %u %u -- %u %u %u\n", v0, v1, v2, GETVALUE(bdz->g, v0), GETVALUE(bdz->g, v1), GETVALUE(bdz->g, v2));
+		DEBUGP("B:%u %u %u -- %u %u %u edge %u\n", v0, v1, v2, GETVALUE(bdz->g, v0), GETVALUE(bdz->g, v1), GETVALUE(bdz->g, v2), curr_edge);
 		if(!GETBIT(marked_vertices, v0)){
 			if(!GETBIT(marked_vertices,v1))
 			{
@@ -585,7 +588,9 @@ static inline cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint
 		base_rank += bdz_lookup_table[*(g + beg_idx_b++)];
 		
 	}
+        DEBUGP("base rank %u\n", base_rank);
 	beg_idx_v = beg_idx_b << 2;
+        DEBUGP("beg_idx_v %u\n", beg_idx_v);
 	while(beg_idx_v < vertex) 
 	{
 		if(GETVALUE(g, beg_idx_v) != UNASSIGNED) base_rank++;
@@ -605,6 +610,7 @@ cmph_uint32 bdz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	hl[1] = hl[1] % bdz->r + bdz->r;
 	hl[2] = hl[2] % bdz->r + (bdz->r << 1);
 	vertex = hl[(GETVALUE(bdz->g, hl[0]) + GETVALUE(bdz->g, hl[1]) + GETVALUE(bdz->g, hl[2])) % 3];
+        DEBUGP("Search found vertex %u\n", vertex);
 	return rank(bdz->b, bdz->ranktable, bdz->g, vertex);
 }
 

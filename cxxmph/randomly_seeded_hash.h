@@ -8,6 +8,7 @@
 
 #include "../src/cmph_types.h"
 #include "MurmurHash2.h"
+#include "jenkins_hash.h"
 #include "stringpiece.h"
 
 namespace cxxmph {
@@ -15,8 +16,24 @@ namespace cxxmph {
 template <class HashFun>
 struct RandomlySeededHashFunction { };
 
+class JenkinsStringPiece { };
 class Murmur2StringPiece { };
 class Murmur2Pod { };
+
+template <>
+struct RandomlySeededHashFunction<JenkinsStringPiece> {
+  RandomlySeededHashFunction() { 
+    srand(1);
+    seed = 4;
+  }
+  cmph_uint32 operator()(const StringPiece& key) const {
+    return jenkins_hash(key.data(), key.length(), seed);
+  }
+  void operator()(const StringPiece& key, cmph_uint32* hashes) const {
+    __jenkins_hash_vector(seed, key.data(), key.length(), hashes);
+  }
+  cmph_uint32 seed;
+};
 
 template <>
 struct RandomlySeededHashFunction<Murmur2StringPiece> {

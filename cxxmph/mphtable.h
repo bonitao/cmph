@@ -22,7 +22,7 @@ class MPHTable {
   // This class could be a template for both key type and hash function, but we
   // chose to go with simplicity.
   typedef StringPiece key_type;
-  typedef RandomlySeededHashFunction<Murmur2StringPiece> hasher_type;
+  typedef RandomlySeededHashFunction<JenkinsStringPiece> hasher_type;
 
   MPHTable(double c = 1.23, cmph_uint8 b = 7) : c_(c), b_(b) { }
   ~MPHTable() {}
@@ -82,7 +82,9 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
   std::vector<cmph_uint32> queue;
   while (1) {
     cerr << "Iterations missing: " << iterations << endl;
-    for (int i = 0; i < 3; ++i) hash_function_[i] = hasher_type();
+    // for (int i = 0; i < 3; ++i) hash_function_[i] = hasher_type();
+    hash_function_[0] = hasher_type();
+    cerr << "Seed: " << hash_function_[0].seed << endl;
     if (Mapping(begin, end, &edges, &queue)) break;
     else --iterations;
     if (iterations == 0) break;
@@ -101,11 +103,12 @@ bool MPHTable::Mapping(
   TriGraph graph(n_, m_);
   for (ForwardIterator it = begin; it != end; ++it) { 
     cmph_uint32 h[3];
-    for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](*it);
+    // for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](*it);
+    hash_function_[0](*it, h);
     cmph_uint32 v0 = h[0] % r_;
     cmph_uint32 v1 = h[1] % r_ + r_;
     cmph_uint32 v2 = h[2] % r_ + (r_ << 1);
-    cerr << "Key: " << *it << " vertex " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
+    cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
     graph.AddEdge(TriGraph::Edge(v0, v1, v2));
   }
   if (GenerateQueue(&graph, queue)) {

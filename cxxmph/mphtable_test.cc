@@ -9,6 +9,8 @@ using std::vector;
 using cxxmph::MPHTable;
 
 int main(int argc, char** argv) {
+
+  srand(1);
   vector<string> keys;
   keys.push_back("davi");
   keys.push_back("paulo");

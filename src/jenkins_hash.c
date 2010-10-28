@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <string.h>
 
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 
 #define hashsize(n) ((cmph_uint32)1<<(n))
@@ -87,8 +87,8 @@ acceptable.  Do NOT use for cryptographic purposes.
 jenkins_state_t *jenkins_state_new(cmph_uint32 size) //size of hash table
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
-	DEBUGP("Initializing jenkins hash\n");
 	state->seed = ((cmph_uint32)rand() % size);
+	DEBUGP("Initializied jenkins hash with seed %d\n", state->seed);
 	return state;
 }
 void jenkins_state_destroy(jenkins_state_t *state)
