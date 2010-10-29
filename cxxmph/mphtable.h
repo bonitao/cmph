@@ -30,6 +30,8 @@ class MPHTable {
   template <class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end);
   cmph_uint32 index(const key_type& x) const;
+  cmph_uint32 size() const { return m_; }
+  void clear();
 
  private:
   template <class ForwardIterator>

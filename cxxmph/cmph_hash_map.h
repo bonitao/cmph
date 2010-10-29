@@ -2,6 +2,20 @@
 #include <vector>
 #include <utility>  // for std::pair
 
+#include "MurmurHash2.h"
+#include "mphtable.h"
+#include "iterator_first.h"
+
+namespace __gnu_cxx {
+template <> struct hash<std::string> {
+  std::size_t operator()(std::string const& s) const {
+    return MurmurHash2(s.c_str(), s.length(), 1 /* seed */);
+  }
+};
+}
+
+namespace cxxmph {
+
 // Save on repetitive typing.
 #define CMPH_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc> 
 #define CMPH_CLASS_SPEC cmph_hash_map<Key, Data, HashFcn, EqualKey, Alloc>
@@ -51,7 +65,7 @@ class cmph_hash_map {
  private:
   void rehash();
   std::vector<value_type> values_;
-  cmph_t* cmph_;
+  MPHTable table_;
   typedef typename __gnu_cxx::hash_map<Key, Data, HashFcn, EqualKey, Alloc> slack_type;
   slack_type slack_;
 };
@@ -61,12 +75,11 @@ bool operator==(const CMPH_CLASS_SPEC& lhs, const CMPH_CLASS_SPEC& rhs) {
   return lhs.values_ == rhs.values_;
 }
 
-CMPH_TMPL_SPEC CMPH_CLASS_SPEC::cmph_hash_map() : cmph_(NULL) {
+CMPH_TMPL_SPEC CMPH_CLASS_SPEC::cmph_hash_map() {
   rehash();
 }
 
 CMPH_TMPL_SPEC CMPH_CLASS_SPEC::~cmph_hash_map() {
-  if(cmph_) cmph_destroy(cmph_);
 }
 
 CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
@@ -74,28 +87,22 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   if (it != end()) return std::make_pair(it, false);
   values_.push_back(x);
   slack_.insert(std::make_pair(x.first, values_.size() - 1));
-  if ((slack_.size() > 10 && !cmph_) ||
-      (cmph_ && slack_.size() > cmph_size(cmph_) * 2)) rehash();
+  if ((slack_.size() > 10 && table_.size() == 0) ||
+      (table_.size() && slack_.size() > table_.size() * 2)) {
+     rehash();
+  }
   it = find(x.first);
-  // std::cerr << "inserted " << x.first.i_ << " at " << values_.begin() - it;
   return std::make_pair(it, true);
 }
 
 CMPH_METHOD_DECL(void_type, rehash)() {
   if (values_.empty()) return;
   slack_type().swap(slack_);
-  cmph_io_adapter_t* source = cmph_io_struct_vector_adapter(
-      &(values_[0]), sizeof(value_type), 0, sizeof(key_type), values_.size());
-  cmph_config_t* cmph_config = cmph_config_new(source);
-  cmph_config_set_algo(cmph_config, CMPH_CHD);
-  //  cmph_config_set_verbosity(cmph_config, 1);
-  if (cmph_) cmph_destroy(cmph_);
-  cmph_ = cmph_new(cmph_config);
-  cmph_config_destroy(cmph_config);
-  cmph_io_struct_vector_adapter_destroy(source);
+  table_.Reset(make_iterator_first(values_.begin()),
+               make_iterator_first(values_.end()));
   std::vector<value_type> new_values(values_.size());
-  for (int i = 0; i < values_.size(); ++i) {
-    size_type id = cmph_search(cmph_, reinterpret_cast<const char*>(&(values_[i].first)), sizeof(key_type));
+  for (unsigned int i = 0; i < values_.size(); ++i) {
+    size_type id = table_.index(values_[i].first);
     new_values[id] = values_[i];
   }
   values_.swap(new_values);
@@ -110,8 +117,7 @@ CMPH_METHOD_DECL(bool_type, empty)() const { return values_.empty(); }
 CMPH_METHOD_DECL(void_type, clear)() { 
   values_.clear();
   slack_.clear();
-  cmph_destroy(cmph_);
-  cmph_ = NULL;
+  table_.clear(); 
 }
 
 CMPH_METHOD_DECL(void_type, erase)(iterator pos) {
@@ -129,9 +135,8 @@ CMPH_METHOD_DECL(const_iterator, find)(const key_type& k) const {
     typename slack_type::const_iterator it = slack_.find(k);
     if (it != slack_.end()) return values_.begin() + it->second;
   }
-  if (!cmph_) return end();
-  size_type id = cmph_search(cmph_, reinterpret_cast<const char*>(&k),
-                             sizeof(key_type));
+  if (table_.size() == 0) return end();
+  size_type id = table_.index(k);
   if (key_equal()(values_[id].first, k)) {
     return values_.begin() + id;
   }
@@ -142,9 +147,8 @@ CMPH_METHOD_DECL(iterator, find)(const key_type& k) {
     typename slack_type::const_iterator it = slack_.find(k);
     if (it != slack_.end()) return values_.begin() + it->second;
   }
-  if (!cmph_) return end();
-  size_type id = cmph_search(cmph_, reinterpret_cast<const char*>(&k),
-                             sizeof(key_type));
+  if (table_.size() == 0) return end();
+  size_type id = table_.index(k);
   if (key_equal()(values_[id].first, k)) {
     return values_.begin() + id;
   }
@@ -155,3 +159,5 @@ CMPH_METHOD_DECL(iterator, find)(const key_type& k) {
 CMPH_METHOD_DECL(data_type&, operator[])(const key_type& k) {
   return insert(std::make_pair(k, data_type())).first->second;
 }
+
+}  // namespace cxxmph

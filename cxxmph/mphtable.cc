@@ -44,6 +44,9 @@ cmph_uint32 get_2bit_value(const vector<cmph_uint8>& d, cmph_uint8 i) {
 
 namespace cxxmph {
 
+void MPHTable::clear() {
+  // TODO(davi) impolement me
+}
 bool MPHTable::GenerateQueue(
     TriGraph* graph, vector<cmph_uint32>* queue_output) {
   cmph_uint32 queue_head = 0, queue_tail = 0;
