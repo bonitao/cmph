@@ -165,8 +165,8 @@ void MPHTable::Ranking() {
 
 cmph_uint32 MPHTable::Search(const key_type& key) const {
   cmph_uint32 h[3];
-  // for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](key);
-  hash_function_[0](key, h);
+  for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](key);
+  // hash_function_[0](key, h);
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
   h[2] = h[2] % r_ + (r_ << 1);

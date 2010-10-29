@@ -17,6 +17,10 @@ int main(int argc, char** argv) {
   keys.push_back("joao");
   keys.push_back("maria");
   keys.push_back("bruno");
+  keys.push_back("paula");
+  keys.push_back("diego");
+  keys.push_back("diogo");
+  keys.push_back("algume");
 
   MPHTable mphtable;
   assert(mphtable.Reset(keys.begin(), keys.end()));
