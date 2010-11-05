@@ -24,7 +24,8 @@ class MPHTable {
   typedef StringPiece key_type;
   typedef RandomlySeededHashFunction<Murmur2StringPiece> hasher_type;
 
-  MPHTable(double c = 1.23, cmph_uint8 b = 7) : c_(c), b_(b) { }
+  MPHTable(double c = 1.23, cmph_uint8 b = 7) :
+      c_(c), b_(b), m_(0), n_(0), k_(0), r_(0) { }
   ~MPHTable() {}
 
   template <class ForwardIterator>

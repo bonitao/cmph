@@ -12,20 +12,20 @@ int main(int argc, char** argv) {
   h.insert(std::make_pair("-1",-1));
   cmph_hash_map<string, int>::const_iterator it;
   for (it = h.begin(); it != h.end(); ++it) {
-    std::cout << it->first << " -> " << it->second << std::endl;
+    std::cerr << it->first << " -> " << it->second << std::endl;
   }
-  std::cout << "Search -1 gives " << h.find("-1")->second << std::endl;
-  for (int i = 0; i < 1000; ++i) {
+  std::cerr << "Search -1 gives " << h.find("-1")->second << std::endl;
+  for (int i = 0; i < 100; ++i) {
      char buf[10];    
      snprintf(buf, 10, "%d", i);
      h.insert(std::make_pair(buf, i));
   }
-  for (int j = 0; j < 1000; ++j) {
+  for (int j = 0; j < 100; ++j) {
     for (int i = 1000; i > 0; --i) {
        char buf[10];    
        snprintf(buf, 10, "%d", i - 1);
        h.find(buf);
-       // std::cout << "Search " << i - 1 << " gives " << h.find(i - 1)->second << std::endl;
+       std::cerr << "Search " << i - 1 << " gives " << h.find(buf)->second << std::endl;
     }
   }
 }
