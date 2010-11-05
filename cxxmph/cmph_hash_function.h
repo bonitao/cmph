@@ -25,7 +25,7 @@ struct Murmur2StringPiece {
   template <class Key>
   cmph_uint32 operator()(const Key& k) const {
     StringPiece s(k);
-    return MurmurHash2(k.data(), k.length(), 1 /* seed */);
+    return MurmurHash2(s.data(), s.length(), 1 /* seed */);
   }
 };
 
@@ -42,7 +42,7 @@ struct seeded_hash_function<Murmur2StringPiece> {
   template <class Key>
   cmph_uint32 operator()(const Key& k, cmph_uint32 seed) const {
     StringPiece s(k);
-    return MurmurHash2(k.data(), k.length(), seed);
+    return MurmurHash2(s.data(), s.length(), seed);
   }
 };
 

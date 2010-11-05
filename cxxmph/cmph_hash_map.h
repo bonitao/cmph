@@ -4,7 +4,6 @@
 
 #include "MurmurHash2.h"
 #include "mphtable.h"
-#include "iterator_first.h"
 
 namespace __gnu_cxx {
 template <> struct hash<std::string> {
