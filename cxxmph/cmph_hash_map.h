@@ -5,27 +5,14 @@
 #include "MurmurHash2.h"
 #include "mphtable.h"
 
-namespace __gnu_cxx {
-template <> struct hash<std::string> {
-  std::size_t operator()(std::string const& s) const {
-    return MurmurHash2(s.c_str(), s.length(), 1 /* seed */);
-  }
-};
-template <> struct hash<long long int> {
-  std::size_t operator()(const long long int& s) const {
-    return MurmurHash2(reinterpret_cast<const char*>(&s), sizeof(long long int), 1 /* seed */);
-  }
-};
-} // namespace __gnu_cxx
-
 namespace cxxmph {
 
 // Save on repetitive typing.
-#define CMPH_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc> 
+#define CMPH_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
 #define CMPH_CLASS_SPEC cmph_hash_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define CMPH_METHOD_DECL(r, m) CMPH_TMPL_SPEC typename CMPH_CLASS_SPEC::r CMPH_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = __gnu_cxx::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> > 
+template <class Key, class Data, class HashFcn = __gnu_cxx::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class cmph_hash_map {
  public:
   typedef Key key_type;
@@ -132,10 +119,10 @@ CMPH_METHOD_DECL(const_iterator, begin)() const { return values_.begin(); }
 CMPH_METHOD_DECL(const_iterator, end)() const { return values_.end(); }
 CMPH_METHOD_DECL(bool_type, empty)() const { return values_.empty(); }
 
-CMPH_METHOD_DECL(void_type, clear)() { 
+CMPH_METHOD_DECL(void_type, clear)() {
   values_.clear();
   slack_.clear();
-  table_.clear(); 
+  table_.clear();
 }
 
 CMPH_METHOD_DECL(void_type, erase)(iterator pos) {
@@ -163,6 +150,8 @@ CMPH_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 CMPH_METHOD_DECL(iterator, find)(const key_type& k) {
   if (!slack_.empty()) {
     typename slack_type::const_iterator it = slack_.find(k);
+    // TODO(davi) this is broken, it->second should be an integer
+    // otherwise I cannot access values_ iterators.
     if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (table_.size() == 0) return end();
@@ -172,7 +161,6 @@ CMPH_METHOD_DECL(iterator, find)(const key_type& k) {
   }
   return end();
 }
-  
 
 CMPH_METHOD_DECL(data_type&, operator[])(const key_type& k) {
   return insert(std::make_pair(k, data_type())).first->second;

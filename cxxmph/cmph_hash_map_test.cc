@@ -1,5 +1,6 @@
 #include "cmph_hash_map.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -28,4 +29,13 @@ int main(int argc, char** argv) {
        std::cerr << "Search " << i - 1 << " gives " << h.find(buf)->second << std::endl;
     }
   }
+  for (int j = 0; j < 100; ++j) {
+    for (int i = 1000; i > 0; --i) {
+       char buf[10];    
+       snprintf(buf, 10, "%d", i*100 - 1);
+       h.find(buf);
+       std::cerr << "Search " << i*100 - 1 << " gives " << h.find(buf)->second << std::endl;
+    }
+  }
+
 }
