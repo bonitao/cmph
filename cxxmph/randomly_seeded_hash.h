@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 
-#include "../src/cmph_types.h"
+#include "cmph_types.h"
 #include "MurmurHash2.h"
 #include "stringpiece.h"
 

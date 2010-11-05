@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "../src/cmph_types.h"
+#include "cmph_types.h"
 
 namespace cxxmph {
 

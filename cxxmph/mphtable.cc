@@ -32,17 +32,11 @@ static cmph_uint8 kBdzLookupTable[] =
 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 0
 };
 
-static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
-void set_2bit_value(vector<cmph_uint8> *d, cmph_uint8 i, cmph_uint8 v) {
-  (*d)[(i >> 2)] &= (v << ((i & 3) << 1)) | valuemask[i & 3];
-}
-cmph_uint32 get_2bit_value(const vector<cmph_uint8>& d, cmph_uint8 i) {
-  return (d[(i >> 2)] >> ((i & 3) << 1)) & 3;
-}
-
 }  // anonymous namespace
 
 namespace cxxmph {
+
+const cmph_uint8 MPHTable::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
 
 void MPHTable::clear() {
   // TODO(davi) impolement me
@@ -166,18 +160,6 @@ void MPHTable::Ranking() {
   }
 }
 
-cmph_uint32 MPHTable::Search(const key_type& key) const {
-  cmph_uint32 h[3];
-  for (int i = 0; i < 3; ++i) h[i] = hash_function_[i](key);
-  // hash_function_[0](key, h);
-  h[0] = h[0] % r_;
-  h[1] = h[1] % r_ + r_;
-  h[2] = h[2] % r_ + (r_ << 1);
-  cmph_uint32 vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
-  cerr << "Search found vertex " << vertex << endl;
-  return Rank(vertex);
-}
-
 cmph_uint32 MPHTable::Rank(cmph_uint32 vertex) const {
   cmph_uint32 index = vertex >> b_;
   cmph_uint32 base_rank = ranktable_[index];
@@ -200,10 +182,6 @@ cmph_uint32 MPHTable::Rank(cmph_uint32 vertex) const {
   }
   cerr << "Base rank: " << base_rank << endl;
   return base_rank;
-}
-
-cmph_uint32 MPHTable::index(const key_type& key) const {
-  return Search(key);
 }
 
 }  // namespace cxxmph

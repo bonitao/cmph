@@ -12,7 +12,12 @@ template <> struct hash<std::string> {
     return MurmurHash2(s.c_str(), s.length(), 1 /* seed */);
   }
 };
-}
+template <> struct hash<long long int> {
+  std::size_t operator()(const long long int& s) const {
+    return MurmurHash2(reinterpret_cast<const char*>(&s), sizeof(long long int), 1 /* seed */);
+  }
+};
+} // namespace __gnu_cxx
 
 namespace cxxmph {
 
@@ -63,11 +68,25 @@ class cmph_hash_map {
   void pack() { rehash(); }
 
  private:
-  void rehash();
-  std::vector<value_type> values_;
-  MPHTable table_;
-  typedef typename __gnu_cxx::hash_map<Key, Data, HashFcn, EqualKey, Alloc> slack_type;
-  slack_type slack_;
+   template <typename iterator>
+   struct iterator_first : public iterator {
+     iterator_first(iterator it) : iterator(it) { }
+      const typename iterator::value_type::first_type& operator*() const {
+      return this->iterator::operator*().first;
+     }
+   };
+
+   template <typename iterator>
+     iterator_first<iterator> make_iterator_first(iterator it) {
+     return iterator_first<iterator>(it);
+   }
+
+
+   void rehash();
+   std::vector<value_type> values_;
+   SimpleMPHTable<Key, typename OptimizedSeededHashFunction<HashFcn>::hash_function> table_;
+   typedef typename __gnu_cxx::hash_map<Key, Data, HashFcn, EqualKey, Alloc> slack_type;
+   slack_type slack_;
 };
 
 CMPH_TMPL_SPEC

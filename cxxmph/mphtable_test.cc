@@ -7,7 +7,7 @@
 
 using std::string;
 using std::vector;
-using cxxmph::MPHTable;
+using cxxmph::SimpleMPHTable;
 
 int main(int argc, char** argv) {
 
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   keys.push_back("diogo");
   keys.push_back("algume");
 
-  MPHTable mphtable;
+  SimpleMPHTable<string> mphtable;
   assert(mphtable.Reset(keys.begin(), keys.end()));
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
