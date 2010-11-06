@@ -67,11 +67,20 @@ class cmph_hash_map {
      return iterator_first<iterator>(it);
    }
 
+   struct slack_hashfnc {
+     size_t operator()(const const_iterator& it) const { return HashFcn()(it->first); }
+   };
+   struct slack_equalkey {
+     bool operator()(const const_iterator& lhs, const const_iterator& rhs) {
+       return EqualKey()(lhs->first, rhs->first);
+     }
+   };
+
 
    void rehash();
    std::vector<value_type> values_;
    SimpleMPHTable<Key, typename OptimizedSeededHashFunction<HashFcn>::hash_function> table_;
-   typedef typename __gnu_cxx::hash_map<Key, Data, HashFcn, EqualKey, Alloc> slack_type;
+   typedef typename __gnu_cxx::hash_set<const_iterator, slack_hashfnc, slack_equalkey, Alloc> slack_type;
    slack_type slack_;
 };
 
@@ -91,7 +100,7 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   iterator it = find(x.first);
   if (it != end()) return std::make_pair(it, false);
   values_.push_back(x);
-  slack_.insert(std::make_pair(x.first, values_.size() - 1));
+  slack_.insert(values_.end() - 1);
   if ((slack_.size() > 10 && table_.size() == 0) ||
       (table_.size() && slack_.size() > table_.size() * 2)) {
      rehash();
@@ -106,9 +115,10 @@ CMPH_METHOD_DECL(void_type, rehash)() {
   table_.Reset(make_iterator_first(values_.begin()),
                make_iterator_first(values_.end()));
   std::vector<value_type> new_values(values_.size());
-  for (unsigned int i = 0; i < values_.size(); ++i) {
-    size_type id = table_.index(values_[i].first);
-    new_values[id] = values_[i];
+  for (const_iterator it = values_.begin(), end = values_.end();
+       it != end; ++it) {
+    size_type id = table_.index(it->first);
+    new_values[id] = *it;
   }
   values_.swap(new_values);
 }
@@ -137,8 +147,10 @@ CMPH_METHOD_DECL(void_type, erase)(const key_type& k) {
 
 CMPH_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   if (!slack_.empty()) {
-    typename slack_type::const_iterator it = slack_.find(k);
-    if (it != slack_.end()) return values_.begin() + it->second;
+    iterator slack_key;
+    slack_key.first = k;
+    typename slack_type::const_iterator it = slack_.find(slack_key);
+    if (it != slack_.end()) return *it;
   }
   if (table_.size() == 0) return end();
   size_type id = table_.index(k);
