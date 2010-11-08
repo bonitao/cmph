@@ -1,4 +1,5 @@
-#include <ext/hash_map>
+#include <algorithm>
+#include <unordered_map>
 #include <vector>
 #include <utility>  // for std::pair
 
@@ -12,7 +13,7 @@ namespace cxxmph {
 #define CMPH_CLASS_SPEC cmph_hash_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define CMPH_METHOD_DECL(r, m) CMPH_TMPL_SPEC typename CMPH_CLASS_SPEC::r CMPH_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = __gnu_cxx::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
+template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class cmph_hash_map {
  public:
   typedef Key key_type;
@@ -67,20 +68,11 @@ class cmph_hash_map {
      return iterator_first<iterator>(it);
    }
 
-   struct slack_hashfnc {
-     size_t operator()(const const_iterator& it) const { return HashFcn()(it->first); }
-   };
-   struct slack_equalkey {
-     bool operator()(const const_iterator& lhs, const const_iterator& rhs) {
-       return EqualKey()(lhs->first, rhs->first);
-     }
-   };
-
-
    void rehash();
    std::vector<value_type> values_;
    SimpleMPHTable<Key, typename OptimizedSeededHashFunction<HashFcn>::hash_function> table_;
-   typedef typename __gnu_cxx::hash_set<const_iterator, slack_hashfnc, slack_equalkey, Alloc> slack_type;
+   // TODO(davi) optimize slack to no hold a copy of the key
+   typedef typename std::unordered_map<Key, cmph_uint32, HashFcn, EqualKey, Alloc> slack_type;
    slack_type slack_;
 };
 
@@ -100,9 +92,11 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   iterator it = find(x.first);
   if (it != end()) return std::make_pair(it, false);
   values_.push_back(x);
-  slack_.insert(values_.end() - 1);
-  if ((slack_.size() > 10 && table_.size() == 0) ||
-      (table_.size() && slack_.size() > table_.size() * 2)) {
+  slack_.insert(std::make_pair(x.first, values_.size() - 1));
+  if (slack_.size() == table_.size() ||
+      (slack_.size() >= 256 && table_.size() == 0)) {
+     // TODO(davi) debug only, remove afterwards
+     std::sort(values_.begin(), values_.end());
      rehash();
   }
   it = find(x.first);
@@ -111,6 +105,10 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 
 CMPH_METHOD_DECL(void_type, rehash)() {
   if (values_.empty()) return;
+  std::cerr << "Calling Reset with "
+            << table_.size() << " keys in table " 
+	    << slack_.size() << " keys in slack "
+	    << values_.size() << " key in total" << std::endl;
   slack_type().swap(slack_);
   table_.Reset(make_iterator_first(values_.begin()),
                make_iterator_first(values_.end()));
@@ -147,10 +145,8 @@ CMPH_METHOD_DECL(void_type, erase)(const key_type& k) {
 
 CMPH_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   if (!slack_.empty()) {
-    iterator slack_key;
-    slack_key.first = k;
-    typename slack_type::const_iterator it = slack_.find(slack_key);
-    if (it != slack_.end()) return *it;
+    typename slack_type::const_iterator it = slack_.find(k);
+    if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (table_.size() == 0) return end();
   size_type id = table_.index(k);
@@ -162,8 +158,6 @@ CMPH_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 CMPH_METHOD_DECL(iterator, find)(const key_type& k) {
   if (!slack_.empty()) {
     typename slack_type::const_iterator it = slack_.find(k);
-    // TODO(davi) this is broken, it->second should be an integer
-    // otherwise I cannot access values_ iterators.
     if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (table_.size() == 0) return end();

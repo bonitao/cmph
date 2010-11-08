@@ -4,6 +4,7 @@
 // Minimal perfect hash abstraction implementing the BDZ algorithm
 
 #include <cmath>
+#include <unordered_map>  // for std::hash
 #include <vector>
 
 #include <iostream>
@@ -133,7 +134,7 @@ cmph_uint32 MPHTable::index(const Key& key) const {
   return Rank(vertex);
 }
 
-template <class Key, class HashFcn = typename OptimizedSeededHashFunction<__gnu_cxx::hash<Key> >::hash_function>
+template <class Key, class HashFcn = typename OptimizedSeededHashFunction<std::hash<Key> >::hash_function>
 class SimpleMPHTable : public MPHTable {
  public:
   template <class ForwardIterator>

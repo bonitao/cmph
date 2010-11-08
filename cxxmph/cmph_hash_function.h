@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <ext/hash_map>  // for __gnu_cxx::hash
+#include <unordered_map>  // for std::hash
 
 #include "MurmurHash2.h"
 #include "stringpiece.h"
@@ -33,7 +33,7 @@ template <>
 struct seeded_hash_function<Murmur2> {
   template <class Key>
   cmph_uint32 operator()(const Key& k, cmph_uint32 seed) const {
-    return MurmurHash2(k, sizeof(Key), seed);
+    return MurmurHash2(reinterpret_cast<const void*>(&k), sizeof(Key), seed);
   }
 };
 
@@ -48,30 +48,34 @@ struct seeded_hash_function<Murmur2StringPiece> {
 
 template <class HashFcn> struct OptimizedSeededHashFunction
 { typedef seeded_hash_function<HashFcn> hash_function; };
-// Use Murmur2 instead for all types defined in __gnu_cxx::hash, plus
+// Use Murmur2 instead for all types defined in std::hash, plus
 // std::string which is commonly extended.
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<char*> >
+template <> struct OptimizedSeededHashFunction<std::hash<char*> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<const char*> >
+template <> struct OptimizedSeededHashFunction<std::hash<const char*> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<std::string> >
+template <> struct OptimizedSeededHashFunction<std::hash<std::string> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
 
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<char> >
+template <> struct OptimizedSeededHashFunction<std::hash<char> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<unsigned char> >
+template <> struct OptimizedSeededHashFunction<std::hash<unsigned char> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<short> >
+template <> struct OptimizedSeededHashFunction<std::hash<short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<unsigned short> >
+template <> struct OptimizedSeededHashFunction<std::hash<unsigned short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<int> >
+template <> struct OptimizedSeededHashFunction<std::hash<int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<unsigned int> >
+template <> struct OptimizedSeededHashFunction<std::hash<unsigned int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<long> >
+template <> struct OptimizedSeededHashFunction<std::hash<long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct OptimizedSeededHashFunction<__gnu_cxx::hash<unsigned long> >
+template <> struct OptimizedSeededHashFunction<std::hash<unsigned long> >
+{ typedef seeded_hash_function<Murmur2> hash_function; };
+template <> struct OptimizedSeededHashFunction<std::hash<long long> >
+{ typedef seeded_hash_function<Murmur2> hash_function; };
+template <> struct OptimizedSeededHashFunction<std::hash<unsigned long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 
 }  // namespace cxxmph

@@ -57,10 +57,12 @@ int main(int argc, char** argv) {
   ifstream f(argv[optind]);
   string buffer;
   while (!getline(f, buffer).eof()) keys.push_back(buffer);
-  cmph_hash_map<const char*, string> table;
-  for (int i = 0; i < keys.size(); ++i) table[keys[i].c_str()] = keys[i];
-  cmph_hash_map<const char*, string>::const_iterator it = table.begin();
-  cmph_hash_map<const char*, string>::const_iterator end = table.end();
+  for (int i = 0; i < keys.size(); ++i) string s = keys[i];
+  cmph_hash_map<string, string> table;
+
+  for (int i = 0; i < keys.size(); ++i) table[keys[i]] = keys[i];
+  cmph_hash_map<string, string>::const_iterator it = table.begin();
+  cmph_hash_map<string, string>::const_iterator end = table.end();
   for (; it != end; ++it) {
     cout << (it - table.begin()) << ": " << it->first
          <<" -> " << it->second << endl;
