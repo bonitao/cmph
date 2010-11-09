@@ -114,7 +114,7 @@ bool MPHTable::Mapping(
     cmph_uint32 v0 = h[0] % r_;
     cmph_uint32 v1 = h[1] % r_ + r_;
     cmph_uint32 v2 = h[2] % r_ + (r_ << 1);
-    cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
+    // cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
     graph.AddEdge(TriGraph::Edge(v0, v1, v2));
   }
   if (GenerateQueue(&graph, queue)) {
@@ -132,12 +132,12 @@ cmph_uint32 MPHTable::index(const Key& key) const {
   h[1] = h[1] % r_ + r_;
   h[2] = h[2] % r_ + (r_ << 1);
   assert(g_.size());
-  cerr << "g_.size() " << g_.size() << " h0 >> 2 " << (h[0] >> 2) << endl;
+  //cerr << "g_.size() " << g_.size() << " h0 >> 2 " << (h[0] >> 2) << endl;
   assert((h[0] >> 2) <g_.size());
   assert((h[1] >> 2) <g_.size());
   assert((h[2] >> 2) <g_.size());
   cmph_uint32 vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
-  cerr << "Search found vertex " << vertex << endl;
+  // cerr << "Search found vertex " << vertex << endl;
   return Rank(vertex);
 }
 

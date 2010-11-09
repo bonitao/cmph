@@ -46,7 +46,7 @@ void TriGraph::AddEdge(const Edge& edge) {
 }
 
 void TriGraph::RemoveEdge(cmph_uint32 current_edge) {
-  cerr << "Removing edge " << current_edge << " from " << nedges_ << " existing edges " << endl;
+  // cerr << "Removing edge " << current_edge << " from " << nedges_ << " existing edges " << endl;
   for (int i = 0; i < 3; ++i) {
     cmph_uint32 vertex = edges_[current_edge][i];
     cmph_uint32 edge1 = first_edge_[vertex];
