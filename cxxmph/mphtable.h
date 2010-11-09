@@ -64,10 +64,10 @@ class MPHTable {
   cmph_uint32 hash_seed_[3];
 
   static const cmph_uint8 valuemask[];
-  static void set_2bit_value(std::vector<cmph_uint8> *d, cmph_uint8 i, cmph_uint8 v) {
+  static void set_2bit_value(std::vector<cmph_uint8> *d, cmph_uint32 i, cmph_uint8 v) {
     (*d)[(i >> 2)] &= (v << ((i & 3) << 1)) | valuemask[i & 3];
   }
-  static cmph_uint32 get_2bit_value(const std::vector<cmph_uint8>& d, cmph_uint8 i) {
+  static cmph_uint32 get_2bit_value(const std::vector<cmph_uint8>& d, cmph_uint32 i) {
     return (d[(i >> 2)] >> ((i & 3) << 1)) & 3;
   }
 
@@ -85,12 +85,13 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
 
   cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
 
-  int iterations = 1000;
+  int iterations = 10;
   std::vector<TriGraph::Edge> edges;
   std::vector<cmph_uint32> queue;
   while (1) {
     cerr << "Iterations missing: " << iterations << endl;
-    for (int i = 0; i < 3; ++i) hash_seed_[i] = random();
+    for (int i = 0; i < 3; ++i) hash_seed_[i] = random() % m_;
+    // for (int i = 0; i < 3; ++i) hash_seed_[i] = random() + i;
     if (Mapping<SeededHashFcn>(begin, end, &edges, &queue)) break;
     else --iterations;
     if (iterations == 0) break;

@@ -100,16 +100,17 @@ void MPHTable::Assigning(
   // Initialize vector of half nibbles with all bits set.
   cmph_uint32 sizeg = static_cast<cmph_uint32>(ceil(n_/4.0));
   vector<cmph_uint8>(sizeg, std::numeric_limits<cmph_uint8>::max()).swap(g_);
+  assert(get_2bit_value(g_, 291) == kUnassigned);
 
   cmph_uint32 nedges = m_;  // for legibility
   for (int i = nedges - 1; i + 1 >= 1; --i) {
     current_edge = queue[i];
-    cerr << "Current edge " << current_edge << " at queue pos " << i << endl;
+    if (current_edge == 157) cerr << "Edge 157" << endl;
     const TriGraph::Edge& e = edges[current_edge];
     cerr << "B: " << e[0] << " " << e[1] << " " << e[2] << " -> "
         << get_2bit_value(g_, e[0]) << " "
         << get_2bit_value(g_, e[1]) << " "
-        << get_2bit_value(g_, e[2]) << " " << endl;
+        << get_2bit_value(g_, e[2]) << " edge " << current_edge  << endl;
     if (!marked_vertices[e[0]]) {
       if (!marked_vertices[e[1]]) {
         set_2bit_value(&g_, e[1], kUnassigned);
@@ -121,6 +122,7 @@ void MPHTable::Assigning(
         marked_vertices[e[2]] = true;
       }
       set_2bit_value(&g_, e[0], (6 - (get_2bit_value(g_, e[1]) + get_2bit_value(g_, e[2]))) % 3);
+      if (e[0] == 291) cerr << "Vertex 291 " << get_2bit_value(g_, 291) << " updated at case 1" <<  endl;
       marked_vertices[e[0]] = true;
     } else if (!marked_vertices[e[1]]) {
       if (!marked_vertices[e[2]]) {
@@ -128,9 +130,11 @@ void MPHTable::Assigning(
         marked_vertices[e[2]] = true;
       }
       set_2bit_value(&g_, e[1], (7 - (get_2bit_value(g_, e[0]) + get_2bit_value(g_, e[2]))) % 3);
+      if (e[1] == 291) cerr << "Vertex 291 " << get_2bit_value(g_, 291) << " updated at case 2" <<  endl;
       marked_vertices[e[1]] = true;
     } else {
       set_2bit_value(&g_, e[2], (8 - (get_2bit_value(g_, e[0]) + get_2bit_value(g_, e[1]))) % 3);
+      if (e[2] == 291) cerr << "Vertex 291 " << get_2bit_value(g_, 291) << " updated at case 3" << endl;
       marked_vertices[e[2]] = true;
     }
     cerr << "A: " << e[0] << " " << e[1] << " " << e[2] << " -> "
@@ -177,8 +181,8 @@ cmph_uint32 MPHTable::Rank(cmph_uint32 vertex) const {
   for (unsigned int i = 0; i < n_; ++i) {
     cerr << get_2bit_value(g_, i) << " ";
   }
+  cerr << endl;
   while (beg_idx_v < vertex) {
-    cerr << get_2bit_value(g_, beg_idx_v) << " ";
     if (get_2bit_value(g_, beg_idx_v) != kUnassigned) ++base_rank;
     ++beg_idx_v;
   }

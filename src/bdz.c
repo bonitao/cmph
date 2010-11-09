@@ -444,6 +444,7 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 				SETBIT(marked_vertices, v2);
 			}
 			SETVALUE1(bdz->g, v0, (6-(GETVALUE(bdz->g, v1) + GETVALUE(bdz->g,v2)))%3);
+			if (v0 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v0);
 		} else if(!GETBIT(marked_vertices, v1)) {
 			if(!GETBIT(marked_vertices, v2))
@@ -452,9 +453,11 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 				SETBIT(marked_vertices, v2);
 			}
 			SETVALUE1(bdz->g, v1, (7-(GETVALUE(bdz->g, v0)+GETVALUE(bdz->g, v2)))%3);
+			if (v1 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v1);
 		}else {
 			SETVALUE1(bdz->g, v2, (8-(GETVALUE(bdz->g,v0)+GETVALUE(bdz->g, v1)))%3);
+			if (v2 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v2);
 		}		
 		DEBUGP("A:%u %u %u -- %u %u %u\n", v0, v1, v2, GETVALUE(bdz->g, v0), GETVALUE(bdz->g, v1), GETVALUE(bdz->g, v2));

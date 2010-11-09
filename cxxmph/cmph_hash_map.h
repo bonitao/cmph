@@ -95,8 +95,6 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   slack_.insert(std::make_pair(x.first, values_.size() - 1));
   if (slack_.size() == table_.size() ||
       (slack_.size() >= 256 && table_.size() == 0)) {
-     // TODO(davi) debug only, remove afterwards
-     std::sort(values_.begin(), values_.end());
      rehash();
   }
   it = find(x.first);
