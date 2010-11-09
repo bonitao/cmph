@@ -3,6 +3,7 @@
 
 // Minimal perfect hash abstraction implementing the BDZ algorithm
 
+#include <cassert>
 #include <cmath>
 #include <unordered_map>  // for std::hash
 #include <vector>
@@ -129,6 +130,11 @@ cmph_uint32 MPHTable::index(const Key& key) const {
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
   h[2] = h[2] % r_ + (r_ << 1);
+  assert(g_.size());
+  cerr << "g_.size() " << g_.size() << " h0 >> 2 " << (h[0] >> 2) << endl;
+  assert((h[0] >> 2) <g_.size());
+  assert((h[1] >> 2) <g_.size());
+  assert((h[2] >> 2) <g_.size());
   cmph_uint32 vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
   cerr << "Search found vertex " << vertex << endl;
   return Rank(vertex);

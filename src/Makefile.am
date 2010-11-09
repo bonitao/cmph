@@ -2,7 +2,7 @@ bin_PROGRAMS = cmph
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h cmph_time.h chd_ph.h
 libcmph_la_SOURCES =  hash.h hash.c \
-		      jenkins_hash.h jenkins_hash.c\
+		      jenkins_hash.h jenkins_hash.c MurmurHash2.h\
 		      hash_state.h debug.h \
 		      vstack.h vstack.c vqueue.h vqueue.c\
 		      graph.h graph.c bitbool.h \

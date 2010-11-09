@@ -9,7 +9,7 @@ using std::endl;
 using std::vector;
 
 namespace {
-static const cmph_uint8 kInvalidEdge = std::numeric_limits<cmph_uint8>::max();
+static const cmph_uint32 kInvalidEdge = std::numeric_limits<cmph_uint32>::max();
 } 
 
 namespace cxxmph {
@@ -65,5 +65,17 @@ void TriGraph::RemoveEdge(cmph_uint32 current_edge) {
     --vertex_degree_[vertex];
   }
 }
+
+void TriGraph::DebugGraph() const {
+  int i;
+  for(i = 0; i < edges_.size(); i++){
+    cerr << i << "  " << edges_[i][0] << " " << edges_[i][1] << " " << edges_[i][2]
+         << " nexts " << next_edge_[i][0] << " " << next_edge_[i][1] << " " << next_edge_[i][2] << endl;
+  }
+  for(i = 0; i < first_edge_.size();i++){
+    cerr << "first for vertice " <<i << " " << first_edge_[i] << endl;
+  }
+}
+
      
 }  // namespace cxxmph

@@ -110,8 +110,10 @@ CMPH_METHOD_DECL(void_type, rehash)() {
 	    << slack_.size() << " keys in slack "
 	    << values_.size() << " key in total" << std::endl;
   slack_type().swap(slack_);
-  table_.Reset(make_iterator_first(values_.begin()),
-               make_iterator_first(values_.end()));
+  bool success = table_.Reset(
+      make_iterator_first(values_.begin()),
+      make_iterator_first(values_.end()));
+  assert(success);
   std::vector<value_type> new_values(values_.size());
   for (const_iterator it = values_.begin(), end = values_.end();
        it != end; ++it) {

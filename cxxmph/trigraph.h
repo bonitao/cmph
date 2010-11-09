@@ -30,6 +30,7 @@ class TriGraph {
   void AddEdge(const Edge& edge);
   void RemoveEdge(cmph_uint32 edge_id);
   void ExtractEdgesAndClear(std::vector<Edge>* edges);
+  void DebugGraph() const;
 
   const std::vector<Edge>& edges() const { return edges_; }
   const std::vector<cmph_uint8>& vertex_degree() const { return vertex_degree_; }

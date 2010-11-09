@@ -178,6 +178,7 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 		};
 	};
         DEBUGP("Queue head %d Queue tail %d\n", queue_head, queue_tail);
+	bdz_dump_graph(graph3,graph3->nedges,graph3->nedges+graph3->nedges/4);
 	while(queue_tail!=queue_head){
 		curr_edge=queue[queue_tail++];
 		bdz_remove_edge(graph3,curr_edge);

@@ -69,6 +69,7 @@ bool MPHTable::GenerateQueue(
   // At this point queue head is the number of edges touching at least one
   // vertex of degree 1.
   cerr << "Queue head " << queue_head << " Queue tail " << queue_tail << endl;
+  graph->DebugGraph();
   while (queue_tail != queue_head) {
     cmph_uint32 current_edge = queue[queue_tail++];
     graph->RemoveEdge(current_edge);
