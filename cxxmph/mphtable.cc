@@ -95,13 +95,13 @@ bool MPHTable::GenerateQueue(
 
 void MPHTable::Assigning(
     const vector<TriGraph::Edge>& edges, const vector<cmph_uint32>& queue) {
-  cmph_uint32 nedges = m_;
   cmph_uint32 current_edge = 0;
-  vector<bool> marked_vertices(nedges + 1);
+  vector<bool> marked_vertices(n_ + 1);
   // Initialize vector of half nibbles with all bits set.
   cmph_uint32 sizeg = static_cast<cmph_uint32>(ceil(n_/4.0));
   vector<cmph_uint8>(sizeg, std::numeric_limits<cmph_uint8>::max()).swap(g_);
 
+  cmph_uint32 nedges = m_;  // for legibility
   for (int i = nedges - 1; i + 1 >= 1; --i) {
     current_edge = queue[i];
     cerr << "Current edge " << current_edge << " at queue pos " << i << endl;
@@ -117,6 +117,7 @@ void MPHTable::Assigning(
       }
       if (!marked_vertices[e[2]]) {
         set_2bit_value(&g_, e[2], kUnassigned);
+	assert(marked_vertices.size() > e[2]);
         marked_vertices[e[2]] = true;
       }
       set_2bit_value(&g_, e[0], (6 - (get_2bit_value(g_, e[1]) + get_2bit_value(g_, e[2]))) % 3);

@@ -11,7 +11,7 @@ using cxxmph::cmph_hash_map;
 
 int main(int argc, char** argv) {
   cmph_hash_map<int64_t, int64_t> b;
-  for (int i = 0; i < 2*500; ++i) {
+  for (int i = 0; i < 257; ++i) {
     b.insert(make_pair(i, i));
   }
   /*
