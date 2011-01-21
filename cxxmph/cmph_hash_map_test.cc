@@ -14,6 +14,9 @@ int main(int argc, char** argv) {
   for (int i = 0; i < 2*1000*1000; ++i) {
     b.insert(make_pair(i, i));
   }
+  for (int i = 0; i < 100*1000*1000; ++i) {
+    b.find(i);
+  }
   /*
   cmph_hash_map<string, int> h;
   h.insert(std::make_pair("-1",-1));
