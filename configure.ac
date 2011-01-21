@@ -32,6 +32,7 @@ AC_CHECK_HEADERS([getopt.h math.h])
 dnl Checks for libraries.
 AC_CHECK_LIBM  
 LDFLAGS="$LIBM $LDFLAGS"
+CFLAGS="-Wall -Werror"
 
 dnl Checks for library functions.
 
