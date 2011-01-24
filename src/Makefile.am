@@ -23,6 +23,7 @@ libcmph_la_SOURCES =  hash.h hash.c \
 		      select.h select.c select_lookup_tables.h \
 		      compressed_seq.h compressed_seq.c \
 		      compressed_rank.h compressed_rank.c \
+		      cmph_benchmark.h cmph_benchmark.cc \
 		      cmph_time.h
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
