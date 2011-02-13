@@ -3,6 +3,8 @@
 
 // Minimal perfect hash abstraction implementing the BDZ algorithm
 
+#include <stdint.h>
+
 #include <cassert>
 #include <cmath>
 #include <unordered_map>  // for std::hash
@@ -13,61 +15,61 @@
 using std::cerr;
 using std::endl;
 
-#include "cmph_hash_function.h"
+#include "cxxmph_hash.h"
 #include "trigraph.h"
 
 namespace cxxmph {
 
 class MPHTable {
  public:
-  MPHTable(double c = 1.23, cmph_uint8 b = 7) :
+  MPHTable(double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), r_(0) { }
   ~MPHTable() {}
 
   template <class SeededHashFcn, class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end);
   template <class SeededHashFcn, class Key>  // must agree with Reset
-  cmph_uint32 index(const Key& x) const;
-  cmph_uint32 size() const { return m_; }
+  uint32_t index(const Key& x) const;
+  uint32_t size() const { return m_; }
   void clear();
 
  private:
   template <class SeededHashFcn, class ForwardIterator>
   bool Mapping(ForwardIterator begin, ForwardIterator end,
                std::vector<TriGraph::Edge>* edges,
-               std::vector<cmph_uint32>* queue);
-  bool GenerateQueue(TriGraph* graph, std::vector<cmph_uint32>* queue);
+               std::vector<uint32_t>* queue);
+  bool GenerateQueue(TriGraph* graph, std::vector<uint32_t>* queue);
   void Assigning(const std::vector<TriGraph::Edge>& edges,
-                 const std::vector<cmph_uint32>& queue);
+                 const std::vector<uint32_t>& queue);
   void Ranking();
-  cmph_uint32 Rank(cmph_uint32 vertex) const;
+  uint32_t Rank(uint32_t vertex) const;
 
   // Algorithm parameters
   double c_;  // Number of bits per key (? is it right)
-  cmph_uint8 b_;  // Number of bits of the kth index in the ranktable
+  uint8_t b_;  // Number of bits of the kth index in the ranktable
 
   // Values used during generation
-  cmph_uint32 m_;  // edges count
-  cmph_uint32 n_;  // vertex count
-  cmph_uint32 k_;  // kth index in ranktable, $k = log_2(n=3r)\varepsilon$
+  uint32_t m_;  // edges count
+  uint32_t n_;  // vertex count
+  uint32_t k_;  // kth index in ranktable, $k = log_2(n=3r)\varepsilon$
 
   // Values used during search
 
   // Partition vertex count, derived from c parameter.
-  cmph_uint32 r_;
+  uint32_t r_;
   // The array containing the minimal perfect hash function graph.
-  std::vector<cmph_uint8> g_;
+  std::vector<uint8_t> g_;
   // The table used for the rank step of the minimal perfect hash function
-  std::vector<cmph_uint32> ranktable_;
+  std::vector<uint32_t> ranktable_;
   // The selected hash seed triplet for finding the edges in the minimal
   // perfect hash function graph.
-  cmph_uint32 hash_seed_[3];
+  uint32_t hash_seed_[3];
 
-  static const cmph_uint8 valuemask[];
-  static void set_2bit_value(std::vector<cmph_uint8> *d, cmph_uint32 i, cmph_uint8 v) {
+  static const uint8_t valuemask[];
+  static void set_2bit_value(std::vector<uint8_t> *d, uint32_t i, uint8_t v) {
     (*d)[(i >> 2)] &= (v << ((i & 3) << 1)) | valuemask[i & 3];
   }
-  static cmph_uint32 get_2bit_value(const std::vector<cmph_uint8>& d, cmph_uint32 i) {
+  static uint32_t get_2bit_value(const std::vector<uint8_t>& d, uint32_t i) {
     return (d[(i >> 2)] >> ((i & 3) << 1)) & 3;
   }
 
@@ -78,7 +80,7 @@ class MPHTable {
 template <class SeededHashFcn, class ForwardIterator>
 bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
   m_ = end - begin;
-  r_ = static_cast<cmph_uint32>(ceil((c_*m_)/3));
+  r_ = static_cast<uint32_t>(ceil((c_*m_)/3));
   if ((r_ % 2) == 0) r_ += 1;
   n_ = 3*r_;
   k_ = 1U << b_;
@@ -87,7 +89,7 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
 
   int iterations = 10;
   std::vector<TriGraph::Edge> edges;
-  std::vector<cmph_uint32> queue;
+  std::vector<uint32_t> queue;
   while (1) {
     cerr << "Iterations missing: " << iterations << endl;
     for (int i = 0; i < 3; ++i) hash_seed_[i] = random() % m_;
@@ -106,14 +108,14 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
 template <class SeededHashFcn, class ForwardIterator>
 bool MPHTable::Mapping(
     ForwardIterator begin, ForwardIterator end,
-    std::vector<TriGraph::Edge>* edges, std::vector<cmph_uint32>* queue) {
+    std::vector<TriGraph::Edge>* edges, std::vector<uint32_t>* queue) {
   TriGraph graph(n_, m_);
   for (ForwardIterator it = begin; it != end; ++it) { 
-    cmph_uint32 h[3];
+    uint32_t h[3];
     for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
-    cmph_uint32 v0 = h[0] % r_;
-    cmph_uint32 v1 = h[1] % r_ + r_;
-    cmph_uint32 v2 = h[2] % r_ + (r_ << 1);
+    uint32_t v0 = h[0] % r_;
+    uint32_t v1 = h[1] % r_ + r_;
+    uint32_t v2 = h[2] % r_ + (r_ << 1);
     // cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
     graph.AddEdge(TriGraph::Edge(v0, v1, v2));
   }
@@ -125,8 +127,8 @@ bool MPHTable::Mapping(
 }
 
 template <class SeededHashFcn, class Key>
-cmph_uint32 MPHTable::index(const Key& key) const {
-  cmph_uint32 h[3];
+uint32_t MPHTable::index(const Key& key) const {
+  uint32_t h[3];
   for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
@@ -136,19 +138,19 @@ cmph_uint32 MPHTable::index(const Key& key) const {
   assert((h[0] >> 2) <g_.size());
   assert((h[1] >> 2) <g_.size());
   assert((h[2] >> 2) <g_.size());
-  cmph_uint32 vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
+  uint32_t vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
   // cerr << "Search found vertex " << vertex << endl;
   return Rank(vertex);
 }
 
-template <class Key, class HashFcn = typename OptimizedSeededHashFunction<std::hash<Key> >::hash_function>
+template <class Key, class HashFcn = typename cxxmph_hash<std::hash<Key> >::hash_function>
 class SimpleMPHTable : public MPHTable {
  public:
   template <class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end) {
     return MPHTable::Reset<HashFcn>(begin, end);
   }
-  cmph_uint32 index(const Key& key) { return MPHTable::index<HashFcn>(key); }
+  uint32_t index(const Key& key) { return MPHTable::index<HashFcn>(key); }
 };
 
 }  // namespace cxxmph

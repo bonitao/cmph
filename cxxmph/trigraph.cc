@@ -9,12 +9,12 @@ using std::endl;
 using std::vector;
 
 namespace {
-static const cmph_uint32 kInvalidEdge = std::numeric_limits<cmph_uint32>::max();
+static const uint32_t kInvalidEdge = std::numeric_limits<uint32_t>::max();
 } 
 
 namespace cxxmph {
 
-TriGraph::TriGraph(cmph_uint32 nvertices, cmph_uint32 nedges)
+TriGraph::TriGraph(uint32_t nvertices, uint32_t nedges)
       : nedges_(0),
         edges_(nedges),
         next_edge_(nedges),
@@ -23,8 +23,8 @@ TriGraph::TriGraph(cmph_uint32 nvertices, cmph_uint32 nedges)
 
 void TriGraph::ExtractEdgesAndClear(vector<Edge>* edges) {
   vector<Edge>().swap(next_edge_);
-  vector<cmph_uint32>().swap(first_edge_);
-  vector<cmph_uint8>().swap(vertex_degree_);
+  vector<uint32_t>().swap(first_edge_);
+  vector<uint8_t>().swap(vertex_degree_);
   nedges_ = 0;
   edges->swap(edges_);
 }
@@ -45,13 +45,13 @@ void TriGraph::AddEdge(const Edge& edge) {
    ++nedges_;
 }
 
-void TriGraph::RemoveEdge(cmph_uint32 current_edge) {
+void TriGraph::RemoveEdge(uint32_t current_edge) {
   // cerr << "Removing edge " << current_edge << " from " << nedges_ << " existing edges " << endl;
   for (int i = 0; i < 3; ++i) {
-    cmph_uint32 vertex = edges_[current_edge][i];
-    cmph_uint32 edge1 = first_edge_[vertex];
-    cmph_uint32 edge2 = kInvalidEdge;
-    cmph_uint32 j = 0;
+    uint32_t vertex = edges_[current_edge][i];
+    uint32_t edge1 = first_edge_[vertex];
+    uint32_t edge2 = kInvalidEdge;
+    uint32_t j = 0;
     while (edge1 != current_edge && edge1 != kInvalidEdge) {
       edge2 = edge1;
       if (edges_[edge1][0] == vertex) j = 0;

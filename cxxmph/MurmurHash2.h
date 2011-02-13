@@ -15,7 +15,7 @@
 // 2. It will not produce the same results on little-endian and big-endian
 //    machines.
 
-namespace {
+namespace cxxmph {
 
 unsigned int MurmurHash2 ( const void * key, int len, unsigned int seed )
 {
@@ -68,6 +68,6 @@ unsigned int MurmurHash2 ( const void * key, int len, unsigned int seed )
 	return h;
 } 
 
-}
+}  // namespace cxxmph
 
 #endif  // __CXXMPH_MURMUR_HASH2__

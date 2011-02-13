@@ -1,3 +1,5 @@
+// A simple benchmark tool around getrusage
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,17 +44,19 @@ int timeval_subtract (
 
 benchmark_t* find_benchmark(const char* name) {
   benchmark_t* benchmark = global_benchmarks;
-  while (benchmark->name != NULL) if (strcmp(benchmark->name, name) != 0) break;
-  if (!benchmark->name) return NULL;
+  while (benchmark && benchmark->name != NULL) {
+    if (strcmp(benchmark->name, name) == 0) break;
+    ++benchmark;
+  }
+  if (!benchmark || !benchmark->name) return NULL;
   return benchmark;
 }
 
 int global_benchmarks_length() {
-  benchmark_t* benchmark;
+  benchmark_t* benchmark = global_benchmarks;
   int length = 0;
-  if (global_benchmarks == 0) return 0;
-  benchmark = global_benchmarks;
-  while (benchmark->name != NULL) ++length;
+  if (benchmark == NULL) return 0;
+  while (benchmark->name != NULL) ++length, ++benchmark;
   return length;
 }
 
@@ -62,8 +66,11 @@ void bm_register(const char* name, void (*func)(int), int iters) {
   benchmark.name = name;
   benchmark.func = func;
   assert(!find_benchmark(name));
-  global_benchmarks = realloc(global_benchmarks, length + 1);
+  global_benchmarks = realloc(
+      global_benchmarks, (length + 2)*sizeof(benchmark_t));
   global_benchmarks[length] = benchmark;
+  memset(&benchmark, 0, sizeof(benchmark_t));  // pivot
+  global_benchmarks[length + 1] = benchmark;
 }
 
 void bm_start(const char* name) {
@@ -71,6 +78,7 @@ void bm_start(const char* name) {
   struct rusage rs;
 
   benchmark = find_benchmark(name);
+  assert(benchmark);
   int ret = getrusage(RUSAGE_SELF, &rs);  
   if (ret != 0) {
     perror("rusage failed");    
@@ -98,6 +106,19 @@ void bm_end(const char* name) {
   struct timeval stime;
   timeval_subtract(&stime, &benchmark->end.ru_stime, &benchmark->begin.ru_stime);
   
-  printf("User cpu time used: %ld.%6ld\n", utime.tv_sec, utime.tv_usec);
-  printf("System cpu time used: %ld.%6ld\n", stime.tv_sec, stime.tv_usec);
+  printf("Benchmark: %s\n", benchmark->name);
+  printf("User time used  : %ld.%6ld\n", utime.tv_sec, utime.tv_usec);
+  printf("System time used: %ld.%6ld\n", stime.tv_sec, stime.tv_usec);
+  printf("Wall time  used : %ld.%6ld\n", stime.tv_sec, stime.tv_usec);
+  printf("\n");
 }
+ 
+void run_benchmarks(int argc, char** argv) {
+  benchmark_t* benchmark = global_benchmarks;
+  while (benchmark && benchmark->name != NULL) {
+    bm_start(benchmark->name);
+    bm_end(benchmark->name);
+    ++benchmark;
+  }
+}
+

@@ -70,9 +70,9 @@ class cmph_hash_map {
 
    void rehash();
    std::vector<value_type> values_;
-   SimpleMPHTable<Key, typename OptimizedSeededHashFunction<HashFcn>::hash_function> table_;
+   SimpleMPHTable<Key, typename cxxmph_hash<HashFcn>::hash_function> table_;
    // TODO(davi) optimize slack to no hold a copy of the key
-   typedef typename std::unordered_map<Key, cmph_uint32, HashFcn, EqualKey, Alloc> slack_type;
+   typedef typename std::unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
    slack_type slack_;
 };
 

@@ -10,9 +10,9 @@ using std::vector;
 
 namespace {
 
-static const cmph_uint8 kUnassigned = 3;
+static const uint8_t kUnassigned = 3;
 // table used for looking up the number of assigned vertices to a 8-bit integer
-static cmph_uint8 kBdzLookupTable[] =
+static uint8_t kBdzLookupTable[] =
 {
 4, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 3, 3, 3, 2,
 4, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 3, 3, 3, 2,
@@ -36,20 +36,20 @@ static cmph_uint8 kBdzLookupTable[] =
 
 namespace cxxmph {
 
-const cmph_uint8 MPHTable::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
+const uint8_t MPHTable::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
 
 void MPHTable::clear() {
   // TODO(davi) impolement me
 }
 bool MPHTable::GenerateQueue(
-    TriGraph* graph, vector<cmph_uint32>* queue_output) {
-  cmph_uint32 queue_head = 0, queue_tail = 0;
-  cmph_uint32 nedges = m_;
-  cmph_uint32 nvertices = n_;
+    TriGraph* graph, vector<uint32_t>* queue_output) {
+  uint32_t queue_head = 0, queue_tail = 0;
+  uint32_t nedges = m_;
+  uint32_t nvertices = n_;
   // Relies on vector<bool> using 1 bit per element
   vector<bool> marked_edge(nedges + 1, false);
-  vector<cmph_uint32> queue(nvertices, 0);
-  for (cmph_uint32 i = 0; i < nedges; ++i) {
+  vector<uint32_t> queue(nvertices, 0);
+  for (uint32_t i = 0; i < nedges; ++i) {
     const TriGraph::Edge& e = graph->edges()[i];
     if (graph->vertex_degree()[e[0]] == 1 ||
         graph->vertex_degree()[e[1]] == 1 ||
@@ -62,7 +62,7 @@ bool MPHTable::GenerateQueue(
   }
   /*
   for (unsigned int i = 0; i < marked_edge.size(); ++i) {
-    cerr << "vertex with degree " << static_cast<cmph_uint32>(graph->vertex_degree()[i]) << " marked " << marked_edge[i] << endl;
+    cerr << "vertex with degree " << static_cast<uint32_t>(graph->vertex_degree()[i]) << " marked " << marked_edge[i] << endl;
   }
   for (unsigned int i = 0; i < queue.size(); ++i) {
     cerr << "vertex " << i << " queued at " << queue[i] << endl;
@@ -73,13 +73,13 @@ bool MPHTable::GenerateQueue(
   // cerr << "Queue head " << queue_head << " Queue tail " << queue_tail << endl;
   // graph->DebugGraph();
   while (queue_tail != queue_head) {
-    cmph_uint32 current_edge = queue[queue_tail++];
+    uint32_t current_edge = queue[queue_tail++];
     graph->RemoveEdge(current_edge);
     const TriGraph::Edge& e = graph->edges()[current_edge];
     for (int i = 0; i < 3; ++i) {
-      cmph_uint32 v = e[i];
+      uint32_t v = e[i];
       if (graph->vertex_degree()[v] == 1) {
-        cmph_uint32 first_edge = graph->first_edge()[v];
+        uint32_t first_edge = graph->first_edge()[v];
         if (!marked_edge[first_edge]) {
           queue[queue_head++] = first_edge;
           marked_edge[first_edge] = true;
@@ -98,14 +98,14 @@ bool MPHTable::GenerateQueue(
 }
 
 void MPHTable::Assigning(
-    const vector<TriGraph::Edge>& edges, const vector<cmph_uint32>& queue) {
-  cmph_uint32 current_edge = 0;
+    const vector<TriGraph::Edge>& edges, const vector<uint32_t>& queue) {
+  uint32_t current_edge = 0;
   vector<bool> marked_vertices(n_ + 1);
   // Initialize vector of half nibbles with all bits set.
-  cmph_uint32 sizeg = static_cast<cmph_uint32>(ceil(n_/4.0));
-  vector<cmph_uint8>(sizeg, std::numeric_limits<cmph_uint8>::max()).swap(g_);
+  uint32_t sizeg = static_cast<uint32_t>(ceil(n_/4.0));
+  vector<uint8_t>(sizeg, std::numeric_limits<uint8_t>::max()).swap(g_);
 
-  cmph_uint32 nedges = m_;  // for legibility
+  uint32_t nedges = m_;  // for legibility
   for (int i = nedges - 1; i + 1 >= 1; --i) {
     current_edge = queue[i];
     const TriGraph::Edge& e = edges[current_edge];
@@ -144,20 +144,20 @@ void MPHTable::Assigning(
 }
 
 void MPHTable::Ranking() {
-  cmph_uint32 nbytes_total = static_cast<cmph_uint32>(ceil(n_ / 4.0));
-  cmph_uint32 size = k_ >> 2U;
-  cmph_uint32 ranktablesize = static_cast<cmph_uint32>(
+  uint32_t nbytes_total = static_cast<uint32_t>(ceil(n_ / 4.0));
+  uint32_t size = k_ >> 2U;
+  uint32_t ranktablesize = static_cast<uint32_t>(
       ceil(n_ / static_cast<double>(k_)));
   // TODO(davi) Change swap of member classes for resize + memset to avoid
   // fragmentation
-  vector<cmph_uint32> (ranktablesize).swap(ranktable_);;
-  cmph_uint32 offset = 0;
-  cmph_uint32 count = 0;
-  cmph_uint32 i = 1;
+  vector<uint32_t> (ranktablesize).swap(ranktable_);;
+  uint32_t offset = 0;
+  uint32_t count = 0;
+  uint32_t i = 1;
   while (1) {
     if (i == ranktable_.size()) break;
-    cmph_uint32 nbytes = size < nbytes_total ? size : nbytes_total;
-    for (cmph_uint32 j = 0; j < nbytes; ++j) count += kBdzLookupTable[g_[offset + j]];
+    uint32_t nbytes = size < nbytes_total ? size : nbytes_total;
+    for (uint32_t j = 0; j < nbytes; ++j) count += kBdzLookupTable[g_[offset + j]];
     ranktable_[i] = count;
     offset += nbytes;
     nbytes_total -= size;
@@ -165,12 +165,12 @@ void MPHTable::Ranking() {
   }
 }
 
-cmph_uint32 MPHTable::Rank(cmph_uint32 vertex) const {
-  cmph_uint32 index = vertex >> b_;
-  cmph_uint32 base_rank = ranktable_[index];
-  cmph_uint32 beg_idx_v = index << b_;
-  cmph_uint32 beg_idx_b = beg_idx_v >> 2;
-  cmph_uint32 end_idx_b = vertex >> 2;
+uint32_t MPHTable::Rank(uint32_t vertex) const {
+  uint32_t index = vertex >> b_;
+  uint32_t base_rank = ranktable_[index];
+  uint32_t beg_idx_v = index << b_;
+  uint32_t beg_idx_b = beg_idx_v >> 2;
+  uint32_t end_idx_b = vertex >> 2;
   while (beg_idx_b < end_idx_b) base_rank += kBdzLookupTable[g_[beg_idx_b++]];
   beg_idx_v = beg_idx_b << 2;
   // cerr << "beg_idx_v: " << beg_idx_v << endl;
