@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <string.h>
 
-#define DEBUG
+// #define DEBUG
 #include "debug.h"
 #include "MurmurHash2.h"
 

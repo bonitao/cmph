@@ -3,12 +3,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cmph_benchmark.h"
 
 typedef struct {
   const char* name;
   void (*func)(int);
+  int iters;
   struct rusage begin;
   struct rusage end;
 } benchmark_t;
@@ -65,6 +67,7 @@ void bm_register(const char* name, void (*func)(int), int iters) {
   int length = global_benchmarks_length();
   benchmark.name = name;
   benchmark.func = func;
+  benchmark.iters = iters;
   assert(!find_benchmark(name));
   global_benchmarks = realloc(
       global_benchmarks, (length + 2)*sizeof(benchmark_t));
@@ -85,7 +88,7 @@ void bm_start(const char* name) {
     exit(-1);
   }
   benchmark->begin = rs;
-  (*benchmark->func)(1);
+  (*benchmark->func)(benchmark->iters);
 }
 
 void bm_end(const char* name) { 
@@ -107,9 +110,9 @@ void bm_end(const char* name) {
   timeval_subtract(&stime, &benchmark->end.ru_stime, &benchmark->begin.ru_stime);
   
   printf("Benchmark: %s\n", benchmark->name);
-  printf("User time used  : %ld.%6ld\n", utime.tv_sec, utime.tv_usec);
-  printf("System time used: %ld.%6ld\n", stime.tv_sec, stime.tv_usec);
-  printf("Wall time  used : %ld.%6ld\n", stime.tv_sec, stime.tv_usec);
+  printf("User time used  : %ld.%06ld\n", utime.tv_sec, utime.tv_usec);
+  printf("System time used: %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
+  printf("Wall time  used : %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
   printf("\n");
 }
  

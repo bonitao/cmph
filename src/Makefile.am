@@ -1,5 +1,6 @@
 bin_PROGRAMS = cmph
 check_PROGRAMS = cmph_benchmark_test
+noinst_PROGRAMS = bm_numbers
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h cmph_time.h chd_ph.h
 libcmph_la_SOURCES =  hash.h hash.c \
@@ -24,7 +25,8 @@ libcmph_la_SOURCES =  hash.h hash.c \
 		      select.h select.c select_lookup_tables.h \
 		      compressed_seq.h compressed_seq.c \
 		      compressed_rank.h compressed_rank.c \
-		      cmph_benchmark.h cmph_benchmark.cc \
+                      linear_string_map.h linear_string_map.c \
+		      cmph_benchmark.h cmph_benchmark.c \
 		      cmph_time.h
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
@@ -32,5 +34,8 @@ libcmph_la_LDFLAGS = -version-info 0:0:0
 cmph_SOURCES = 	main.c wingetopt.h wingetopt.c
 cmph_LDADD = libcmph.la
 
-cmph_benchmark_test_SOURCES = cmph_benchmark_test.cc
+cmph_benchmark_test_SOURCES = cmph_benchmark_test.c
 cmph_benchmark_test_LDADD = libcmph.la
+
+bm_numbers_SOURCES = bm_numbers.c
+bm_numbers_LDADD = libcmph.la

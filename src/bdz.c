@@ -178,7 +178,9 @@ static int bdz_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_que
 		};
 	};
         DEBUGP("Queue head %d Queue tail %d\n", queue_head, queue_tail);
+        #ifdef DEBUG
 	bdz_dump_graph(graph3,graph3->nedges,graph3->nedges+graph3->nedges/4);
+        #endif
 	while(queue_tail!=queue_head){
 		curr_edge=queue[queue_tail++];
 		bdz_remove_edge(graph3,curr_edge);
@@ -444,7 +446,6 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 				SETBIT(marked_vertices, v2);
 			}
 			SETVALUE1(bdz->g, v0, (6-(GETVALUE(bdz->g, v1) + GETVALUE(bdz->g,v2)))%3);
-			if (v0 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v0);
 		} else if(!GETBIT(marked_vertices, v1)) {
 			if(!GETBIT(marked_vertices, v2))
@@ -453,11 +454,9 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 				SETBIT(marked_vertices, v2);
 			}
 			SETVALUE1(bdz->g, v1, (7-(GETVALUE(bdz->g, v0)+GETVALUE(bdz->g, v2)))%3);
-			if (v1 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v1);
 		}else {
 			SETVALUE1(bdz->g, v2, (8-(GETVALUE(bdz->g,v0)+GETVALUE(bdz->g, v1)))%3);
-			if (v2 == 291) fprintf(stderr, "Vertex 291 updated at case 1\n");
 			SETBIT(marked_vertices, v2);
 		}		
 		DEBUGP("A:%u %u %u -- %u %u %u\n", v0, v1, v2, GETVALUE(bdz->g, v0), GETVALUE(bdz->g, v1), GETVALUE(bdz->g, v2));
