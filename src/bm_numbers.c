@@ -18,14 +18,26 @@ cmph_uint32* random_numbers_vector_new(cmph_uint32 size) {
     while (GETBIT(dup, v % dup_bits)) { v = random(); }
     SETBIT(dup, v % dup_bits);
     vec[i] = v;
-    fprintf(stderr, "v[%u] = %u\n", i, vec[i]);
   }
   free(dup);
   return vec;
 }
+
+int cmph_uint32_cmp(const void *a, const void *b) { 
+  return *(const cmph_uint32*)a - *(const cmph_uint32*)b;
+}
+
+char* create_lsmap_key(CMPH_ALGO algo, int iters) {
+  char mphf_name[128];
+  snprintf(mphf_name, 128, "%s:%u", cmph_names[algo], iters);
+  return strdup(mphf_name);
+}
+
 static cmph_uint32 g_numbers_len = 0;
 static cmph_uint32 *g_numbers = NULL;
 static lsmap_t *g_created_mphf = NULL;
+static lsmap_t *g_expected_probes = NULL;
+static lsmap_t *g_mphf_probes = NULL;
 
 void bm_create(CMPH_ALGO algo, int iters) {
   cmph_uint32 i = 0;
@@ -51,11 +63,7 @@ void bm_create(CMPH_ALGO algo, int iters) {
   }
   cmph_config_destroy(config);
   cmph_io_struct_vector_adapter_destroy(source);
-  
-
-  char mphf_name[128];
-  snprintf(mphf_name, 128, "%s:%u", cmph_names[algo], iters);
-  lsmap_append(g_created_mphf, strdup(mphf_name), mphf);
+  lsmap_append(g_created_mphf, create_lsmap_key(algo, iters), mphf);
 }
 
 void bm_search(CMPH_ALGO algo, int iters) {
@@ -63,35 +71,52 @@ void bm_search(CMPH_ALGO algo, int iters) {
   char mphf_name[128];
   cmph_t* mphf = NULL; 
 
+  
   snprintf(mphf_name, 128, "%s:%u", cmph_names[algo], iters);
   mphf = lsmap_search(g_created_mphf, mphf_name);
+
+  cmph_uint32* count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
+  cmph_uint32* hash_count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
+
   for (i = 0; i < iters * 100; ++i) {
     cmph_uint32 pos = random() % iters;
-    fprintf(stderr, "Looking for key %u at pos %u\n", g_numbers[pos], pos);
     const char* buf = (const char*)(g_numbers + pos);
     cmph_uint32 h = cmph_search(mphf, buf, sizeof(cmph_uint32));
-    fprintf(stderr, "Found h %u value %u\n", h, g_numbers[h]);
-    if (h != pos) {
-      fprintf(stderr, "Buggy mphf\n");
-    }
+    ++count[pos];
+    ++hash_count[h];
   }
+
+  // Verify correctness later.
+  lsmap_append(g_expected_probes, create_lsmap_key(algo, iters), count);
+  lsmap_append(g_mphf_probes, create_lsmap_key(algo, iters), hash_count);
 }
+
+void verify() { }
 
 #define DECLARE_ALGO(algo) \
   void bm_create_ ## algo(int iters) { bm_create(algo, iters); } \
   void bm_search_ ## algo(int iters) { bm_search(algo, iters); }
 
+DECLARE_ALGO(CMPH_CHM);
+DECLARE_ALGO(CMPH_BMZ);
 DECLARE_ALGO(CMPH_BDZ);
 
 int main(int argc, char** argv) {
-  g_numbers_len = 20;
+  g_numbers_len = 1000 * 1000;
   g_numbers = random_numbers_vector_new(g_numbers_len);
   g_created_mphf = lsmap_new();
+  g_expected_probes = lsmap_new();
+  g_mphf_probes = lsmap_new();
 
-  BM_REGISTER(bm_create_CMPH_BDZ, 20);
-  BM_REGISTER(bm_search_CMPH_BDZ, 20);
+  BM_REGISTER(bm_create_CMPH_CHM, 1000 * 1000);
+  BM_REGISTER(bm_search_CMPH_CHM, 1000 * 1000);
+  BM_REGISTER(bm_create_CMPH_BMZ, 1000 * 1000);
+  BM_REGISTER(bm_search_CMPH_BMZ, 1000 * 1000);
+  BM_REGISTER(bm_create_CMPH_BDZ, 1000 * 1000);
+  BM_REGISTER(bm_search_CMPH_BDZ, 1000 * 1000);
   run_benchmarks(argc, argv);
 
+  verify();
   free(g_numbers);
   lsmap_foreach_key(g_created_mphf, free);
   lsmap_foreach_value(g_created_mphf, cmph_destroy);

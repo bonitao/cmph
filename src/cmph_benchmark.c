@@ -112,7 +112,6 @@ void bm_end(const char* name) {
   printf("Benchmark: %s\n", benchmark->name);
   printf("User time used  : %ld.%06ld\n", utime.tv_sec, utime.tv_usec);
   printf("System time used: %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
-  printf("Wall time  used : %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
   printf("\n");
 }
  

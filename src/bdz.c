@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#define DEBUG
+// #define DEBUG
 #include "debug.h"
 #define UNASSIGNED 3U
 #define NULL_EDGE 0xffffffff
@@ -115,10 +115,12 @@ static void bdz_dump_graph(bdz_graph3_t* graph3, cmph_uint32 nedges, cmph_uint32
 				graph3->edges[i].next_edges[1],graph3->edges[i].next_edges[2]);
 	};
 	
+        #ifdef DEBUG
 	for(i=0;i<nvertices;i++){
 		printf("\nfirst for vertice %d %d ",i,graph3->first_edge[i]);
 	
 	};
+        #endif
 };
 
 static void bdz_remove_edge(bdz_graph3_t * graph3, cmph_uint32 curr_edge)
@@ -408,7 +410,7 @@ static int bdz_mapping(cmph_config_t *mph, bdz_graph3_t* graph3, bdz_queue_t que
 		h0 = hl[0] % bdz->r;
 		h1 = hl[1] % bdz->r + bdz->r;
 		h2 = hl[2] % bdz->r + (bdz->r << 1);
-                DEBUGP("Key: %s (%u %u %u)\n", key, h0, h1, h2);
+                DEBUGP("Key: %.*s (%u %u %u)\n", keylen, key, h0, h1, h2);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
 		bdz_add_edge(graph3,h0,h1,h2);
 	}

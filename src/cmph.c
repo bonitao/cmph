@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-//#define DEBUG
+// #define DEBUG
 #include "debug.h"
 
 const char *cmph_names[] = {"bmz", "bmz8", "chm", "brz", "fch", "bdz", "bdz_ph", "chd_ph", "chd", NULL };

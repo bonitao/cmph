@@ -8,7 +8,7 @@
 #include "vstack.h"
 #include "bitbool.h"
 
-//#define DEBUG
+// #define DEBUG
 #include "debug.h"
 
 /* static const cmph_uint8 bitmask[8] = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 }; */
@@ -176,7 +176,7 @@ static cmph_uint8 find_degree1_edge(graph_t *g, cmph_uint32 v, cmph_uint8 *delet
 {
 	cmph_uint32 edge = g->first[v];
 	cmph_uint8 found = 0;
-	DEBUGP("Checking degree of vertex %u\n", v);
+	DEBUGP("Checking degree of vertex %u connected to edge %u\n", v, edge);
 	if (edge == EMPTY) return 0;
 	else if (!(GETBIT(deleted, abs_edge(edge, 0)))) 
 	{

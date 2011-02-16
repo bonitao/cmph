@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <string.h>
 
-//#define DEBUG
+// #define DEBUG
 #include "debug.h"
 
 static int bmz_gen_edges(cmph_config_t *mph);
@@ -162,13 +162,19 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	  }    
 	  free(used_edges);
 	  free(visited);
-        }while(restart_mapping && iterations_map > 0);
+        } while(restart_mapping && iterations_map > 0);
 	graph_destroy(bmz->graph);
 	bmz->graph = NULL;
 	if (iterations_map == 0) 
 	{
 		return NULL;
 	}
+        #ifdef DEBUG
+        fprintf(stderr, "G: ");
+        for (i = 0; i < bmz->n; ++i) fprintf(stderr, "%u ", bmz->g[i]);
+        fprintf(stderr, "\n");
+        #endif
+
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
 	bmzf = (bmz_data_t *)malloc(sizeof(bmz_data_t));
@@ -421,19 +427,18 @@ static int bmz_gen_edges(cmph_config_t *mph)
 		char *key = NULL;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
 		
-//		if (key == NULL)fprintf(stderr, "key = %s -- read BMZ\n", key);
 		h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 		h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
 		if (h1 == h2) if (++h2 >= bmz->n) h2 = 0;
+		DEBUGP("key: %.*s h1: %u h2: %u\n", keylen, key, h1, h2);
 		if (h1 == h2) 
 		{
 			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
 			return 0;
 		}
-		//DEBUGP("Adding edge: %u -> %u for key %s\n", h1, h2, key);
+		DEBUGP("Adding edge: %u -> %u for key %.*s\n", h1, h2, keylen, key);
 		mph->key_source->dispose(mph->key_source->data, key, keylen);
-//		fprintf(stderr, "key = %s -- dispose BMZ\n", key);
 		multiple_edges = graph_contains_edge(bmz->graph, h1, h2);
 		if (mph->verbosity && multiple_edges) fprintf(stderr, "A non simple graph was generated\n");
 		if (multiple_edges) return 0; // checking multiple edge restriction.
@@ -524,9 +529,9 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	bmz_data_t *bmz = mphf->data;
 	cmph_uint32 h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 	cmph_uint32 h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
-	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
+	DEBUGP("key: %.*s h1: %u h2: %u\n", keylen, key, h1, h2);
 	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
-	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, bmz->g[h1], bmz->g[h2], bmz->m);
+	DEBUGP("key: %.*s g[h1]: %u g[h2]: %u edges: %u\n", keylen, key, bmz->g[h1], bmz->g[h2], bmz->m);
 	return bmz->g[h1] + bmz->g[h2];
 }
 void bmz_destroy(cmph_t *mphf)
