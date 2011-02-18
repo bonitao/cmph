@@ -85,13 +85,13 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
   n_ = 3*r_;
   k_ = 1U << b_;
 
-  cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
+  // cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
 
   int iterations = 10;
   std::vector<TriGraph::Edge> edges;
   std::vector<uint32_t> queue;
   while (1) {
-    cerr << "Iterations missing: " << iterations << endl;
+    // cerr << "Iterations missing: " << iterations << endl;
     for (int i = 0; i < 3; ++i) hash_seed_[i] = random() % m_;
     // for (int i = 0; i < 3; ++i) hash_seed_[i] = random() + i;
     if (Mapping<SeededHashFcn>(begin, end, &edges, &queue)) break;

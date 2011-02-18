@@ -17,6 +17,7 @@
 
 namespace cxxmph {
 
+inline  // not measured, for making compilation easier only
 unsigned int MurmurHash2 ( const void * key, int len, unsigned int seed )
 {
 	// 'm' and 'r' are mixing constants generated offline.
