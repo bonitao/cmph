@@ -97,8 +97,10 @@ void verify() { }
   void bm_create_ ## algo(int iters) { bm_create(algo, iters); } \
   void bm_search_ ## algo(int iters) { bm_search(algo, iters); }
 
-DECLARE_ALGO(CMPH_CHM);
 DECLARE_ALGO(CMPH_BMZ);
+DECLARE_ALGO(CMPH_CHM);
+DECLARE_ALGO(CMPH_BRZ);
+DECLARE_ALGO(CMPH_FCH);
 DECLARE_ALGO(CMPH_BDZ);
 
 int main(int argc, char** argv) {
@@ -108,10 +110,14 @@ int main(int argc, char** argv) {
   g_expected_probes = lsmap_new();
   g_mphf_probes = lsmap_new();
 
-  BM_REGISTER(bm_create_CMPH_CHM, 1000 * 1000);
-  BM_REGISTER(bm_search_CMPH_CHM, 1000 * 1000);
   BM_REGISTER(bm_create_CMPH_BMZ, 1000 * 1000);
   BM_REGISTER(bm_search_CMPH_BMZ, 1000 * 1000);
+  BM_REGISTER(bm_create_CMPH_CHM, 1000 * 1000);
+  BM_REGISTER(bm_search_CMPH_CHM, 1000 * 1000);
+//  BM_REGISTER(bm_create_CMPH_BRZ, 1000 * 1000);
+//  BM_REGISTER(bm_search_CMPH_BRZ, 1000 * 1000);
+  BM_REGISTER(bm_create_CMPH_FCH, 1000 * 1000);
+  BM_REGISTER(bm_search_CMPH_FCH, 1000 * 1000);
   BM_REGISTER(bm_create_CMPH_BDZ, 1000 * 1000);
   BM_REGISTER(bm_search_CMPH_BDZ, 1000 * 1000);
   run_benchmarks(argc, argv);
