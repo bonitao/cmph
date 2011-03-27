@@ -31,15 +31,6 @@ static const cmph_uint8 valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
  */
 #define SETBIT(array, i) (array[i >> 3] |= bitmask[i & 0x00000007])
 
-/** \def UNSETBIT(array, i)
- *  \brief set 0 to an 1-bit integer stored in an array. 
- *  \param array to store 1-bit integer values
- *  \param i is the index in array to set the the bit to 0
- * 
- * UNSETBIT(array, i) is a macro that sets 0 to an 1-bit integer stored in an array.
- */
-#define UNSETBIT(array, i) (array[i >> 3] ^= ((bitmask[i & 0x00000007])))
-
 //#define GETBIT(array, i) (array[(i) / 8] & bitmask[(i) % 8])
 //#define SETBIT(array, i) (array[(i) / 8] |= bitmask[(i) % 8])
 //#define UNSETBIT(array, i) (array[(i) / 8] ^= ((bitmask[(i) % 8])))

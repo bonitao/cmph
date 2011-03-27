@@ -560,21 +560,6 @@ void bdz_load(FILE *f, cmph_t *mphf)
 }
 		
 
-/*
-static cmph_uint32 bdz_search_ph(cmph_t *mphf, const char *key, cmph_uint32 keylen)
-{
-	bdz_data_t *bdz = mphf->data;
-	cmph_uint32 hl[3];
-	hash_vector(bdz->hl, key, keylen, hl);
-	cmph_uint32 vertex;
-	hl[0] = hl[0] % bdz->r;
-	hl[1] = hl[1] % bdz->r + bdz->r;
-	hl[2] = hl[2] % bdz->r + (bdz->r << 1);
-	vertex = hl[(GETVALUE(bdz->g, hl[0]) + GETVALUE(bdz->g, hl[1]) + GETVALUE(bdz->g, hl[2])) % 3];
-	return vertex;
-}
-*/
-
 static inline cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex)
 {
 	register cmph_uint32 index = vertex >> b;

@@ -59,7 +59,9 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 	{
 		case CMPH_HASH_JENKINS:
 			jenkins_state_dump((jenkins_state_t *)state, &algobuf, buflen);
-			if (*buflen == UINT_MAX) return;
+			if (*buflen == UINT_MAX) {
+                goto cmph_cleanup;
+            }
 			break;
 		default:
 			assert(0);
@@ -70,6 +72,7 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 	len = *buflen;
 	memcpy(*buf + strlen(cmph_hash_names[state->hashfunc]) + 1, algobuf, len);
 	*buflen  = (cmph_uint32)strlen(cmph_hash_names[state->hashfunc]) + 1 + *buflen;
+cmph_cleanup:
 	free(algobuf);
 	return;
 }

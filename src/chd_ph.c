@@ -625,7 +625,7 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	chd_ph_data_t *chd_phf = NULL;
 	chd_ph_config_data_t *chd_ph = (chd_ph_config_data_t *)mph->data;
 	
-	register double load_factor = 0.6;
+	register double load_factor = c;
 	register cmph_uint8 searching_success = 0;
 	register cmph_uint32 max_probes = 1 << 20; // default value for max_probes
 	register cmph_uint32 iterations = 100;
@@ -641,7 +641,6 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	double construction_time = 0.0;
 	ELAPSED_TIME_IN_SECONDS(&construction_time_begin);
 	#endif
-	c = load_factor;
 
 
 	chd_ph->m = mph->key_source->nkeys;
