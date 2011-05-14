@@ -1,4 +1,6 @@
-noinst_PROGRAMS = graph_tests packed_mphf_tests mphf_tests select_tests compressed_seq_tests compressed_rank_tests
+TESTS = $(check_PROGRAMS)
+check_PROGRAMS = graph_tests select_tests compressed_seq_tests compressed_rank_tests
+noinst_PROGRAMS = packed_mphf_tests mphf_tests
 
 INCLUDES = -I../src/
 
