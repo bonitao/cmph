@@ -1,3 +1,11 @@
+AC_DEFUN([AC_ENABLE_CXXMPH], [AC_ARG_ENABLE([cxxmph],
+	[  --enable-cxxmph	enable the c++ cxxmph library ],
+	[case "${enableval}" in
+		yes) cxxmph=true ;;
+		no)  cxxmph=false ;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-cxxmph]) ;;
+	esac],[cxxmph=false])])
+
 AC_DEFUN([AC_CHECK_SPOON], [
 	AC_ARG_WITH(spoon, [  --with-spoon=SPOON this is inocuous, since the truth is that there is no spoon ])
 	AC_MSG_CHECKING(if there is spoon)
