@@ -1,5 +1,4 @@
 bin_PROGRAMS = cmph
-check_PROGRAMS = cmph_benchmark_test
 noinst_PROGRAMS = bm_numbers
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h cmph_time.h chd_ph.h
@@ -33,9 +32,6 @@ libcmph_la_LDFLAGS = -version-info 0:0:0
 
 cmph_SOURCES = 	main.c wingetopt.h wingetopt.c
 cmph_LDADD = libcmph.la
-
-cmph_benchmark_test_SOURCES = cmph_benchmark_test.c
-cmph_benchmark_test_LDADD = libcmph.la
 
 bm_numbers_SOURCES = bm_numbers.c
 bm_numbers_LDADD = libcmph.la
