@@ -1,3 +1,4 @@
+TESTS = $(check_PROGRAMS)
 check_PROGRAMS = cmph_hash_map_test mphtable_test trigraph_test
 noinst_PROGRAMS = bm_numbers bm_urls
 bin_PROGRAMS = cxxmph

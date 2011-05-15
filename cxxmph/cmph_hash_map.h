@@ -103,10 +103,6 @@ CMPH_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 
 CMPH_METHOD_DECL(void_type, rehash)() {
   if (values_.empty()) return;
-  std::cerr << "Calling Reset with "
-            << table_.size() << " keys in table " 
-	    << slack_.size() << " keys in slack "
-	    << values_.size() << " key in total" << std::endl;
   slack_type().swap(slack_);
   bool success = table_.Reset(
       make_iterator_first(values_.begin()),

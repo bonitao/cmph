@@ -11,10 +11,10 @@ using cxxmph::cmph_hash_map;
 
 int main(int argc, char** argv) {
   cmph_hash_map<int64_t, int64_t> b;
-  for (int i = 0; i < 2*1000*1000; ++i) {
+  for (int i = 0; i < 100*1000; ++i) {
     b.insert(make_pair(i, i));
   }
-  for (int i = 0; i < 100*1000*1000; ++i) {
+  for (int i = 0; i < 1000*1000; ++i) {
     b.find(i);
   }
   /*
