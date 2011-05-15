@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "benchmark.h"
-#include "mphtable.h"
+#include "mph_table.h"
 
 using std::set;
 using std::vector;

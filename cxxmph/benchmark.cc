@@ -73,7 +73,7 @@ namespace cxxmph {
 /* static */ void Benchmark::Register(Benchmark* bm) {
   if (bm->name().empty()) {
     string name = demangle(typeid(*bm).name());
-     bm->set_name(name);
+    bm->set_name(name);
   }
   g_benchmarks.push_back(bm);
 }

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "cmph_hash_map.h"
+#include "mph_map.h"
 #include "config.h"
 
 using std::cerr;
@@ -19,10 +19,10 @@ using std::ifstream;
 using std::string;
 using std::vector;
 
-using cxxmph::cmph_hash_map;
+using cxxmph::mph_map;
 
 void usage(const char* prg) {
-  cerr << "usage: " << prg << "[-v] [-h] [-V]" << endl;
+  cerr << "usage: " << prg << " [-v] [-h] [-V] <keys.txt>" << endl;
 }
 void usage_long(const char* prg) {
   usage(prg);
@@ -58,11 +58,11 @@ int main(int argc, char** argv) {
   string buffer;
   while (!getline(f, buffer).eof()) keys.push_back(buffer);
   for (int i = 0; i < keys.size(); ++i) string s = keys[i];
-  cmph_hash_map<string, string> table;
+  mph_map<string, string> table;
 
   for (int i = 0; i < keys.size(); ++i) table[keys[i]] = keys[i];
-  cmph_hash_map<string, string>::const_iterator it = table.begin();
-  cmph_hash_map<string, string>::const_iterator end = table.end();
+  mph_map<string, string>::const_iterator it = table.begin();
+  mph_map<string, string>::const_iterator end = table.end();
   for (; it != end; ++it) {
     cout << (it - table.begin()) << ": " << it->first
          <<" -> " << it->second << endl;

@@ -1,5 +1,5 @@
-#ifndef __CXXMPH_MPHTABLE_H__
-#define __CXXMPH_MPHTABLE_H__
+#ifndef __CXXMPH_MPH_TABLE_H__
+#define __CXXMPH_MPH_TABLE_H__
 
 // Minimal perfect hash abstraction implementing the BDZ algorithm
 
@@ -15,7 +15,7 @@
 using std::cerr;
 using std::endl;
 
-#include "cxxmph_hash.h"
+#include "seeded_hash.h"
 #include "trigraph.h"
 
 namespace cxxmph {
@@ -143,7 +143,7 @@ uint32_t MPHTable::index(const Key& key) const {
   return Rank(vertex);
 }
 
-template <class Key, class HashFcn = typename cxxmph_hash<std::hash<Key> >::hash_function>
+template <class Key, class HashFcn = typename seeded_hash<std::hash<Key> >::hash_function>
 class SimpleMPHTable : public MPHTable {
  public:
   template <class ForwardIterator>
@@ -155,4 +155,4 @@ class SimpleMPHTable : public MPHTable {
 
 }  // namespace cxxmph
 
-#endif // __CXXMPH_MPHTABLE_H__
+#endif // __CXXMPH_MPH_TABLE_H__

@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "benchmark.h"
-#include "cmph_hash_map.h"
+#include "mph_map.h"
 
 using std::ifstream;
 using std::set;
@@ -43,7 +43,7 @@ class BM_UrlsCreate : public Benchmark {
     urls_.swap(urls);
   }
   vector<string> urls_;
-  cxxmph::cmph_hash_map<string, int> table_;
+  cxxmph::mph_map<string, int> table_;
 };
    
 class BM_UrlsFind : public BM_UrlsCreate {

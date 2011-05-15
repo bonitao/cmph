@@ -1,10 +1,11 @@
 #include <limits>
 #include <iostream>
+#include <vector>
 
 using std::cerr;
 using std::endl;
 
-#include "mphtable.h"
+#include "mph_table.h"
 
 using std::vector;
 

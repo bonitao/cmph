@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "mphtable.h"
+#include "mph_table.h"
 
 using std::string;
 using std::vector;
@@ -23,11 +23,11 @@ int main(int argc, char** argv) {
   keys.push_back("diogo");
   keys.push_back("algume");
 
-  SimpleMPHTable<string> mphtable;
-  assert(mphtable.Reset(keys.begin(), keys.end()));
+  SimpleMPHTable<string> mph_table;
+  assert(mph_table.Reset(keys.begin(), keys.end()));
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
-     ids.push_back(mphtable.index(keys[i]));
+     ids.push_back(mph_table.index(keys[i]));
      cerr << " " << *(ids.end() - 1);
   }
   cerr << endl;
