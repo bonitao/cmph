@@ -88,6 +88,10 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 1.1==
+
+Fixed a bug in the chd_pc algorithm and reorganized tests.
+
 ==News for version 1.0==
 
 This is a bugfix only version, after which a revamp of the cmph code and

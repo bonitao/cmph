@@ -98,7 +98,7 @@ void jenkins_state_destroy(jenkins_state_t *state)
 }
 
 
-inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
+static inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
 {
         int i;
         for (i = 0; i < 3; ++i) {
@@ -270,7 +270,7 @@ void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed)
  *  \brief Return the amount of space needed to pack a jenkins function.
  *  \return the size of the packed function or zero for failures
  */ 
-cmph_uint32 jenkins_state_packed_size()
+cmph_uint32 jenkins_state_packed_size(void)
 {
 	return sizeof(cmph_uint32);
 }

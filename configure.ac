@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(cmph, 1.0)
+AM_INIT_AUTOMAKE(cmph, 1.1)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -22,6 +22,7 @@ if test "x$ac_cv_sys_largefile_LIBS" = "xno" ; then
 	ac_cv_sys_largefile_LIBS=""
 fi
 CFLAGS="$CFLAGS $ac_cv_sys_largefile_CFLAGS"
+CXXFLAGS='-std=c++0x'
 LDFLAGS="$LDFLAGS $ac_cv_sys_largefile_LDFLAGS"
 LIBS="$LIBS $ac_cv_sys_largefile_LIBS"
 
@@ -32,6 +33,7 @@ AC_CHECK_HEADERS([getopt.h math.h])
 dnl Checks for libraries.
 AC_CHECK_LIBM  
 LDFLAGS="$LIBM $LDFLAGS"
+CFLAGS="-Wall -Werror"
 
 dnl Checks for library functions.
 

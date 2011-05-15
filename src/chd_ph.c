@@ -77,7 +77,7 @@ void chd_ph_bucket_clean(chd_ph_bucket_t * buckets, cmph_uint32 nbuckets)
 	for(i = 0; i < nbuckets; i++)
 		buckets[i].size = 0;
 }
-cmph_uint8 chd_ph_bucket_insert(chd_ph_bucket_t * buckets,chd_ph_map_item_t * map_items, chd_ph_item_t * items,
+static cmph_uint8 chd_ph_bucket_insert(chd_ph_bucket_t * buckets,chd_ph_map_item_t * map_items, chd_ph_item_t * items,
 				cmph_uint32 nbuckets,cmph_uint32 item_idx)
 {
 	register cmph_uint32 i = 0;
@@ -141,7 +141,7 @@ static inline double chd_ph_get_entropy(cmph_uint32 * disp_table, cmph_uint32 n,
 	return entropy;
 };
 
-chd_ph_config_data_t *chd_ph_config_new()
+chd_ph_config_data_t *chd_ph_config_new(void)
 {
 	chd_ph_config_data_t *chd_ph;
 	chd_ph = (chd_ph_config_data_t *)malloc(sizeof(chd_ph_config_data_t));
@@ -625,7 +625,7 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	chd_ph_data_t *chd_phf = NULL;
 	chd_ph_config_data_t *chd_ph = (chd_ph_config_data_t *)mph->data;
 	
-	register double load_factor = 0.6;
+	register double load_factor = c;
 	register cmph_uint8 searching_success = 0;
 	register cmph_uint32 max_probes = 1 << 20; // default value for max_probes
 	register cmph_uint32 iterations = 100;
@@ -641,7 +641,6 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	double construction_time = 0.0;
 	ELAPSED_TIME_IN_SECONDS(&construction_time_begin);
 	#endif
-	c = load_factor;
 
 
 	chd_ph->m = mph->key_source->nkeys;

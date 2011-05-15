@@ -18,5 +18,6 @@ int main(int argc, char** argv) {
   BM_REGISTER(bm_sleep, 1);
   BM_REGISTER(bm_increment, 1);
   run_benchmarks(argc, argv);
+  return 0;
 }
 

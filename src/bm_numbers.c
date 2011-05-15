@@ -40,7 +40,6 @@ static lsmap_t *g_expected_probes = NULL;
 static lsmap_t *g_mphf_probes = NULL;
 
 void bm_create(CMPH_ALGO algo, int iters) {
-  cmph_uint32 i = 0;
   cmph_io_adapter_t* source = NULL;
   cmph_config_t* config = NULL;
   cmph_t* mphf = NULL;
@@ -124,8 +123,9 @@ int main(int argc, char** argv) {
 
   verify();
   free(g_numbers);
-  lsmap_foreach_key(g_created_mphf, free);
-  lsmap_foreach_value(g_created_mphf, cmph_destroy);
+  lsmap_foreach_key(g_created_mphf, (void(*)(const char*))free);
+  lsmap_foreach_value(g_created_mphf, (void(*)(void*))cmph_destroy);
   lsmap_destroy(g_created_mphf);
+  return 0;
 }
 

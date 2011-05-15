@@ -107,7 +107,7 @@ static void bdz_add_edge(bdz_graph3_t * graph3, cmph_uint32 v0, cmph_uint32 v1, 
 
 static void bdz_dump_graph(bdz_graph3_t* graph3, cmph_uint32 nedges, cmph_uint32 nvertices)
 {
-	int i;
+	cmph_uint32 i;
 	for(i=0;i<nedges;i++){
 		printf("\nedge %d %d %d %d ",i,graph3->edges[i].vertices[0],
 			graph3->edges[i].vertices[1],graph3->edges[i].vertices[2]);
@@ -223,7 +223,7 @@ static void assigning(bdz_config_data_t *bdz, bdz_graph3_t* graph3, bdz_queue_t 
 static void ranking(bdz_config_data_t *bdz);
 static cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex);
 
-bdz_config_data_t *bdz_config_new()
+bdz_config_data_t *bdz_config_new(void)
 {
 	bdz_config_data_t *bdz;
 	bdz = (bdz_config_data_t *)malloc(sizeof(bdz_config_data_t));
@@ -567,19 +567,6 @@ void bdz_load(FILE *f, cmph_t *mphf)
 	return;
 }
 		
-
-cmph_uint32 bdz_search_ph(cmph_t *mphf, const char *key, cmph_uint32 keylen)
-{
-	bdz_data_t *bdz = mphf->data;
-	cmph_uint32 hl[3];
-	hash_vector(bdz->hl, key, keylen, hl);
-	cmph_uint32 vertex;
-	hl[0] = hl[0] % bdz->r;
-	hl[1] = hl[1] % bdz->r + bdz->r;
-	hl[2] = hl[2] % bdz->r + (bdz->r << 1);
-	vertex = hl[(GETVALUE(bdz->g, hl[0]) + GETVALUE(bdz->g, hl[1]) + GETVALUE(bdz->g, hl[2])) % 3];
-	return vertex;
-}
 
 static inline cmph_uint32 rank(cmph_uint32 b, cmph_uint32 * ranktable, cmph_uint8 * g, cmph_uint32 vertex)
 {
