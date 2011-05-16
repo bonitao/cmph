@@ -34,6 +34,13 @@ class MPHTable {
   uint32_t size() const { return m_; }
   void clear();
 
+  // Serialization machinery for mmap usage. 
+  // Serialized tables are not guaranteed to work across versions or different
+  // endianness (although they could easily be made to be).
+  uint32_t serialize_bytes_needed() const;
+  void serialize(char *memory) const;
+  bool deserialize(const char* serialized_memory);
+
  private:
   template <class SeededHashFcn, class ForwardIterator>
   bool Mapping(ForwardIterator begin, ForwardIterator end,
@@ -60,10 +67,10 @@ class MPHTable {
   uint32_t r_;
   // The array containing the minimal perfect hash function graph. Do not use
   // c++ vector to make mmap based backing easier.
-  uint8_t* g_;
+  const uint8_t* g_;
   uint32_t g_size_;
   // The table used for the rank step of the minimal perfect hash function
-  uint32_t* ranktable_;
+  const uint32_t* ranktable_;
   uint32_t ranktable_size_;
   // The selected hash seed triplet for finding the edges in the minimal
   // perfect hash function graph.

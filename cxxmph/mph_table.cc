@@ -116,9 +116,10 @@ void MPHTable::Assigning(
   // Initialize vector of half nibbles with all bits set.
   g_size_ = static_cast<uint32_t>(ceil(n_/4.0));
   delete [] g_;
-  g_ = new uint8_t[g_size_];
-  memset(g_, std::numeric_limits<uint8_t>::max(), g_size_);
-  assert(g_[g_size_ - 1] == 255);
+  g_ = NULL;
+  uint8_t* g = new uint8_t[g_size_];
+  memset(g, std::numeric_limits<uint8_t>::max(), g_size_);
+  assert(g[g_size_ - 1] == 255);
 
   uint32_t nedges = m_;  // for legibility
   for (int i = nedges - 1; i + 1 >= 1; --i) {
@@ -132,34 +133,35 @@ void MPHTable::Assigning(
     */
     if (!marked_vertices[e[0]]) {
       if (!marked_vertices[e[1]]) {
-        set_2bit_value(g_, e[1], kUnassigned);
+        set_2bit_value(g, e[1], kUnassigned);
         marked_vertices[e[1]] = true;
       }
       if (!marked_vertices[e[2]]) {
-        set_2bit_value(g_, e[2], kUnassigned);
+        set_2bit_value(g, e[2], kUnassigned);
 	assert(marked_vertices.size() > e[2]);
         marked_vertices[e[2]] = true;
       }
-      set_2bit_value(g_, e[0], (6 - (get_2bit_value(g_, e[1]) + get_2bit_value(g_, e[2]))) % 3);
+      set_2bit_value(g, e[0], (6 - (get_2bit_value(g, e[1]) + get_2bit_value(g, e[2]))) % 3);
       marked_vertices[e[0]] = true;
     } else if (!marked_vertices[e[1]]) {
       if (!marked_vertices[e[2]]) {
-        set_2bit_value(g_, e[2], kUnassigned);
+        set_2bit_value(g, e[2], kUnassigned);
         marked_vertices[e[2]] = true;
       }
-      set_2bit_value(g_, e[1], (7 - (get_2bit_value(g_, e[0]) + get_2bit_value(g_, e[2]))) % 3);
+      set_2bit_value(g, e[1], (7 - (get_2bit_value(g, e[0]) + get_2bit_value(g, e[2]))) % 3);
       marked_vertices[e[1]] = true;
     } else {
-      set_2bit_value(g_, e[2], (8 - (get_2bit_value(g_, e[0]) + get_2bit_value(g_, e[1]))) % 3);
+      set_2bit_value(g, e[2], (8 - (get_2bit_value(g, e[0]) + get_2bit_value(g, e[1]))) % 3);
       marked_vertices[e[2]] = true;
     }
     /*
     cerr << "A: " << e[0] << " " << e[1] << " " << e[2] << " -> "
-        << get_2bit_value(g_, e[0]) << " "
-        << get_2bit_value(g_, e[1]) << " "
-        << get_2bit_value(g_, e[2]) << " " << endl;
+        << get_2bit_value(g, e[0]) << " "
+        << get_2bit_value(g, e[1]) << " "
+        << get_2bit_value(g, e[2]) << " " << endl;
     */
   }
+  g_ = g;
 }
 
 void MPHTable::Ranking() {
@@ -168,8 +170,9 @@ void MPHTable::Ranking() {
   ranktable_size_ = static_cast<uint32_t>(
       ceil(n_ / static_cast<double>(k_)));
   delete [] ranktable_;
-  ranktable_ = new uint32_t[ranktable_size_];
-  memset(ranktable_, 0, ranktable_size_*sizeof(uint32_t));
+  ranktable_ = NULL;
+  uint32_t* ranktable = new uint32_t[ranktable_size_];
+  memset(ranktable, 0, ranktable_size_*sizeof(uint32_t));
   uint32_t offset = 0;
   uint32_t count = 0;
   uint32_t i = 1;
@@ -177,11 +180,12 @@ void MPHTable::Ranking() {
     if (i == ranktable_size_) break;
     uint32_t nbytes = size < nbytes_total ? size : nbytes_total;
     for (uint32_t j = 0; j < nbytes; ++j) count += kBdzLookupTable[g_[offset + j]];
-    ranktable_[i] = count;
+    ranktable[i] = count;
     offset += nbytes;
     nbytes_total -= size;
     ++i;
   }
+  ranktable_ = ranktable;
 }
 
 uint32_t MPHTable::Rank(uint32_t vertex) const {
@@ -207,6 +211,24 @@ uint32_t MPHTable::Rank(uint32_t vertex) const {
   }
   // cerr << "Base rank: " << base_rank << endl;
   return base_rank;
+}
+
+uint32_t MPHTable::serialize_bytes_needed() const {
+  return sizeof(MPHTable) + g_size_ + ranktable_size_*sizeof(uint32_t);
+}
+void MPHTable::serialize(char* memory) const {
+  memcpy(memory, this, sizeof(MPHTable));
+  memcpy(memory + sizeof(MPHTable), g_, g_size_);
+  memcpy(memory + sizeof(MPHTable) + g_size_,
+      ranktable_, ranktable_size_*sizeof(uint32_t));
+}
+
+bool MPHTable::deserialize(const char* serialized_memory) {
+  memcpy(this, serialized_memory, sizeof(MPHTable)); 
+  g_ = reinterpret_cast<const uint8_t*>(serialized_memory + sizeof(MPHTable));
+  ranktable_ = reinterpret_cast<const uint32_t*>(
+      serialized_memory + sizeof(MPHTable) + g_size_);
+  return true;
 }
 
 }  // namespace cxxmph
