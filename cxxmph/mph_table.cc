@@ -61,14 +61,12 @@ bool MPHTable::GenerateQueue(
       }
     }
   }
-  /*
   for (unsigned int i = 0; i < marked_edge.size(); ++i) {
     cerr << "vertex with degree " << static_cast<uint32_t>(graph->vertex_degree()[i]) << " marked " << marked_edge[i] << endl;
   }
   for (unsigned int i = 0; i < queue.size(); ++i) {
     cerr << "vertex " << i << " queued at " << queue[i] << endl;
   }
-  */
   // At this point queue head is the number of edges touching at least one
   // vertex of degree 1.
   // cerr << "Queue head " << queue_head << " Queue tail " << queue_tail << endl;
@@ -88,11 +86,9 @@ bool MPHTable::GenerateQueue(
       }
     }
   }
-  /*
   for (unsigned int i = 0; i < queue.size(); ++i) {
     cerr << "vertex " << i << " queued at " << queue[i] << endl;
   }
-  */
   int cycles = queue_head - nedges;
   if (cycles == 0) queue.swap(*queue_output);
   return cycles == 0;
@@ -110,10 +106,10 @@ void MPHTable::Assigning(
   for (int i = nedges - 1; i + 1 >= 1; --i) {
     current_edge = queue[i];
     const TriGraph::Edge& e = edges[current_edge];
-    // cerr << "B: " << e[0] << " " << e[1] << " " << e[2] << " -> "
-    //    << get_2bit_value(g_, e[0]) << " "
-    //    << get_2bit_value(g_, e[1]) << " "
-    //    << get_2bit_value(g_, e[2]) << " edge " << current_edge  << endl;
+    cerr << "B: " << e[0] << " " << e[1] << " " << e[2] << " -> "
+        << get_2bit_value(g_, e[0]) << " "
+        << get_2bit_value(g_, e[1]) << " "
+        << get_2bit_value(g_, e[2]) << " edge " << current_edge  << endl;
     if (!marked_vertices[e[0]]) {
       if (!marked_vertices[e[1]]) {
         set_2bit_value(&g_, e[1], kUnassigned);
@@ -137,10 +133,10 @@ void MPHTable::Assigning(
       set_2bit_value(&g_, e[2], (8 - (get_2bit_value(g_, e[0]) + get_2bit_value(g_, e[1]))) % 3);
       marked_vertices[e[2]] = true;
     }
-    // cerr << "A: " << e[0] << " " << e[1] << " " << e[2] << " -> "
-    //    << get_2bit_value(g_, e[0]) << " "
-    //    << get_2bit_value(g_, e[1]) << " "
-    //    << get_2bit_value(g_, e[2]) << " " << endl;
+    cerr << "A: " << e[0] << " " << e[1] << " " << e[2] << " -> "
+        << get_2bit_value(g_, e[0]) << " "
+        << get_2bit_value(g_, e[1]) << " "
+        << get_2bit_value(g_, e[2]) << " " << endl;
   }
 }
 
@@ -174,14 +170,14 @@ uint32_t MPHTable::Rank(uint32_t vertex) const {
   uint32_t end_idx_b = vertex >> 2;
   while (beg_idx_b < end_idx_b) base_rank += kBdzLookupTable[g_[beg_idx_b++]];
   beg_idx_v = beg_idx_b << 2;
-  // cerr << "beg_idx_v: " << beg_idx_v << endl;
-  // cerr << "base rank: " << base_rank << endl;
+  cerr << "beg_idx_v: " << beg_idx_v << endl;
+  cerr << "base rank: " << base_rank << endl;
 
-  //cerr << "G: ";
-  // for (unsigned int i = 0; i < n_; ++i) {
-  //  cerr << get_2bit_value(g_, i) << " ";
-  //}
-  // cerr << endl;
+  cerr << "G: ";
+  for (unsigned int i = 0; i < n_; ++i) {
+    cerr << get_2bit_value(g_, i) << " ";
+  }
+  cerr << endl;
   while (beg_idx_v < vertex) {
     if (get_2bit_value(g_, beg_idx_v) != kUnassigned) ++base_rank;
     ++beg_idx_v;
