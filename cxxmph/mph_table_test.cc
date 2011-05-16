@@ -33,5 +33,10 @@ int main(int argc, char** argv) {
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
+
+  char* serialized = new char[mph_table.serialize_bytes_needed()];
+  mph_table.serialize(serialized);
+  SimpleMPHTable<string> other_mph_table;
+  other_mph_table.deserialize(serialized);
 }
   

@@ -24,7 +24,8 @@ class MPHTable {
  public:
   MPHTable(double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), r_(0),
-      g_(NULL), g_size_(0), ranktable_(NULL), ranktable_size_(0) { }
+      g_(NULL), g_size_(0), ranktable_(NULL), ranktable_size_(0),
+      deserialized_(false) { }
   ~MPHTable();
 
   template <class SeededHashFcn, class ForwardIterator>
@@ -76,6 +77,8 @@ class MPHTable {
   // perfect hash function graph.
   uint32_t hash_seed_[3];
 
+  bool deserialized_;
+
   static const uint8_t valuemask[];
   static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
     d[(i >> 2)] &= ((v << ((i & 3) << 1)) | valuemask[i & 3]);
@@ -113,6 +116,7 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
   Assigning(edges, queue);
   std::vector<TriGraph::Edge>().swap(edges);
   Ranking();
+  deserialized_ = false;
   return true;
 }
 

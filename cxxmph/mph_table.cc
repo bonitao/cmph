@@ -44,10 +44,10 @@ MPHTable::~MPHTable() {
 }
 
 void MPHTable::clear() {
-  delete [] g_;
+  if (!deserialized_) delete [] g_;
   g_ = NULL;
   g_size_ = 0;
-  delete [] ranktable_;
+  if (!deserialized_) delete [] ranktable_;
   ranktable_ = NULL;
   ranktable_size_ = 0;
   // TODO(davi) implement me
@@ -115,7 +115,7 @@ void MPHTable::Assigning(
   vector<bool> marked_vertices(n_ + 1);
   // Initialize vector of half nibbles with all bits set.
   g_size_ = static_cast<uint32_t>(ceil(n_/4.0));
-  delete [] g_;
+  if (!deserialized_) delete [] g_;
   g_ = NULL;
   uint8_t* g = new uint8_t[g_size_];
   memset(g, std::numeric_limits<uint8_t>::max(), g_size_);
@@ -169,7 +169,7 @@ void MPHTable::Ranking() {
   uint32_t size = k_ >> 2U;
   ranktable_size_ = static_cast<uint32_t>(
       ceil(n_ / static_cast<double>(k_)));
-  delete [] ranktable_;
+  if (!deserialized_) delete [] ranktable_;
   ranktable_ = NULL;
   uint32_t* ranktable = new uint32_t[ranktable_size_];
   memset(ranktable, 0, ranktable_size_*sizeof(uint32_t));
@@ -228,6 +228,7 @@ bool MPHTable::deserialize(const char* serialized_memory) {
   g_ = reinterpret_cast<const uint8_t*>(serialized_memory + sizeof(MPHTable));
   ranktable_ = reinterpret_cast<const uint32_t*>(
       serialized_memory + sizeof(MPHTable) + g_size_);
+  deserialized_ = true;
   return true;
 }
 
