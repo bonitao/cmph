@@ -1,3 +1,4 @@
+AM_CXXFLAGS='-std=c++0x'
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = mph_map_test mph_table_test trigraph_test
 noinst_PROGRAMS = bm_numbers bm_urls

@@ -22,7 +22,6 @@ if test "x$ac_cv_sys_largefile_LIBS" = "xno" ; then
 	ac_cv_sys_largefile_LIBS=""
 fi
 CFLAGS="$CFLAGS $ac_cv_sys_largefile_CFLAGS"
-CXXFLAGS='-std=c++0x'
 LDFLAGS="$LDFLAGS $ac_cv_sys_largefile_LDFLAGS"
 LIBS="$LIBS $ac_cv_sys_largefile_LIBS"
 
@@ -37,7 +36,6 @@ CFLAGS="-Wall -Werror"
 AC_PROG_CXX
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
-	CXXFLAGS="$CXXFLAGS -std=c++0x"
 	AC_SUBST([CXXMPH], "cxxmph")
 fi
 
