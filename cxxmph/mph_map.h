@@ -112,6 +112,7 @@ MPH_MAP_METHOD_DECL(void_type, rehash)() {
   for (const_iterator it = values_.begin(), end = values_.end();
        it != end; ++it) {
     size_type id = table_.index(it->first);
+    assert(id < new_values.size());
     new_values[id] = *it;
   }
   values_.swap(new_values);

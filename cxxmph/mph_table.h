@@ -23,8 +23,9 @@ namespace cxxmph {
 class MPHTable {
  public:
   MPHTable(double c = 1.23, uint8_t b = 7) :
-      c_(c), b_(b), m_(0), n_(0), k_(0), r_(0) { }
-  ~MPHTable() {}
+      c_(c), b_(b), m_(0), n_(0), k_(0), r_(0),
+      g_(NULL), g_size_(0), ranktable_(NULL), ranktable_size_(0) { }
+  ~MPHTable();
 
   template <class SeededHashFcn, class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end);
@@ -57,20 +58,23 @@ class MPHTable {
 
   // Partition vertex count, derived from c parameter.
   uint32_t r_;
-  // The array containing the minimal perfect hash function graph.
-  std::vector<uint8_t> g_;
+  // The array containing the minimal perfect hash function graph. Do not use
+  // c++ vector to make mmap based backing easier.
+  uint8_t* g_;
+  uint32_t g_size_;
   // The table used for the rank step of the minimal perfect hash function
-  std::vector<uint32_t> ranktable_;
+  uint32_t* ranktable_;
+  uint32_t ranktable_size_;
   // The selected hash seed triplet for finding the edges in the minimal
   // perfect hash function graph.
   uint32_t hash_seed_[3];
 
   static const uint8_t valuemask[];
-  static void set_2bit_value(std::vector<uint8_t> *d, uint32_t i, uint8_t v) {
-    (*d)[(i >> 2)] &= (v << ((i & 3) << 1)) | valuemask[i & 3];
+  static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
+    d[(i >> 2)] &= ((v << ((i & 3) << 1)) | valuemask[i & 3]);
   }
-  static uint32_t get_2bit_value(const std::vector<uint8_t>& d, uint32_t i) {
-    return (d[(i >> 2)] >> ((i & 3) << 1)) & 3;
+  static uint32_t get_2bit_value(const uint8_t* d, uint32_t i) {
+    return (d[(i >> 2)] >> (((i & 3) << 1)) & 3);
   }
 
   
@@ -85,13 +89,13 @@ bool MPHTable::Reset(ForwardIterator begin, ForwardIterator end) {
   n_ = 3*r_;
   k_ = 1U << b_;
 
-  cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
+  // cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
 
   int iterations = 10;
   std::vector<TriGraph::Edge> edges;
   std::vector<uint32_t> queue;
   while (1) {
-    cerr << "Iterations missing: " << iterations << endl;
+    // cerr << "Iterations missing: " << iterations << endl;
     for (int i = 0; i < 3; ++i) hash_seed_[i] = random() % m_;
     // for (int i = 0; i < 3; ++i) hash_seed_[i] = random() + i;
     if (Mapping<SeededHashFcn>(begin, end, &edges, &queue)) break;
@@ -116,7 +120,7 @@ bool MPHTable::Mapping(
     uint32_t v0 = h[0] % r_;
     uint32_t v1 = h[1] % r_ + r_;
     uint32_t v2 = h[2] % r_ + (r_ << 1);
-    cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
+    // cerr << "Key: " << *it << " edge " <<  it - begin << " (" << v0 << "," << v1 << "," << v2 << ")" << endl;
     graph.AddEdge(TriGraph::Edge(v0, v1, v2));
   }
   if (GenerateQueue(&graph, queue)) {
@@ -133,13 +137,13 @@ uint32_t MPHTable::index(const Key& key) const {
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
   h[2] = h[2] % r_ + (r_ << 1);
-  assert(g_.size());
-  cerr << "g_.size() " << g_.size() << " h0 >> 2 " << (h[0] >> 2) << endl;
-  assert((h[0] >> 2) <g_.size());
-  assert((h[1] >> 2) <g_.size());
-  assert((h[2] >> 2) <g_.size());
+  assert(g_size_);
+  // cerr << "g_.size() " << g_size_ << " h0 >> 2 " << (h[0] >> 2) << endl;
+  assert((h[0] >> 2) <g_size_);
+  assert((h[1] >> 2) <g_size_);
+  assert((h[2] >> 2) <g_size_);
   uint32_t vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
-  cerr << "Search found vertex " << vertex << endl;
+  // cerr << "Search found vertex " << vertex << endl;
   return Rank(vertex);
 }
 
