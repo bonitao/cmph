@@ -8,9 +8,9 @@ namespace cxxmph {
 
 class Benchmark {
  public:
-  Benchmark(int iters = 1) : iters_(iters) { }
-  virtual void Run(int iters) = 0;
-  virtual ~Benchmark() { }
+  Benchmark() {}
+  virtual ~Benchmark() {}
+
   const std::string& name() { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
@@ -18,10 +18,11 @@ class Benchmark {
   static void RunAll();
 
  protected:
-  int iters() { return iters_; }
+  virtual bool SetUp() {}; 
+  virtual void Run() = 0;
+  virtual bool TearDown() {};
 
  private:
-  int iters_;
   std::string name_;
   void MeasureRun();
 };

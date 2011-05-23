@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 
-#include "mph_table.h"
+#include "mph_index.h"
 
 using std::string;
 using std::vector;
-using cxxmph::SimpleMPHTable;
+using cxxmph::SimpleMPHIndex;
 
 int main(int argc, char** argv) {
 
@@ -23,20 +23,20 @@ int main(int argc, char** argv) {
   keys.push_back("diogo");
   keys.push_back("algume");
 
-  SimpleMPHTable<string> mph_table;
-  assert(mph_table.Reset(keys.begin(), keys.end()));
+  SimpleMPHIndex<string> mph_index;
+  assert(mph_index.Reset(keys.begin(), keys.end()));
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
-     ids.push_back(mph_table.index(keys[i]));
+     ids.push_back(mph_index.index(keys[i]));
      cerr << " " << *(ids.end() - 1);
   }
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
 
-  char* serialized = new char[mph_table.serialize_bytes_needed()];
-  mph_table.serialize(serialized);
-  SimpleMPHTable<string> other_mph_table;
-  other_mph_table.deserialize(serialized);
+  char* serialized = new char[mph_index.serialize_bytes_needed()];
+  mph_index.serialize(serialized);
+  SimpleMPHIndex<string> other_mph_index;
+  other_mph_index.deserialize(serialized);
 }
   

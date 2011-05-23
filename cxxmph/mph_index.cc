@@ -5,7 +5,7 @@
 using std::cerr;
 using std::endl;
 
-#include "mph_table.h"
+#include "mph_index.h"
 
 using std::vector;
 
@@ -13,7 +13,7 @@ namespace {
 
 static const uint8_t kUnassigned = 3;
 // table used for looking up the number of assigned vertices to a 8-bit integer
-static uint8_t kBdzLookupTable[] =
+static uint8_t kBdzLookupIndex[] =
 {
 4, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 3, 3, 3, 2,
 4, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 3, 3, 3, 2,
@@ -37,13 +37,13 @@ static uint8_t kBdzLookupTable[] =
 
 namespace cxxmph {
 
-const uint8_t MPHTable::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
+const uint8_t MPHIndex::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
 
-MPHTable::~MPHTable() {
+MPHIndex::~MPHIndex() {
   clear();
 }
 
-void MPHTable::clear() {
+void MPHIndex::clear() {
   if (!deserialized_) delete [] g_;
   g_ = NULL;
   g_size_ = 0;
@@ -53,7 +53,7 @@ void MPHTable::clear() {
   // TODO(davi) implement me
 }
 
-bool MPHTable::GenerateQueue(
+bool MPHIndex::GenerateQueue(
     TriGraph* graph, vector<uint32_t>* queue_output) {
   uint32_t queue_head = 0, queue_tail = 0;
   uint32_t nedges = m_;
@@ -109,7 +109,7 @@ bool MPHTable::GenerateQueue(
   return cycles == 0;
 }
 
-void MPHTable::Assigning(
+void MPHIndex::Assigning(
     const vector<TriGraph::Edge>& edges, const vector<uint32_t>& queue) {
   uint32_t current_edge = 0;
   vector<bool> marked_vertices(n_ + 1);
@@ -164,7 +164,7 @@ void MPHTable::Assigning(
   g_ = g;
 }
 
-void MPHTable::Ranking() {
+void MPHIndex::Ranking() {
   uint32_t nbytes_total = static_cast<uint32_t>(ceil(n_ / 4.0));
   uint32_t size = k_ >> 2U;
   ranktable_size_ = static_cast<uint32_t>(
@@ -179,7 +179,7 @@ void MPHTable::Ranking() {
   while (1) {
     if (i == ranktable_size_) break;
     uint32_t nbytes = size < nbytes_total ? size : nbytes_total;
-    for (uint32_t j = 0; j < nbytes; ++j) count += kBdzLookupTable[g_[offset + j]];
+    for (uint32_t j = 0; j < nbytes; ++j) count += kBdzLookupIndex[g_[offset + j]];
     ranktable[i] = count;
     offset += nbytes;
     nbytes_total -= size;
@@ -188,13 +188,13 @@ void MPHTable::Ranking() {
   ranktable_ = ranktable;
 }
 
-uint32_t MPHTable::Rank(uint32_t vertex) const {
+uint32_t MPHIndex::Rank(uint32_t vertex) const {
   uint32_t index = vertex >> b_;
   uint32_t base_rank = ranktable_[index];
   uint32_t beg_idx_v = index << b_;
   uint32_t beg_idx_b = beg_idx_v >> 2;
   uint32_t end_idx_b = vertex >> 2;
-  while (beg_idx_b < end_idx_b) base_rank += kBdzLookupTable[g_[beg_idx_b++]];
+  while (beg_idx_b < end_idx_b) base_rank += kBdzLookupIndex[g_[beg_idx_b++]];
   beg_idx_v = beg_idx_b << 2;
   // cerr << "beg_idx_v: " << beg_idx_v << endl;
   // cerr << "base rank: " << base_rank << endl;
@@ -213,21 +213,21 @@ uint32_t MPHTable::Rank(uint32_t vertex) const {
   return base_rank;
 }
 
-uint32_t MPHTable::serialize_bytes_needed() const {
-  return sizeof(MPHTable) + g_size_ + ranktable_size_*sizeof(uint32_t);
+uint32_t MPHIndex::serialize_bytes_needed() const {
+  return sizeof(MPHIndex) + g_size_ + ranktable_size_*sizeof(uint32_t);
 }
-void MPHTable::serialize(char* memory) const {
-  memcpy(memory, this, sizeof(MPHTable));
-  memcpy(memory + sizeof(MPHTable), g_, g_size_);
-  memcpy(memory + sizeof(MPHTable) + g_size_,
+void MPHIndex::serialize(char* memory) const {
+  memcpy(memory, this, sizeof(MPHIndex));
+  memcpy(memory + sizeof(MPHIndex), g_, g_size_);
+  memcpy(memory + sizeof(MPHIndex) + g_size_,
       ranktable_, ranktable_size_*sizeof(uint32_t));
 }
 
-bool MPHTable::deserialize(const char* serialized_memory) {
-  memcpy(this, serialized_memory, sizeof(MPHTable)); 
-  g_ = reinterpret_cast<const uint8_t*>(serialized_memory + sizeof(MPHTable));
+bool MPHIndex::deserialize(const char* serialized_memory) {
+  memcpy(this, serialized_memory, sizeof(MPHIndex)); 
+  g_ = reinterpret_cast<const uint8_t*>(serialized_memory + sizeof(MPHIndex));
   ranktable_ = reinterpret_cast<const uint32_t*>(
-      serialized_memory + sizeof(MPHTable) + g_size_);
+      serialized_memory + sizeof(MPHIndex) + g_size_);
   deserialized_ = true;
   return true;
 }

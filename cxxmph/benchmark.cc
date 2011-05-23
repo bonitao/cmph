@@ -1,7 +1,9 @@
 #include "benchmark.h"
 
+#include <cerrno>
 #include <cstring>
 #include <cstdio>
+#include <sys/time.h>
 #include <sys/resource.h>
 
 #include <iostream>
@@ -50,6 +52,16 @@ struct rusage getrusage_or_die() {
   return rs;
 }
 
+struct timeval gettimeofday_or_die() {
+  struct timeval tv;
+  int ret = gettimeofday(&tv, NULL); 
+  if (ret != 0) {
+    cerr << "gettimeofday failed: " << strerror(errno) << endl;
+    exit(-1);
+  }
+  return tv;
+}
+
 #ifdef HAVE_CXA_DEMANGLE
 string demangle(const string& name) {
   char buf[1024];
@@ -79,25 +91,33 @@ namespace cxxmph {
 }
 
 /* static */ void Benchmark::RunAll() {
-  for (auto it = g_benchmarks.begin(); it != g_benchmarks.end(); ++it) {
-    (*it)->MeasureRun();
-    delete *it;
+  for (int i = 0; i < g_benchmarks.size(); ++i) {
+    Benchmark* bm = g_benchmarks[i];
+    bm->SetUp();
+    bm->MeasureRun();
+    bm->TearDown(); 
+    delete bm;
   }
 }
 
 void Benchmark::MeasureRun() {
+  struct timeval walltime_begin = gettimeofday_or_die();
   struct rusage begin = getrusage_or_die();
-  Run(iters_);
+  Run();
   struct rusage end = getrusage_or_die();
+  struct timeval walltime_end = gettimeofday_or_die();
 
   struct timeval utime;
   timeval_subtract(&utime, &end.ru_utime, &begin.ru_utime);
   struct timeval stime;
   timeval_subtract(&stime, &end.ru_stime, &begin.ru_stime);
+  struct timeval wtime;
+  timeval_subtract(&wtime, &walltime_end, &walltime_begin);
 
   printf("Benchmark: %s\n", name().c_str());
-  printf("User time used  : %ld.%06ld\n", utime.tv_sec, utime.tv_usec);
-  printf("System time used: %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
+  printf("CPU User time  : %ld.%06ld\n", utime.tv_sec, utime.tv_usec);
+  printf("CPU System time: %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
+  printf("Wall clock time: %ld.%06ld\n", wtime.tv_sec, wtime.tv_usec);
   printf("\n");
 }
 

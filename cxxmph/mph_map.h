@@ -4,7 +4,7 @@
 #include <utility>  // for std::pair
 
 #include "MurmurHash2.h"
-#include "mph_table.h"
+#include "mph_index.h"
 
 namespace cxxmph {
 
@@ -70,7 +70,7 @@ class mph_map {
 
    void rehash();
    std::vector<value_type> values_;
-   SimpleMPHTable<Key, typename seeded_hash<HashFcn>::hash_function> table_;
+   SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to no hold a copy of the key
    typedef typename std::unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
    slack_type slack_;
@@ -93,8 +93,8 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   if (it != end()) return std::make_pair(it, false);
   values_.push_back(x);
   slack_.insert(std::make_pair(x.first, values_.size() - 1));
-  if (slack_.size() == table_.size() ||
-      (slack_.size() >= 256 && table_.size() == 0)) {
+  if (slack_.size() == index_.size() ||
+      (slack_.size() >= 256 && index_.size() == 0)) {
      rehash();
   }
   it = find(x.first);
@@ -104,14 +104,14 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 MPH_MAP_METHOD_DECL(void_type, rehash)() {
   if (values_.empty()) return;
   slack_type().swap(slack_);
-  bool success = table_.Reset(
+  bool success = index_.Reset(
       make_iterator_first(values_.begin()),
       make_iterator_first(values_.end()));
   assert(success);
   std::vector<value_type> new_values(values_.size());
   for (const_iterator it = values_.begin(), end = values_.end();
        it != end; ++it) {
-    size_type id = table_.index(it->first);
+    size_type id = index_.index(it->first);
     assert(id < new_values.size());
     new_values[id] = *it;
   }
@@ -127,7 +127,7 @@ MPH_MAP_METHOD_DECL(bool_type, empty)() const { return values_.empty(); }
 MPH_MAP_METHOD_DECL(void_type, clear)() {
   values_.clear();
   slack_.clear();
-  table_.clear();
+  index_.clear();
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
@@ -145,8 +145,8 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
     typename slack_type::const_iterator it = slack_.find(k);
     if (it != slack_.end()) return values_.begin() + it->second;
   }
-  if (table_.size() == 0) return end();
-  size_type id = table_.index(k);
+  if (index_.size() == 0) return end();
+  size_type id = index_.index(k);
   if (key_equal()(values_[id].first, k)) {
     return values_.begin() + id;
   }
@@ -157,8 +157,8 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
     typename slack_type::const_iterator it = slack_.find(k);
     if (it != slack_.end()) return values_.begin() + it->second;
   }
-  if (table_.size() == 0) return end();
-  size_type id = table_.index(k);
+  if (index_.size() == 0) return end();
+  size_type id = index_.index(k);
   if (key_equal()(values_[id].first, k)) {
     return values_.begin() + id;
   }
