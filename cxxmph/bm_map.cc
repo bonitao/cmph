@@ -1,18 +1,19 @@
 #include <string>
-#include <unordered_map>
+#include <tr1/unordered_map>
 
 #include "bm_common.h"
 #include "mph_map.h"
 
 using cxxmph::mph_map;
 using std::string;
-using std::unordered_map;
+using std::tr1::unordered_map;
 
 namespace cxxmph {
 
 template <class MapType>
 class BM_MapCreate : public UrlsBenchmark {
  public:
+  BM_MapCreate(const string& urls_file) : UrlsBenchmark(urls_file) { }
   virtual void Run() {
     MapType mymap;
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
@@ -24,17 +25,20 @@ class BM_MapCreate : public UrlsBenchmark {
 template <class MapType>
 class BM_MapSearch : public SearchUrlsBenchmark {
  public:
+  BM_MapSearch(const std::string& urls_file, int nsearches) 
+      : SearchUrlsBenchmark(urls_file, nsearches) { }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto value = mymap[*it];
+      auto value = mymap_[it->ToString()];
     }
   }
  protected:
-  virtual void SetUp() {
+  virtual bool SetUp() {
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
       mymap_[*it] = *it;
     }
-    mymap_.resize(mymap.size());
+    mymap_.rehash(mymap_.bucket_count());
+    return true;
   }
   MapType mymap_;
 };

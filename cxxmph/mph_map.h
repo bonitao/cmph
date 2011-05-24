@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include <vector>
 #include <utility>  // for std::pair
 
@@ -8,12 +8,14 @@
 
 namespace cxxmph {
 
+using std::tr1::unordered_map;
+
 // Save on repetitive typing.
 #define MPH_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
 #define MPH_MAP_CLASS_SPEC mph_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define MPH_MAP_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
+template <class Key, class Data, class HashFcn = std::tr1::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class mph_map {
  public:
   typedef Key key_type;
@@ -52,7 +54,8 @@ class mph_map {
   const_iterator find(const key_type& k) const;
   data_type& operator[](const key_type &k);
 
-  void pack() { rehash(); }
+  size_type bucket_count() const { return size(); }
+  void rehash(size_type nbuckets /*ignored*/) { pack(); }
 
  private:
    template <typename iterator>
@@ -68,11 +71,11 @@ class mph_map {
      return iterator_first<iterator>(it);
    }
 
-   void rehash();
+   void pack();
    std::vector<value_type> values_;
    SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to no hold a copy of the key
-   typedef typename std::unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
+   typedef unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
    slack_type slack_;
 };
 
@@ -82,7 +85,7 @@ bool operator==(const MPH_MAP_CLASS_SPEC& lhs, const MPH_MAP_CLASS_SPEC& rhs) {
 }
 
 MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::mph_map() {
-  rehash();
+  pack();
 }
 
 MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map() {
@@ -95,13 +98,13 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   slack_.insert(std::make_pair(x.first, values_.size() - 1));
   if (slack_.size() == index_.size() ||
       (slack_.size() >= 256 && index_.size() == 0)) {
-     rehash();
+     pack();
   }
   it = find(x.first);
   return std::make_pair(it, true);
 }
 
-MPH_MAP_METHOD_DECL(void_type, rehash)() {
+MPH_MAP_METHOD_DECL(void_type, pack)() {
   if (values_.empty()) return;
   slack_type().swap(slack_);
   bool success = index_.Reset(
@@ -123,6 +126,7 @@ MPH_MAP_METHOD_DECL(iterator, end)() { return values_.end(); }
 MPH_MAP_METHOD_DECL(const_iterator, begin)() const { return values_.begin(); }
 MPH_MAP_METHOD_DECL(const_iterator, end)() const { return values_.end(); }
 MPH_MAP_METHOD_DECL(bool_type, empty)() const { return values_.empty(); }
+MPH_MAP_METHOD_DECL(size_type, size)() const { return values_.size(); }
 
 MPH_MAP_METHOD_DECL(void_type, clear)() {
   values_.clear();
@@ -132,7 +136,7 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
   values_.erase(pos);
-  rehash();
+  pack();
 }
 MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   iterator it = find(k);

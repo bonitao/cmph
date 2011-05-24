@@ -18,9 +18,9 @@ class Benchmark {
   static void RunAll();
 
  protected:
-  virtual bool SetUp() {}; 
+  virtual bool SetUp() { return true; }; 
   virtual void Run() = 0;
-  virtual bool TearDown() {};
+  virtual bool TearDown() { return true; };
 
  private:
   std::string name_;

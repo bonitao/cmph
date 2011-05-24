@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <cmath>
-#include <unordered_map>  // for std::hash
+#include <tr1/unordered_map>  // for std::tr1::hash
 #include <vector>
 
 #include <iostream>
@@ -158,7 +158,7 @@ uint32_t MPHIndex::index(const Key& key) const {
   return Rank(vertex);
 }
 
-template <class Key, class HashFcn = typename seeded_hash<std::hash<Key> >::hash_function>
+template <class Key, class HashFcn = typename seeded_hash<std::tr1::hash<Key> >::hash_function>
 class SimpleMPHIndex : public MPHIndex {
  public:
   template <class ForwardIterator>
