@@ -60,6 +60,8 @@ template <> struct seeded_hash<std::tr1::hash<const char*> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
 template <> struct seeded_hash<std::tr1::hash<std::string> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
+template <> struct seeded_hash<std::tr1::hash<cxxmph::StringPiece> >
+{ typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
 
 template <> struct seeded_hash<std::tr1::hash<char> >
 { typedef seeded_hash_function<Murmur2> hash_function; };

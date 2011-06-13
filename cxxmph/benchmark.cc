@@ -3,15 +3,22 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdio>
+#include <memory>
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 using std::cerr;
+using std::cout;
 using std::endl;
+using std::setfill;
+using std::setw;
 using std::string;
+using std::ostringstream;
 using std::vector;
 
 namespace {
@@ -40,6 +47,14 @@ int timeval_subtract (
 
   /* Return 1 if result is negative. */
   return x->tv_sec < y->tv_sec;
+}
+
+// C++ iostream is terrible for formatting.
+string timeval_to_string(timeval tv) {
+  ostringstream out;
+  out << setfill(' ') << setw(3) << tv.tv_sec << '.';
+  out << setfill('0') << setw(6) << tv.tv_usec;
+  return out.str();
 }
 
 struct rusage getrusage_or_die() {
@@ -92,11 +107,14 @@ namespace cxxmph {
 
 /* static */ void Benchmark::RunAll() {
   for (int i = 0; i < g_benchmarks.size(); ++i) {
-    Benchmark* bm = g_benchmarks[i];
-    bm->SetUp();
+    std::auto_ptr<Benchmark> bm(g_benchmarks[i]);
+    if (!bm->SetUp()) {
+      cerr << "Set up phase for benchmark "
+           << bm->name() << " failed." << endl;
+      continue;
+    }
     bm->MeasureRun();
     bm->TearDown(); 
-    delete bm;
   }
 }
 
@@ -114,11 +132,11 @@ void Benchmark::MeasureRun() {
   struct timeval wtime;
   timeval_subtract(&wtime, &walltime_end, &walltime_begin);
 
-  printf("Benchmark: %s\n", name().c_str());
-  printf("CPU User time  : %ld.%06ld\n", utime.tv_sec, utime.tv_usec);
-  printf("CPU System time: %ld.%06ld\n", stime.tv_sec, stime.tv_usec);
-  printf("Wall clock time: %ld.%06ld\n", wtime.tv_sec, wtime.tv_usec);
-  printf("\n");
+  cout << "Benchmark: " << name_ << endl;
+  cout << "CPU User time  : " << timeval_to_string(utime) << endl;
+  cout << "CPU System time: " << timeval_to_string(stime) << endl;
+  cout << "Wall clock time: " << timeval_to_string(wtime) << endl;
+  cout << endl;
 }
 
 }  // namespace cxxmph

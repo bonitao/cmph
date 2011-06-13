@@ -93,6 +93,10 @@ class MPHIndex {
 // Template method needs to go in the header file.
 template <class SeededHashFcn, class ForwardIterator>
 bool MPHIndex::Reset(ForwardIterator begin, ForwardIterator end) {
+  if (end == begin) {
+    clear();
+    return true;
+  }
   m_ = end - begin;
   r_ = static_cast<uint32_t>(ceil((c_*m_)/3));
   if ((r_ % 2) == 0) r_ += 1;

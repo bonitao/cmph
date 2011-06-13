@@ -29,11 +29,12 @@ class BM_MapSearch : public SearchUrlsBenchmark {
       : SearchUrlsBenchmark(urls_file, nsearches) { }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto value = mymap_[it->ToString()];
+      mymap_.find(*it);
     }
   }
  protected:
   virtual bool SetUp() {
+    if (!SearchUrlsBenchmark::SetUp()) return false;
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
       mymap_[*it] = *it;
     }
@@ -48,9 +49,9 @@ class BM_MapSearch : public SearchUrlsBenchmark {
 using namespace cxxmph;
 
 int main(int argc, char** argv) {
-  Benchmark::Register(new BM_MapCreate<mph_map<string, string>>("URLS100k"));
-  Benchmark::Register(new BM_MapCreate<unordered_map<string, string>>("URLS100k"));
-  Benchmark::Register(new BM_MapSearch<mph_map<string, string>>("URLS100k", 1000 * 1000));
-  Benchmark::Register(new BM_MapSearch<unordered_map<string, string>>("URLS100k", 1000 * 1000));
+  Benchmark::Register(new BM_MapCreate<mph_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_MapCreate<unordered_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_MapSearch<mph_map<StringPiece, StringPiece>>("URLS100k", 1000* 1000));
+  Benchmark::Register(new BM_MapSearch<unordered_map<StringPiece, StringPiece>>("URLS100k", 1000* 1000));
   Benchmark::RunAll();
 }

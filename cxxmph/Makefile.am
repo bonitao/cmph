@@ -1,6 +1,6 @@
 AM_CXXFLAGS='-std=c++0x'
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = mph_map_test mph_index_test trigraph_test
+check_PROGRAMS = mph_map_test mph_index_test # trigraph_test
 noinst_PROGRAMS = bm_index bm_map
 bin_PROGRAMS = cxxmph
 lib_LTLIBRARIES = libcxxmph.la
@@ -15,8 +15,8 @@ mph_map_test_SOURCES = mph_map_test.cc
 mph_index_test_LDADD   = libcxxmph.la
 mph_index_test_SOURCES = mph_index_test.cc
 
-trigraph_test_LDADD   = libcxxmph.la
-trigraph_test_SOURCES = trigraph_test.cc
+# trigraph_test_LDADD   = libcxxmph.la
+# trigraph_test_SOURCES = trigraph_test.cc
 
 bm_index_LDADD = libcxxmph.la
 bm_index_SOURCES = bm_common.cc bm_index.cc 

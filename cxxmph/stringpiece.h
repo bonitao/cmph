@@ -145,31 +145,33 @@ class StringPiece {
   StringPiece substr(size_type pos, size_type n = npos) const;
 };
 
-}  // namespace cxxmph
+inline bool operator==(const StringPiece& x, const StringPiece& y) {
+  return x.length() == y.length() && memcmp(x.data(), y.data(), x.length()) == 0;
+}
 
-bool operator==(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y);
-
-inline bool operator!=(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y) {
+inline bool operator!=(const StringPiece& x, const StringPiece& y) {
   return !(x == y);
 }
 
-inline bool operator<(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y) {
+inline bool operator<(const StringPiece& x, const StringPiece& y) {
   const int r = memcmp(x.data(), y.data(),
                        std::min(x.size(), y.size()));
   return ((r < 0) || ((r == 0) && (x.size() < y.size())));
 }
 
-inline bool operator>(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y) {
+inline bool operator>(const StringPiece& x, const StringPiece& y) {
   return y < x;
 }
 
-inline bool operator<=(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y) {
+inline bool operator<=(const StringPiece& x, const StringPiece& y) {
   return !(x > y);
 }
 
-inline bool operator>=(const cxxmph::StringPiece& x, const cxxmph::StringPiece& y) {
+inline bool operator>=(const StringPiece& x, StringPiece& y) {
   return !(x < y);
 }
+
+}  // namespace cxxmph
 
 // allow StringPiece to be logged
 extern std::ostream& operator<<(std::ostream& o, const cxxmph::StringPiece& piece);

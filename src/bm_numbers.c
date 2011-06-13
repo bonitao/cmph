@@ -1,10 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ext/hash_set>
-using __gnu_cxx::hash_set;
-static const char cxx_name = "__gnu_cxx::hash_set";
-
 #include "bitbool.h"
 #include "cmph.h"
 #include "cmph_benchmark.h"
@@ -71,12 +67,12 @@ void bm_create(CMPH_ALGO algo, int iters) {
 
 void bm_search(CMPH_ALGO algo, int iters) {
   int i = 0;
-  char mphf_name[128];
+  char *mphf_name;
   cmph_t* mphf = NULL; 
 
-  
-  snprintf(mphf_name, 128, "%s:%u", cxx_name, iters);
+  mphf_name = create_lsmap_key(algo, iters);
   mphf = (cmph_t*)lsmap_search(g_created_mphf, mphf_name);
+  free(mphf_name);
 
   cmph_uint32* count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
   cmph_uint32* hash_count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
@@ -106,49 +102,6 @@ DECLARE_ALGO(CMPH_BRZ);
 DECLARE_ALGO(CMPH_FCH);
 DECLARE_ALGO(CMPH_BDZ);
 
-void bm_create_ext_hash_set(int iters) {
-  cmph_uint32 i = 0;
-
-  if (iters > g_numbers_len) {
-    fprintf(stderr, "No input with proper size.");
-    exit(-1);
-  }
-
-  hash_set<cmph_uint32>* ext_hash_set = new hash_set<cmph_uint32>;
-  for (i = 0; i < iters; ++i) {
-    ext_hash_set->insert(g_numbers[i]);
-  }
-  lsmap_append(g_created_mphf, cxx_name, ext_hash_set);
-}
-
-void bm_search_ext_hash_set(int iters) {
-  cmph_uint32 i = 0;
-
-  if (iters > g_numbers_len) {
-    fprintf(stderr, "No input with proper size.");
-    exit(-1);
-  }
-
-  snprintf(mphf_name, 128, "%s:%u", hash_count, iters);
-  mphf = (__gnu_cxx::hash_set*)lsmap_search(g_created_mphf, mphf_name);
-
-  cmph_uint32* count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
-  cmph_uint32* hash_count = (cmph_uint32*)malloc(sizeof(cmph_uint32)*iters);  
-
-  for (i = 0; i < iters * 100; ++i) {
-    cmph_uint32 pos = random() % iters;
-    const char* buf = (const char*)(g_numbers + pos);
-    cmph_uint32 h = cmph_search(mphf, buf, sizeof(cmph_uint32));
-    ++count[pos];
-    ++hash_count[h];
-  }
-
-  // Verify correctness later.
-  lsmap_append(g_expected_probes, create_lsmap_key(algo, iters), count);
-  lsmap_append(g_mphf_probes, create_lsmap_key(algo, iters), hash_count);
-}
-}
-
 int main(int argc, char** argv) {
   g_numbers_len = 1000 * 1000;
   g_numbers = random_numbers_vector_new(g_numbers_len);
@@ -162,8 +115,8 @@ int main(int argc, char** argv) {
   BM_REGISTER(bm_search_CMPH_CHM, 1000 * 1000);
 //  BM_REGISTER(bm_create_CMPH_BRZ, 1000 * 1000);
 //  BM_REGISTER(bm_search_CMPH_BRZ, 1000 * 1000);
-  BM_REGISTER(bm_create_CMPH_FCH, 1000 * 1000);
-  BM_REGISTER(bm_search_CMPH_FCH, 1000 * 1000);
+//  BM_REGISTER(bm_create_CMPH_FCH, 1000 * 1000);
+//  BM_REGISTER(bm_search_CMPH_FCH, 1000 * 1000);
   BM_REGISTER(bm_create_CMPH_BDZ, 1000 * 1000);
   BM_REGISTER(bm_search_CMPH_BDZ, 1000 * 1000);
   run_benchmarks(argc, argv);
