@@ -35,6 +35,11 @@ class MPHIndex {
   uint32_t size() const { return m_; }
   void clear();
 
+  uint32_t perfect_hash_size() const { return n_; }
+  template <class SeededHashFcn, class Key>  // must agree with Reset
+  uint32_t perfect_hash(const Key& x) const;
+  template <class SeededHashFcn, class Key>  // must agree with Reset
+  uint32_t minimal_perfect_hash(const Key& x) const;
   // Serialization machinery for mmap usage. 
   // Serialized tables are not guaranteed to work across versions or different
   // endianness (although they could easily be made to be).
@@ -146,7 +151,7 @@ bool MPHIndex::Mapping(
 }
 
 template <class SeededHashFcn, class Key>
-uint32_t MPHIndex::index(const Key& key) const {
+uint32_t MPHIndex::perfect_hash(const Key& key) const {
   uint32_t h[3];
   for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
   assert(r_);
@@ -159,8 +164,16 @@ uint32_t MPHIndex::index(const Key& key) const {
   assert((h[1] >> 2) <g_size_);
   assert((h[2] >> 2) <g_size_);
   uint32_t vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
-  // cerr << "Search found vertex " << vertex << endl;
-  return Rank(vertex);
+  return vertex;
+}
+template <class SeededHashFcn, class Key>
+uint32_t MPHIndex::minimal_perfect_hash(const Key& key) const {
+  return Rank(perfect_hash<SeededHashFcn, Key>(key));
+}
+
+template <class SeededHashFcn, class Key>
+uint32_t MPHIndex::index(const Key& key) const {
+  return minimal_perfect_hash<SeededHashFcn, Key>(key);
 }
 
 template <class Key, class HashFcn = typename seeded_hash<std::tr1::hash<Key> >::hash_function>
