@@ -149,6 +149,7 @@ template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::index(const Key& key) const {
   uint32_t h[3];
   for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
+  assert(r_);
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
   h[2] = h[2] % r_ + (r_ << 1);
@@ -169,7 +170,7 @@ class SimpleMPHIndex : public MPHIndex {
   bool Reset(ForwardIterator begin, ForwardIterator end) {
     return MPHIndex::Reset<HashFcn>(begin, end);
   }
-  uint32_t index(const Key& key) { return MPHIndex::index<HashFcn>(key); }
+  uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
 };
 
 }  // namespace cxxmph

@@ -56,7 +56,7 @@ class SearchUint64Benchmark : public Uint64Benchmark {
  protected:
   virtual bool SetUp();
   const uint32_t nsearches_;
-  std::vector<uint32_t> random_;
+  std::vector<uint64_t> random_;
 };
 
 }  // namespace cxxmph

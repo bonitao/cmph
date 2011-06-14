@@ -19,10 +19,17 @@ struct seeded_hash_function {
   }
 };
 
+struct seeded_identity_function {
+  template <class Key>
+  uint32_t operator()(const Key& k, uint32_t seed) const {
+    return k ^ seed;
+  }
+};
+
 struct Murmur2 {
   template<class Key>
   uint32_t operator()(const Key& k) const {
-    return MurmurHash2(k, sizeof(Key), 1 /* seed */);
+    return MurmurHash2(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */);
   }
 };
 struct Murmur2StringPiece {

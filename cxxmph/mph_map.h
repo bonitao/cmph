@@ -52,10 +52,16 @@ class mph_map {
   std::pair<iterator, bool> insert(const value_type& x);
   iterator find(const key_type& k);
   const_iterator find(const key_type& k) const;
+  typedef int32_t my_int32_t;
+  int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
+  const data_type& operator[](const key_type &k) const;
 
   size_type bucket_count() const { return size(); }
   void rehash(size_type nbuckets /*ignored*/) { pack(); }
+
+ protected:  // mimicking STL implementation
+  EqualKey equal_;
 
  private:
    template <typename iterator>
@@ -145,28 +151,31 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (!slack_.empty()) {
-    typename slack_type::const_iterator it = slack_.find(k);
-    if (it != slack_.end()) return values_.begin() + it->second;
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     typename slack_type::const_iterator it = slack_.find(k);
+     if (it != slack_.end()) return values_.begin() + it->second;
   }
-  if (index_.size() == 0) return end();
-  size_type id = index_.index(k);
-  if (key_equal()(values_[id].first, k)) {
-    return values_.begin() + id;
-  }
+  if (__builtin_expect(index_.size() == 0, 0)) return end();
+  auto it = values_.begin() + index_.index(k);
+  if (__builtin_expect(equal_(k, it->first), 1)) return it;
   return end();
 }
+
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   if (!slack_.empty()) {
-    typename slack_type::const_iterator it = slack_.find(k);
-    if (it != slack_.end()) return values_.begin() + it->second;
+     typename slack_type::const_iterator it = slack_.find(k);
+     if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (index_.size() == 0) return end();
-  size_type id = index_.index(k);
-  if (key_equal()(values_[id].first, k)) {
-    return values_.begin() + id;
-  }
+  auto it = values_.begin() + index_.index(k);
+  if (equal_(it->first, k)) return it;
   return end();
+}
+
+MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+  assert(slack_.empty());
+  if (index_.size() == 0) return -1;
+  return index_.index(k);
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
