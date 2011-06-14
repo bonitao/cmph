@@ -13,6 +13,7 @@ namespace cxxmph {
 uint64_t myfind(const unordered_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
   return mymap.find(k)->second;
 }
+
 uint64_t myfind(const mph_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
   return mymap.find(k)->second;
 }
@@ -44,7 +45,11 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       : SearchUrlsBenchmark(urls_file, nsearches) { }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto idx = myfind(mymap_, *it);
+      auto v = myfind(mymap_, *it);
+      if (v != *it) {
+        fprintf(stderr, "Looked for %s got %s\n", it->data(), v.data());
+	exit(-1);
+      }
     }
   }
  protected:
@@ -98,8 +103,8 @@ int main(int argc, char** argv) {
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
   */
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000* 1000));
+  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 10*1000* 1000));
   /*
-  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 1000* 1000));
   Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
   */
