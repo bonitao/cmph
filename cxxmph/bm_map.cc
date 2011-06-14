@@ -10,11 +10,11 @@ using std::tr1::unordered_map;
 
 namespace cxxmph {
 
-uint64_t myfind(const unordered_map<uint64_t, uint64_t, Murmur2>& mymap, const uint64_t& k) {
+uint64_t myfind(const unordered_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
   return mymap.find(k)->second;
 }
 uint64_t myfind(const mph_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
-  return mymap.index(k);
+  return mymap.find(k)->second;
 }
 
 const StringPiece& myfind(const unordered_map<StringPiece, StringPiece, Murmur2StringPiece>& mymap, const StringPiece& k) {
@@ -62,18 +62,26 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
 template <class MapType>
 class BM_SearchUint64 : public SearchUint64Benchmark {
  public:
-  BM_SearchUint64() : SearchUint64Benchmark(1000*1000, 1000*1000) { }
+  BM_SearchUint64() : SearchUint64Benchmark(10000, 10*1000*1000) { }
   virtual bool SetUp() {
     if (!SearchUint64Benchmark::SetUp()) return false;
     for (int i = 0; i < values_.size(); ++i) {
       mymap_[values_[i]] = values_[i];
     }
     mymap_.rehash(mymap_.bucket_count());
+    // Double check if everything is all right
+    for (int i = 0; i < values_.size(); ++i) {
+      if (mymap_[values_[i]] != values_[i]) return false;
+    }
     return true;
   }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
+      if (v != *it) {
+        fprintf(stderr, "Looked for %lu got %lu\n", *it, v);
+	exit(-1);
+      }
     }
   }
   MapType mymap_;
@@ -84,14 +92,15 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
 using namespace cxxmph;
 
 int main(int argc, char** argv) {
+  srandom(4);
   /*
   Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
   */
-  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 1000* 1000*100));
+  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000* 1000));
   /*
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 1000* 1000));
-  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t, Murmur2>>);
+  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
   */
   Benchmark::RunAll();
