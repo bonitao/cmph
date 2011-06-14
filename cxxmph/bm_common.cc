@@ -54,7 +54,8 @@ bool SearchUint64Benchmark::SetUp() {
   if (!Uint64Benchmark::SetUp()) return false;
   random_.resize(nsearches_);
   for (int i = 0; i < nsearches_; ++i) {
-    random_.push_back(values_[random() % values_.size()]);
+    uint32_t pos = random() % values_.size();
+    random_[i] = values_[pos];
   }
   return true;
 }
