@@ -184,6 +184,8 @@ class SimpleMPHIndex : public MPHIndex {
     return MPHIndex::Reset<HashFcn>(begin, end);
   }
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
+  uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
+  uint32_t minimal_perfect_hash(const Key& key) const { return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
 };
 
 }  // namespace cxxmph
