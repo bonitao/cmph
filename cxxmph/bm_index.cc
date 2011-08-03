@@ -3,7 +3,7 @@
 #include <tr1/unordered_set>
 
 #include "bm_common.h"
-#include "StringPiece.h"
+#include "stringpiece.h"
 #include "mph_index.h"
 
 using namespace cxxmph;
