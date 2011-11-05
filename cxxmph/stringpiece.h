@@ -174,6 +174,8 @@ inline bool operator>=(const StringPiece& x, StringPiece& y) {
 }  // namespace cxxmph
 
 // allow StringPiece to be logged
-extern std::ostream& operator<<(std::ostream& o, const cxxmph::StringPiece& piece);
+inline std::ostream& operator<<(std::ostream& o, const cxxmph::StringPiece& piece) {
+  o << piece.as_string(); return o;
+}
 
 #endif  // CXXMPH_STRINGPIECE_H__

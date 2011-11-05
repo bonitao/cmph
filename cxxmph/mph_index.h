@@ -2,6 +2,25 @@
 #define __CXXMPH_MPH_INDEX_H__
 
 // Minimal perfect hash abstraction implementing the BDZ algorithm
+//
+// This is a data structure that given a set of known keys S, will create a
+// mapping from S to [0..|S|). The class is informed about S through the Reset
+// method and the mapping is queried by calling index(key).
+//
+// This is a pretty uncommon data structure, and if you application has a real
+// use case for it, chances are that it is a real win. If all you are doing is
+// a straightforward implementation of an in-memory associative mapping data
+// structure (e.g., mph_map.h), then it will probably be slower, since that the
+// evaluation of index() is typically slower than the total cost of running a
+// traditional hash function over a key and doing 2-3 conflict resolutions on
+// 100byte-ish strings.
+//
+// Notes:
+//
+// Most users can use the SimpleMPHIndex wrapper instead of the MPHIndex which
+// have confusing template parameters.
+// This class only implements a minimal perfect hash function, it does not
+// implement an associative mapping data structure.
 
 #include <stdint.h>
 
@@ -31,16 +50,20 @@ class MPHIndex {
   template <class SeededHashFcn, class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end);
   template <class SeededHashFcn, class Key>  // must agree with Reset
+  // Get a unique identifier for k, in the range [0;size()). If x wasn't part
+  // of the input in the last Reset call, returns a random value.
   uint32_t index(const Key& x) const;
   uint32_t size() const { return m_; }
   void clear();
 
+  // Advanced users functions. Please avoid unless you know what you are doing.
   uint32_t perfect_hash_size() const { return n_; }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t perfect_hash(const Key& x) const;
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
-  // Serialization machinery for mmap usage. 
+
+  // Serialization for mmap usage - not tested well, ping me if you care. 
   // Serialized tables are not guaranteed to work across versions or different
   // endianness (although they could easily be made to be).
   uint32_t serialize_bytes_needed() const;
@@ -110,7 +133,7 @@ bool MPHIndex::Reset(ForwardIterator begin, ForwardIterator end) {
 
   // cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
 
-  int iterations = 10;
+  int iterations = 1000;
   std::vector<TriGraph::Edge> edges;
   std::vector<uint32_t> queue;
   while (1) {
@@ -176,6 +199,8 @@ uint32_t MPHIndex::index(const Key& key) const {
   return minimal_perfect_hash<SeededHashFcn, Key>(key);
 }
 
+// Simple wrapper around MPHIndex to simplify calling code. Please refer to the
+// MPHIndex class for documentation.
 template <class Key, class HashFcn = typename seeded_hash<std::tr1::hash<Key> >::hash_function>
 class SimpleMPHIndex : public MPHIndex {
  public:

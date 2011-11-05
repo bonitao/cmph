@@ -1,3 +1,10 @@
+// Implementation of the unordered associative mapping interface using a
+// minimal perfect hash function.
+//
+// This class is about 20% to 100% slower than unordered_map (or ext/hash_map)
+// and should not be used if performance is a concern. In fact, you should only
+// use it for educational purposes.
+
 #include <algorithm>
 #include <tr1/unordered_map>
 #include <vector>
@@ -58,6 +65,7 @@ class mph_map {
   const data_type& operator[](const key_type &k) const;
 
   size_type bucket_count() const { return size(); }
+  // FIXME: not sure if this has the semantics I want
   void rehash(size_type nbuckets /*ignored*/) { pack(); }
 
  protected:  // mimicking STL implementation
@@ -156,7 +164,7 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
      if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (__builtin_expect(index_.size() == 0, 0)) return end();
-  auto it = values_.begin() + index_.index(k);
+  const_iterator it = values_.begin() + index_.index(k);
   if (__builtin_expect(equal_(k, it->first), 1)) return it;
   return end();
 }
@@ -167,7 +175,7 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
      if (it != slack_.end()) return values_.begin() + it->second;
   }
   if (index_.size() == 0) return end();
-  auto it = values_.begin() + index_.index(k);
+  iterator it = values_.begin() + index_.index(k);
   if (equal_(it->first, k)) return it;
   return end();
 }
