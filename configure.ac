@@ -36,7 +36,17 @@ CFLAGS="-Wall -Werror"
 AC_PROG_CXX
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
-	AC_SUBST([CXXMPH], "cxxmph")
+  AC_COMPILE_STDCXX_0X
+  if test x$ac_cv_cxx_compile_cxx0x_native = "xno"; then
+    if test x$ac_cv_cxx_compile_cxx0x_cxx = "xyes"; then
+      CXXFLAGS="$CXXFLAGS -std=c++0x"
+    elif test x$ac_cv_cxx_compile_cxx0x_gxx = "xyes"; then
+      CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+    else
+      AC_MSG_ERROR("cxxmph demands a working c++0x compiler.")
+    fi
+  fi
+  AC_SUBST([CXXMPH], "cxxmph")
 fi
 
 AC_CHECK_SPOON
