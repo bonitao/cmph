@@ -6,7 +6,7 @@
 // use it for educational purposes.
 
 #include <algorithm>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <vector>
 #include <utility>  // for std::pair
 
@@ -15,14 +15,14 @@
 
 namespace cxxmph {
 
-using std::tr1::unordered_map;
+using std::unordered_map;
 
 // Save on repetitive typing.
 #define MPH_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
 #define MPH_MAP_CLASS_SPEC mph_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define MPH_MAP_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = std::tr1::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
+template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class mph_map {
  public:
   typedef Key key_type;

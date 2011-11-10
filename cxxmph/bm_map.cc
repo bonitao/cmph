@@ -4,38 +4,38 @@
 #include "bm_common.h"
 #include "mph_map.h"
 
-using cxxmph::mph_map;
-using std::string;
-using std::tr1::unordered_map;
+  using cxxmph::mph_map;
+  using std::string;
+  using std::unordered_map;
 
-namespace cxxmph {
+  namespace cxxmph {
 
-uint64_t myfind(const unordered_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
-  return mymap.find(k)->second;
-}
-
-uint64_t myfind(const mph_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
-  return mymap.find(k)->second;
-}
-
-const StringPiece& myfind(const unordered_map<StringPiece, StringPiece, Murmur2StringPiece>& mymap, const StringPiece& k) {
-  return mymap.find(k)->second;
-}
-StringPiece myfind(const mph_map<StringPiece, StringPiece>& mymap, const StringPiece& k) {
-  auto it = mymap.find(k);
-  return it->second;
-}
-
-template <class MapType>
-class BM_CreateUrls : public UrlsBenchmark {
- public:
-  BM_CreateUrls(const string& urls_file) : UrlsBenchmark(urls_file) { }
-  virtual void Run() {
-    MapType mymap;
-    for (auto it = urls_.begin(); it != urls_.end(); ++it) {
-      mymap[*it] = *it;
-    }
+  uint64_t myfind(const unordered_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
+    return mymap.find(k)->second;
   }
+
+  uint64_t myfind(const mph_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
+    return mymap.find(k)->second;
+  }
+
+  const StringPiece& myfind(const unordered_map<StringPiece, StringPiece, Murmur2StringPiece>& mymap, const StringPiece& k) {
+    return mymap.find(k)->second;
+  }
+  StringPiece myfind(const mph_map<StringPiece, StringPiece>& mymap, const StringPiece& k) {
+    auto it = mymap.find(k);
+    return it->second;
+  }
+
+  template <class MapType>
+  class BM_CreateUrls : public UrlsBenchmark {
+   public:
+    BM_CreateUrls(const string& urls_file) : UrlsBenchmark(urls_file) { }
+    virtual void Run() {
+      MapType mymap;
+      for (auto it = urls_.begin(); it != urls_.end(); ++it) {
+        mymap[*it] = *it;
+      }
+    }
 };
 
 template <class MapType>

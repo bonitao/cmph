@@ -19,6 +19,7 @@
 #ifndef CXXMPH_STRINGPIECE_H__
 #define CXXMPH_STRINGPIECE_H__
 
+#include <cstddef>
 #include <string.h>
 #include <iosfwd>
 #include <string>

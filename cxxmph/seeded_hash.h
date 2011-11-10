@@ -4,7 +4,7 @@
 #include <stdint.h>  // for uint32_t and friends
 
 #include <cstdlib>
-#include <tr1/unordered_map>  // for std::tr1::hash
+#include <unordered_map>  // for std::hash
 
 #include "MurmurHash2.h"
 #include "stringpiece.h"
@@ -59,36 +59,36 @@ struct seeded_hash_function<Murmur2StringPiece> {
 
 template <class HashFcn> struct seeded_hash
 { typedef seeded_hash_function<HashFcn> hash_function; };
-// Use Murmur2 instead for all types defined in std::tr1::hash, plus
+// Use Murmur2 instead for all types defined in std::hash, plus
 // std::string which is commonly extended.
-template <> struct seeded_hash<std::tr1::hash<char*> >
+template <> struct seeded_hash<std::hash<char*> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<const char*> >
+template <> struct seeded_hash<std::hash<const char*> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<std::string> >
+template <> struct seeded_hash<std::hash<std::string> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<cxxmph::StringPiece> >
+template <> struct seeded_hash<std::hash<cxxmph::StringPiece> >
 { typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
 
-template <> struct seeded_hash<std::tr1::hash<char> >
+template <> struct seeded_hash<std::hash<char> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<unsigned char> >
+template <> struct seeded_hash<std::hash<unsigned char> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<short> >
+template <> struct seeded_hash<std::hash<short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<unsigned short> >
+template <> struct seeded_hash<std::hash<unsigned short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<int> >
+template <> struct seeded_hash<std::hash<int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<unsigned int> >
+template <> struct seeded_hash<std::hash<unsigned int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<long> >
+template <> struct seeded_hash<std::hash<long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<unsigned long> >
+template <> struct seeded_hash<std::hash<unsigned long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<long long> >
+template <> struct seeded_hash<std::hash<long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-template <> struct seeded_hash<std::tr1::hash<unsigned long long> >
+template <> struct seeded_hash<std::hash<unsigned long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 
 }  // namespace cxxmph

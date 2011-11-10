@@ -1,6 +1,6 @@
 #include <set>
 #include <string>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 #include "bm_common.h"
 #include "stringpiece.h"
@@ -9,7 +9,7 @@
 using namespace cxxmph;
 
 using std::string;
-using std::tr1::unordered_map;
+using std::unordered_map;
 
 class BM_MPHIndexCreate : public UrlsBenchmark {
  public:
@@ -35,7 +35,7 @@ class BM_STLIndexCreate : public UrlsBenchmark {
     }
   }
 };
-   
+
 class BM_MPHIndexSearch : public SearchUrlsBenchmark {
  public:
   BM_MPHIndexSearch(const std::string& urls_file, int nsearches)
@@ -76,7 +76,7 @@ class BM_STLIndexSearch : public SearchUrlsBenchmark {
    index.swap(index_);
    return true;
   }
-  std::tr1::unordered_map<StringPiece, uint32_t> index_;
+  std::unordered_map<StringPiece, uint32_t> index_;
 };
 
 int main(int argc, char** argv) {

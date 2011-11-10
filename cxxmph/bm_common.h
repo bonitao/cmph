@@ -2,19 +2,17 @@
 
 #include <string>
 #include <vector>
-#include <tr1/unordered_map>  // for std::tr1::hash
+#include <unordered_map>  // std::hash
 #include "MurmurHash2.h"
 
 #include "benchmark.h"
 
 namespace std {
-namespace tr1 {
 template <> struct hash<cxxmph::StringPiece> {
   uint32_t operator()(const cxxmph::StringPiece& k) const {
     return cxxmph::MurmurHash2(k.data(), k.length(), 1);
   }
 };
-}  // namespace tr1
 }  // namespace std
 
 namespace cxxmph {
