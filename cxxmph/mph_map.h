@@ -1,3 +1,5 @@
+#ifndef __CXXMPH_MPH_MAP_H__
+#define __CXXMPH_MPH_MAP_H__
 // Implementation of the unordered associative mapping interface using a
 // minimal perfect hash function.
 //
@@ -191,3 +193,5 @@ MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
 }
 
 }  // namespace cxxmph
+
+#endif  // __CXXMPH_MPH_MAP_H__
