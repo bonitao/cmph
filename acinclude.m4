@@ -44,6 +44,7 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++0x"
   AC_TRY_COMPILE([
+  #include <unordered_map>
   template <typename T>
     struct check
     {
@@ -66,6 +67,7 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=gnu++0x"
   AC_TRY_COMPILE([
+  #include <unordered_map>
   template <typename T>
     struct check
     {

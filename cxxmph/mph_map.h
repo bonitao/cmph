@@ -17,7 +17,10 @@
 
 namespace cxxmph {
 
+using std::pair;
+using std::make_pair;
 using std::unordered_map;
+using std::vector;
 
 // Save on repetitive typing.
 #define MPH_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
@@ -29,7 +32,7 @@ class mph_map {
  public:
   typedef Key key_type;
   typedef Data data_type;
-  typedef std::pair<Key, Data> value_type;
+  typedef pair<Key, Data> value_type;
   typedef HashFcn hasher;
   typedef EqualKey key_equal;
 
@@ -44,7 +47,7 @@ class mph_map {
   // For making macros simpler.
   typedef void void_type;
   typedef bool bool_type;
-  typedef std::pair<iterator, bool> insert_return_type;
+  typedef pair<iterator, bool> insert_return_type;
 
   mph_map();
   ~mph_map();
@@ -58,10 +61,10 @@ class mph_map {
   void clear();
   void erase(iterator pos);
   void erase(const key_type& k);
-  std::pair<iterator, bool> insert(const value_type& x);
+  pair<iterator, bool> insert(const value_type& x);
   iterator find(const key_type& k);
   const_iterator find(const key_type& k) const;
-  typedef int32_t my_int32_t;
+  typedef int32_t my_int32_t;  // help macros
   int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
@@ -109,15 +112,15 @@ MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map() {
 
 MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   iterator it = find(x.first);
-  if (it != end()) return std::make_pair(it, false);
+  if (it != end()) return make_pair(it, false);
   values_.push_back(x);
-  slack_.insert(std::make_pair(x.first, values_.size() - 1));
+  slack_.insert(make_pair(x.first, values_.size() - 1));
   if (slack_.size() == index_.size() ||
       (slack_.size() >= 256 && index_.size() == 0)) {
      pack();
   }
   it = find(x.first);
-  return std::make_pair(it, true);
+  return make_pair(it, true);
 }
 
 MPH_MAP_METHOD_DECL(void_type, pack)() {
@@ -189,7 +192,7 @@ MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
-  return insert(std::make_pair(k, data_type())).first->second;
+  return insert(make_pair(k, data_type())).first->second;
 }
 
 }  // namespace cxxmph
