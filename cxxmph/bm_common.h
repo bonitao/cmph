@@ -1,3 +1,6 @@
+#ifndef __CXXMPH_BM_COMMON_H__
+#define __CXXMPH_BM_COMMON_H__
+
 #include "stringpiece.h"
 
 #include <string>
@@ -58,3 +61,5 @@ class SearchUint64Benchmark : public Uint64Benchmark {
 };
 
 }  // namespace cxxmph
+
+#endif  // __CXXMPH_BM_COMMON_H__
