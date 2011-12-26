@@ -24,7 +24,7 @@ bmz_config_data_t *bmz_config_new(void)
 {
 	bmz_config_data_t *bmz = NULL;
 	bmz = (bmz_config_data_t *)malloc(sizeof(bmz_config_data_t));
-	assert(bmz);
+        if (!bmz) return NULL;
 	memset(bmz, 0, sizeof(bmz_config_data_t));
 	bmz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	bmz->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -49,7 +49,7 @@ void bmz_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	while(*hashptr != CMPH_HASH_COUNT)
 	{
 		if (i >= 2) break; //bmz only uses two hash functions
-		bmz->hashfuncs[i] = *hashptr;	
+		bmz->hashfuncs[i] = *hashptr;
 		++i, ++hashptr;
 	}
 }
@@ -68,8 +68,8 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
 	if (c == 0) c = 1.15; // validating restrictions over parameter c.
 	DEBUGP("c: %f\n", c);
-	bmz->m = mph->key_source->nkeys;	
-	bmz->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);	
+	bmz->m = mph->key_source->nkeys;
+	bmz->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", bmz->m, bmz->n, c);
 	bmz->graph = graph_new(bmz->n, bmz->m);
 	DEBUGP("Created graph\n");
@@ -81,7 +81,7 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	{
 	  // Mapping step
 	  cmph_uint32 biggest_g_value = 0;
-	  cmph_uint32 biggest_edge_value = 1;	
+	  cmph_uint32 biggest_edge_value = 1;
 	  iterations = 100;
 	  if (mph->verbosity)
 	  {
@@ -109,12 +109,12 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 				fprintf(stderr, "simple graph creation failure - %u iterations remaining\n", iterations);
 			}
 			if (iterations == 0) break;
-		} 
+		}
 		else break;
 	  }
 	  if (iterations == 0)
 	  {
-		graph_destroy(bmz->graph);	
+		graph_destroy(bmz->graph);
 		return NULL;
 	  }
 	  // Ordering step
@@ -155,17 +155,17 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 		}
 		bmz_traverse_non_critical_nodes(bmz, used_edges, visited); // non_critical_nodes
 	  }
-	  else 
+	  else
 	  {
  	        iterations_map--;
 		if (mph->verbosity) fprintf(stderr, "Restarting mapping step. %u iterations remaining.\n", iterations_map);
-	  }    
+	  }
 	  free(used_edges);
 	  free(visited);
         } while(restart_mapping && iterations_map > 0);
 	graph_destroy(bmz->graph);
 	bmz->graph = NULL;
-	if (iterations_map == 0) 
+	if (iterations_map == 0)
 	{
 		return NULL;
 	}
@@ -212,15 +212,15 @@ static cmph_uint8 bmz_traverse_critical_nodes(bmz_config_data_t *bmz, cmph_uint3
 	while(!vqueue_is_empty(q))
 	{
 		v = vqueue_remove(q);
-		it = graph_neighbors_it(bmz->graph, v);		
+		it = graph_neighbors_it(bmz->graph, v);
 		while ((u = graph_next_neighbor(bmz->graph, &it)) != GRAPH_NO_NEIGHBOR)
-		{		        
+		{
                	        if (graph_node_is_critical(bmz->graph, u) && (!GETBIT(visited,u)))
 			{
 			        collision = 1;
 			        while(collision) // lookahead to resolve collisions
 				{
- 				        next_g = *biggest_g_value + 1; 
+ 				        next_g = *biggest_g_value + 1;
 					it1 = graph_neighbors_it(bmz->graph, u);
 					collision = 0;
 					while((lav = graph_next_neighbor(bmz->graph, &it1)) != GRAPH_NO_NEIGHBOR)
@@ -232,7 +232,7 @@ static cmph_uint8 bmz_traverse_critical_nodes(bmz_config_data_t *bmz, cmph_uint3
 							        vqueue_destroy(q);
 								return 1; // restart mapping step.
 							}
-							if (GETBIT(used_edges, (next_g + bmz->g[lav]))) 
+							if (GETBIT(used_edges, (next_g + bmz->g[lav])))
 							{
 							        collision = 1;
 								break;
@@ -240,7 +240,7 @@ static cmph_uint8 bmz_traverse_critical_nodes(bmz_config_data_t *bmz, cmph_uint3
 						}
 					}
  					if (next_g > *biggest_g_value) *biggest_g_value = next_g;
-				}		
+				}
 				// Marking used edges...
 				it1 = graph_neighbors_it(bmz->graph, u);
 				while((lav = graph_next_neighbor(bmz->graph, &it1)) != GRAPH_NO_NEIGHBOR)
@@ -254,9 +254,9 @@ static cmph_uint8 bmz_traverse_critical_nodes(bmz_config_data_t *bmz, cmph_uint3
 				bmz->g[u] = next_g; // Labelling vertex u.
 				SETBIT(visited,u);
 			        vqueue_insert(q, u);
-			}			
+			}
 	        }
-		 
+
 	}
 	vqueue_destroy(q);
 	return 0;
@@ -282,22 +282,22 @@ static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, 
 	while(!vqueue_is_empty(q))
 	{
 		v = vqueue_remove(q);
-		it = graph_neighbors_it(bmz->graph, v);		
+		it = graph_neighbors_it(bmz->graph, v);
 		while ((u = graph_next_neighbor(bmz->graph, &it)) != GRAPH_NO_NEIGHBOR)
-		{		        
+		{
                	        if (graph_node_is_critical(bmz->graph, u) && (!GETBIT(visited,u)))
 			{
 			        cmph_uint32 next_g_index = 0;
 			        collision = 1;
 			        while(collision) // lookahead to resolve collisions
 				{
-				        if (next_g_index < nunused_g_values) 
+				        if (next_g_index < nunused_g_values)
 					{
-					        next_g = unused_g_values[next_g_index++];						
+					        next_g = unused_g_values[next_g_index++];
 					}
-					else    
+					else
 					{
-					        next_g = *biggest_g_value + 1; 
+					        next_g = *biggest_g_value + 1;
 						next_g_index = UINT_MAX;
 					}
 					it1 = graph_neighbors_it(bmz->graph, u);
@@ -312,7 +312,7 @@ static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, 
 								free(unused_g_values);
 								return 1; // restart mapping step.
 							}
-							if (GETBIT(used_edges, (next_g + bmz->g[lav]))) 
+							if (GETBIT(used_edges, (next_g + bmz->g[lav])))
 							{
 							        collision = 1;
 								break;
@@ -324,13 +324,13 @@ static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, 
 					        if(nunused_g_values == unused_g_values_capacity)
 						{
    						        unused_g_values = (cmph_uint32 *)realloc(unused_g_values, (unused_g_values_capacity + BUFSIZ)*sizeof(cmph_uint32));
-						        unused_g_values_capacity += BUFSIZ;  							
-						} 
-						unused_g_values[nunused_g_values++] = next_g;							
+						        unused_g_values_capacity += BUFSIZ;  
+						}
+						unused_g_values[nunused_g_values++] = next_g;
 
 					}
  					if (next_g > *biggest_g_value) *biggest_g_value = next_g;
-				}	
+				}
 				next_g_index--;
 				if (next_g_index < nunused_g_values) unused_g_values[next_g_index] = unused_g_values[--nunused_g_values];
 
@@ -347,13 +347,13 @@ static cmph_uint8 bmz_traverse_critical_nodes_heuristic(bmz_config_data_t *bmz, 
 				bmz->g[u] = next_g; // Labelling vertex u.
 				SETBIT(visited, u);
 			        vqueue_insert(q, u);
-			}			
+			}
 	        }
-		 
+
 	}
 	vqueue_destroy(q);
 	free(unused_g_values);
-	return 0;  
+	return 0;
 }
 
 static cmph_uint32 next_unused_edge(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_uint32 unused_edge_index)
@@ -381,8 +381,8 @@ static void bmz_traverse(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_u
 		SETBIT(visited, neighbor);
 		(*unused_edge_index)++;
 		bmz_traverse(bmz, used_edges, neighbor, unused_edge_index, visited);
-		
-	}  
+
+	}
 }
 
 static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 * used_edges, cmph_uint8 * visited)
@@ -394,7 +394,7 @@ static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 *
 	{
 	        v1 = graph_vertex_id(bmz->graph, i, 0);
 		v2 = graph_vertex_id(bmz->graph, i, 1);
-		if((GETBIT(visited,v1) && GETBIT(visited,v2)) || (!GETBIT(visited,v1) && !GETBIT(visited,v2))) continue;				  	
+		if((GETBIT(visited,v1) && GETBIT(visited,v2)) || (!GETBIT(visited,v1) && !GETBIT(visited,v2))) continue;				  
 		if(GETBIT(visited,v1)) bmz_traverse(bmz, used_edges, v1, &unused_edge_index, visited);
 	        else bmz_traverse(bmz, used_edges, v2, &unused_edge_index, visited);
 
@@ -403,7 +403,7 @@ static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 *
 	for(i = 0; i < bmz->n; i++)
 	{
 		if(!GETBIT(visited,i))
-		{ 	                        
+		{ 
 		        bmz->g[i] = 0;
 			SETBIT(visited, i);
 			bmz_traverse(bmz, used_edges, i, &unused_edge_index, visited);
@@ -411,14 +411,14 @@ static void bmz_traverse_non_critical_nodes(bmz_config_data_t *bmz, cmph_uint8 *
 	}
 
 }
-		
+
 static int bmz_gen_edges(cmph_config_t *mph)
 {
 	cmph_uint32 e;
 	bmz_config_data_t *bmz = (bmz_config_data_t *)mph->data;
 	cmph_uint8 multiple_edges = 0;
 	DEBUGP("Generating edges for %u vertices\n", bmz->n);
-	graph_clear_edges(bmz->graph);	
+	graph_clear_edges(bmz->graph);
 	mph->key_source->rewind(mph->key_source->data);
 	for (e = 0; e < mph->key_source->nkeys; ++e)
 	{
@@ -426,12 +426,12 @@ static int bmz_gen_edges(cmph_config_t *mph)
 		cmph_uint32 keylen;
 		char *key = NULL;
 		mph->key_source->read(mph->key_source->data, &key, &keylen);
-		
+
 		h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 		h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
 		if (h1 == h2) if (++h2 >= bmz->n) h2 = 0;
 		DEBUGP("key: %.*s h1: %u h2: %u\n", keylen, key, h1, h2);
-		if (h1 == h2) 
+		if (h1 == h2)
 		{
 			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
@@ -472,7 +472,7 @@ int bmz_dump(cmph_t *mphf, FILE *fd)
 
 	nbytes = fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
-	
+
 	nbytes = fwrite(data->g, sizeof(cmph_uint32)*(data->n), (size_t)1, fd);
 	#ifdef DEBUG
 	cmph_uint32 i;
@@ -510,8 +510,8 @@ void bmz_load(FILE *f, cmph_t *mphf)
 	}
 
 	DEBUGP("Reading m and n\n");
-	nbytes = fread(&(bmz->n), sizeof(cmph_uint32), (size_t)1, f);	
-	nbytes = fread(&(bmz->m), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(bmz->n), sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&(bmz->m), sizeof(cmph_uint32), (size_t)1, f);
 
 	bmz->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*bmz->n);
 	nbytes = fread(bmz->g, bmz->n*sizeof(cmph_uint32), (size_t)1, f);
@@ -522,7 +522,7 @@ void bmz_load(FILE *f, cmph_t *mphf)
 	#endif
 	return;
 }
-		
+
 
 cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
@@ -537,7 +537,7 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 void bmz_destroy(cmph_t *mphf)
 {
 	bmz_data_t *data = (bmz_data_t *)mphf->data;
-	free(data->g);	
+	free(data->g);
 	hash_state_destroy(data->hashes[0]);
 	hash_state_destroy(data->hashes[1]);
 	free(data->hashes);
@@ -548,7 +548,7 @@ void bmz_destroy(cmph_t *mphf)
 /** \fn void bmz_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf
- *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size()
  */
 void bmz_pack(cmph_t *mphf, void *packed_mphf)
 {
@@ -579,26 +579,26 @@ void bmz_pack(cmph_t *mphf, void *packed_mphf)
 	ptr += sizeof(data->n);
 
 	// packing g
-	memcpy(ptr, data->g, sizeof(cmph_uint32)*data->n);	
+	memcpy(ptr, data->g, sizeof(cmph_uint32)*data->n);
 }
 
 /** \fn cmph_uint32 bmz_packed_size(cmph_t *mphf);
  *  \brief Return the amount of space needed to pack mphf.
  *  \param mphf pointer to a mphf
  *  \return the size of the packed function or zero for failures
- */ 
+ */
 cmph_uint32 bmz_packed_size(cmph_t *mphf)
 {
 	bmz_data_t *data = (bmz_data_t *)mphf->data;
-	CMPH_HASH h1_type = hash_get_type(data->hashes[0]); 
-	CMPH_HASH h2_type = hash_get_type(data->hashes[1]); 
+	CMPH_HASH h1_type = hash_get_type(data->hashes[0]);
+	CMPH_HASH h2_type = hash_get_type(data->hashes[1]);
 
-	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) +
 			3*sizeof(cmph_uint32) + sizeof(cmph_uint32)*data->n);
 }
 
 /** cmph_uint32 bmz_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
- *  \brief Use the packed mphf to do a search. 
+ *  \brief Use the packed mphf to do a search.
  *  \param  packed_mphf pointer to the packed mphf
  *  \param key key to be hashed
  *  \param keylen key legth in bytes
@@ -613,13 +613,13 @@ cmph_uint32 bmz_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
 	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
 	h2_ptr += 4;
-	
+
 	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));
-	
-	register cmph_uint32 n = *g_ptr++;  
-	
-	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n; 
-	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n; 
+
+	register cmph_uint32 n = *g_ptr++;
+
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n;
+	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n;
 	if (h1 == h2 && ++h2 > n) h2 = 0;
-	return (g_ptr[h1] + g_ptr[h2]);	
+	return (g_ptr[h1] + g_ptr[h2]);
 }

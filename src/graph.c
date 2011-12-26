@@ -77,7 +77,7 @@ void graph_print(graph_t *g)
 				printf("%u -> %u\n", g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)]);
 			}
 		}
-			
+
 	}
 	return;
 }
@@ -130,7 +130,7 @@ static void del_edge_point(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 
 	DEBUGP("Deleting edge point %u %u\n", v1, v2);
 	e = g->first[v1];
-	if (check_edge(g, e, v1, v2)) 
+	if (check_edge(g, e, v1, v2))
 	{
 		g->first[v1] = g->next[e];
 		//g->edges[e] = EMPTY;
@@ -151,7 +151,7 @@ static void del_edge_point(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 	DEBUGP("Deleted\n");
 }
 
-	
+
 void graph_del_edge(graph_t *g, cmph_uint32 v1, cmph_uint32 v2)
 {
 	g->shrinking = 1;
@@ -163,7 +163,7 @@ void graph_clear_edges(graph_t *g)
 {
 	cmph_uint32 i;
 	for (i = 0; i < g->nnodes; ++i) g->first[i] = EMPTY;
-	for (i = 0; i < g->nedges*2; ++i) 
+	for (i = 0; i < g->nedges*2; ++i)
 	{
 		g->edges[i] = EMPTY;
 		g->next[i] = EMPTY;
@@ -178,7 +178,7 @@ static cmph_uint8 find_degree1_edge(graph_t *g, cmph_uint32 v, cmph_uint8 *delet
 	cmph_uint8 found = 0;
 	DEBUGP("Checking degree of vertex %u connected to edge %u\n", v, edge);
 	if (edge == EMPTY) return 0;
-	else if (!(GETBIT(deleted, abs_edge(edge, 0)))) 
+	else if (!(GETBIT(deleted, abs_edge(edge, 0))))
 	{
 		found = 1;
 		*e = edge;
@@ -206,17 +206,17 @@ static void cyclic_del_edge(graph_t *g, cmph_uint32 v, cmph_uint8 *deleted)
 
 	degree1 = find_degree1_edge(g, v1, deleted, &e);
 	if (!degree1) return;
-	while(1) 
+	while(1)
 	{
 		DEBUGP("Deleting edge %u (%u->%u)\n", e, g->edges[abs_edge(e, 0)], g->edges[abs_edge(e, 1)]);
 		SETBIT(deleted, abs_edge(e, 0));
-		
+
 		v2 = g->edges[abs_edge(e, 0)];
 		if (v2 == v1) v2 = g->edges[abs_edge(e, 1)];
 
-		DEBUGP("Checking if second endpoint %u has degree 1\n", v2); 
+		DEBUGP("Checking if second endpoint %u has degree 1\n", v2);
 		degree1 = find_degree1_edge(g, v2, deleted, &e);
-		if (degree1) 
+		if (degree1)
 		{
 			DEBUGP("Inspecting vertex %u\n", v2);
 			v1 = v2;
@@ -240,7 +240,7 @@ int graph_is_cyclic(graph_t *g)
 	}
 	for (i = 0; i < g->nedges; ++i)
 	{
-		if (!(GETBIT(deleted, i))) 
+		if (!(GETBIT(deleted, i)))
 		{
 			DEBUGP("Edge %u %u->%u was not deleted\n", i, g->edges[i], g->edges[i + g->nedges]);
 			free(deleted);
@@ -275,15 +275,15 @@ void graph_obtain_critical_nodes(graph_t *g) /* included -- Fabiano*/
 
 	for (i = 0; i < g->nedges; ++i)
 	{
-		if (!(GETBIT(deleted,i))) 
+		if (!(GETBIT(deleted,i)))
 		{
 			DEBUGP("Edge %u %u->%u belongs to the 2-core\n", i, g->edges[i], g->edges[i + g->nedges]);
-			if(!(GETBIT(g->critical_nodes,g->edges[i]))) 
+			if(!(GETBIT(g->critical_nodes,g->edges[i])))
 			{
 			  g->ncritical_nodes ++;
 			  SETBIT(g->critical_nodes,g->edges[i]);
 			}
-			if(!(GETBIT(g->critical_nodes,g->edges[i + g->nedges]))) 
+			if(!(GETBIT(g->critical_nodes,g->edges[i + g->nedges])))
 			{
 			  g->ncritical_nodes ++;
 			  SETBIT(g->critical_nodes,g->edges[i + g->nedges]);
@@ -328,11 +328,9 @@ graph_iterator_t graph_neighbors_it(graph_t *g, cmph_uint32 v)
 cmph_uint32 graph_next_neighbor(graph_t *g, graph_iterator_t* it)
 {
 	cmph_uint32 ret;
-	if(it->edge == EMPTY) return GRAPH_NO_NEIGHBOR; 
+	if(it->edge == EMPTY) return GRAPH_NO_NEIGHBOR;
 	if (g->edges[it->edge] == it->vertex) ret = g->edges[it->edge + g->nedges];
 	else ret = g->edges[it->edge];
 	it->edge = g->next[it->edge];
 	return ret;
 }
-	
-

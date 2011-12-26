@@ -18,7 +18,7 @@ chd_config_data_t *chd_config_new(cmph_config_t *mph)
 	cmph_io_adapter_t *key_source = mph->key_source;
 	chd_config_data_t *chd;
 	chd = (chd_config_data_t *)malloc(sizeof(chd_config_data_t));
-	assert(chd);
+        if (!chd) return NULL;
 	memset(chd, 0, sizeof(chd_config_data_t));
 
 	chd->chd_ph = cmph_config_new(key_source);
@@ -69,12 +69,12 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	chd_config_data_t *chd = (chd_config_data_t *)mph->data;
 	chd_ph_config_data_t * chd_ph = (chd_ph_config_data_t *)chd->chd_ph->data;
 	compressed_rank_t cr;
-	
+
 	register cmph_t * chd_phf = NULL;
-	register cmph_uint32 packed_chd_phf_size = 0; 
+	register cmph_uint32 packed_chd_phf_size = 0;
 	cmph_uint8 * packed_chd_phf = NULL;
-	
-	register cmph_uint32 packed_cr_size = 0; 
+
+	register cmph_uint32 packed_cr_size = 0;
 	cmph_uint8 * packed_cr = NULL;
 
 	register cmph_uint32 i, idx, nkeys, nvals, nbins;
@@ -86,24 +86,24 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	ELAPSED_TIME_IN_SECONDS(&construction_time_begin);
 	#endif
 
-	cmph_config_set_verbosity(chd->chd_ph, mph->verbosity);	
+	cmph_config_set_verbosity(chd->chd_ph, mph->verbosity);
 	cmph_config_set_graphsize(chd->chd_ph, c);
-	
+
 	if (mph->verbosity)
 	{
 		fprintf(stderr, "Generating a CHD_PH perfect hash function with a load factor equal to %.3f\n", c);
 	}
-	
+
 	chd_phf = cmph_new(chd->chd_ph);
-	
-	if(chd_phf == NULL) 
+
+	if(chd_phf == NULL)
 	{
 		return NULL;
 	}
-	
-	packed_chd_phf_size = cmph_packed_size(chd_phf); 
+
+	packed_chd_phf_size = cmph_packed_size(chd_phf);
 	DEBUGP("packed_chd_phf_size = %u\n", packed_chd_phf_size);
-	
+
 	/* Make sure that we have enough space to pack the mphf. */
 	packed_chd_phf = calloc((size_t)packed_chd_phf_size,(size_t)1);
 
@@ -111,8 +111,8 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	cmph_pack(chd_phf, packed_chd_phf);
 
 	cmph_destroy(chd_phf);
-	
-	
+
+
 	if (mph->verbosity)
 	{
 		fprintf(stderr, "Compressing the range of the resulting CHD_PH perfect hash function\n");
@@ -121,11 +121,11 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	compressed_rank_init(&cr);
 	nbins = chd_ph->n;
 	nkeys = chd_ph->m;
-	nvals =  nbins - nkeys; 
-	
+	nvals =  nbins - nkeys;
+
 	vals_table = (cmph_uint32 *)calloc(nvals, sizeof(cmph_uint32));
 	occup_table = (cmph_uint32 *)chd_ph->occup_table;
-	
+
 	for(i = 0, idx = 0; i < nbins; i++)
 	{
 		if(!GETBIT32(occup_table, i))
@@ -133,10 +133,10 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 			vals_table[idx++] = i;
 		}
 	}
-	
+
 	compressed_rank_generate(&cr, vals_table, nvals);
 	free(vals_table);
-	
+
 	packed_cr_size = compressed_rank_packed_size(&cr);
 	packed_cr = (cmph_uint8 *) calloc(packed_cr_size, sizeof(cmph_uint8));
 	compressed_rank_pack(&cr, packed_cr);
@@ -145,16 +145,16 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));
 	mphf->algo = mph->algo;
 	chdf = (chd_data_t *)malloc(sizeof(chd_data_t));
-	
+
 	chdf->packed_cr = packed_cr;
 	packed_cr = NULL; //transfer memory ownership
 
 	chdf->packed_chd_phf = packed_chd_phf;
 	packed_chd_phf = NULL; //transfer memory ownership
-	
+
 	chdf->packed_chd_phf_size = packed_chd_phf_size;
 	chdf->packed_cr_size = packed_cr_size;
-	
+
 	mphf->data = chdf;
 	mphf->size = nkeys;
 
@@ -163,12 +163,12 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	{
 		fprintf(stderr, "Successfully generated minimal perfect hash function\n");
 	}
-	#ifdef CMPH_TIMING	
+	#ifdef CMPH_TIMING
 	ELAPSED_TIME_IN_SECONDS(&construction_time);
 	register cmph_uint32 space_usage =  chd_packed_size(mphf)*8;
 	construction_time = construction_time - construction_time_begin;
 	fprintf(stdout, "%u\t%.2f\t%u\t%.4f\t%.4f\n", nkeys, c, chd_ph->keys_per_bucket, construction_time, space_usage/(double)nkeys);
-	#endif	
+	#endif
 
 	return mphf;
 }
@@ -196,7 +196,7 @@ int chd_dump(cmph_t *mphf, FILE *fd)
 {
 	register size_t nbytes;
 	chd_data_t *data = (chd_data_t *)mphf->data;
-	
+
 	__cmph_dump(mphf, fd);
 	// Dumping CHD_PH perfect hash function
 
@@ -207,7 +207,7 @@ int chd_dump(cmph_t *mphf, FILE *fd)
 	DEBUGP("Dumping compressed rank structure with %u bytes to disk\n", 1);
 	nbytes = fwrite(&data->packed_cr_size, sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(data->packed_cr, data->packed_cr_size, (size_t)1, fd);
-	
+
 	return 1;
 }
 
@@ -242,10 +242,10 @@ void chd_pack(cmph_t *mphf, void *packed_mphf)
 	// packing packed_cr_size and packed_cr
 	*ptr = data->packed_cr_size;
 	ptr8 =  (cmph_uint8 *) (ptr + 1);
-	
+
 	memcpy(ptr8, data->packed_cr, data->packed_cr_size);
 	ptr8 += data->packed_cr_size;
-	
+
 	ptr = (cmph_uint32 *) ptr8;
 	*ptr = data->packed_chd_phf_size;
 
@@ -268,5 +268,3 @@ cmph_uint32 chd_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register cmph_uint8 * packed_chd_phf = ((cmph_uint8 *) ptr) + packed_cr_size + sizeof(cmph_uint32);
 	return _chd_search(packed_chd_phf, ptr, key, keylen);
 }
-
-

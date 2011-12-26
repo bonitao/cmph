@@ -1,10 +1,10 @@
 #include "cmph.h"
 #include "cmph_structs.h"
 #include "chm.h"
-#include "bmz.h" 
-#include "bmz8.h" 
-#include "brz.h" 
-#include "fch.h" 
+#include "bmz.h"
+#include "bmz8.h"
+#include "brz.h"
+#include "fch.h"
 #include "bdz.h"
 #include "bdz_ph.h"
 #include "chd_ph.h"
@@ -268,12 +268,12 @@ cmph_io_adapter_t *cmph_io_struct_vector_adapter(void * vector, cmph_uint32 stru
 	key_source->read = key_struct_vector_read;
 	key_source->dispose = key_vector_dispose;
 	key_source->rewind = key_struct_vector_rewind;
-	return key_source;	
+	return key_source;
 }
 
 void cmph_io_struct_vector_adapter_destroy(cmph_io_adapter_t * key_source)
 {
-	cmph_io_struct_vector_destroy(key_source);	
+	cmph_io_struct_vector_destroy(key_source);
 }
 
 cmph_io_adapter_t *cmph_io_vector_adapter(char ** vector, cmph_uint32 nkeys)
@@ -374,7 +374,7 @@ void cmph_config_set_algo(cmph_config_t *mph, CMPH_ALGO algo)
 
 void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 {
-	if (mph->algo == CMPH_BRZ) 
+	if (mph->algo == CMPH_BRZ)
 	{
 		brz_config_set_tmp_dir(mph, tmp_dir);
 	}
@@ -383,7 +383,7 @@ void cmph_config_set_tmp_dir(cmph_config_t *mph, cmph_uint8 *tmp_dir)
 
 void cmph_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd)
 {
-	if (mph->algo == CMPH_BRZ) 
+	if (mph->algo == CMPH_BRZ)
 	{
 		brz_config_set_mphf_fd(mph, mphf_fd);
 	}
@@ -391,19 +391,19 @@ void cmph_config_set_mphf_fd(cmph_config_t *mph, FILE *mphf_fd)
 
 void cmph_config_set_b(cmph_config_t *mph, cmph_uint32 b)
 {
-	if (mph->algo == CMPH_BRZ) 
+	if (mph->algo == CMPH_BRZ)
 	{
 		brz_config_set_b(mph, b);
 	}
-	else if (mph->algo == CMPH_BDZ) 
+	else if (mph->algo == CMPH_BDZ)
 	{
 		bdz_config_set_b(mph, b);
 	}
-	else if (mph->algo == CMPH_CHD_PH) 
+	else if (mph->algo == CMPH_CHD_PH)
 	{
 		chd_ph_config_set_b(mph, b);
 	}
-	else if (mph->algo == CMPH_CHD) 
+	else if (mph->algo == CMPH_CHD)
 	{
 		chd_config_set_b(mph, b);
 	}
@@ -411,11 +411,11 @@ void cmph_config_set_b(cmph_config_t *mph, cmph_uint32 b)
 
 void cmph_config_set_keys_per_bin(cmph_config_t *mph, cmph_uint32 keys_per_bin)
 {
-	if (mph->algo == CMPH_CHD_PH) 
+	if (mph->algo == CMPH_CHD_PH)
 	{
 		chd_ph_config_set_keys_per_bin(mph, keys_per_bin);
 	}
-	else if (mph->algo == CMPH_CHD) 
+	else if (mph->algo == CMPH_CHD)
 	{
 		chd_config_set_keys_per_bin(mph, keys_per_bin);
 	}
@@ -423,7 +423,7 @@ void cmph_config_set_keys_per_bin(cmph_config_t *mph, cmph_uint32 keys_per_bin)
 
 void cmph_config_set_memory_availability(cmph_config_t *mph, cmph_uint32 memory_availability)
 {
-	if (mph->algo == CMPH_BRZ) 
+	if (mph->algo == CMPH_BRZ)
 	{
 		brz_config_set_memory_availability(mph, memory_availability);
 	}
@@ -523,7 +523,7 @@ cmph_t *cmph_new(cmph_config_t *mph)
 	double c = mph->c;
 
 	DEBUGP("Creating mph with algorithm %s\n", cmph_names[mph->algo]);
-	switch (mph->algo)	
+	switch (mph->algo)
 	{
 		case CMPH_CHM:
 			DEBUGP("Creating chm hash\n");
@@ -658,28 +658,28 @@ cmph_uint32 cmph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 		case CMPH_CHM:
 			return chm_search(mphf, key, keylen);
 		case CMPH_BMZ: /* included -- Fabiano */
-		        DEBUGP("bmz algorithm search\n");		         
+		        DEBUGP("bmz algorithm search\n");
 		        return bmz_search(mphf, key, keylen);
 		case CMPH_BMZ8: /* included -- Fabiano */
-		        DEBUGP("bmz8 algorithm search\n");		         
+		        DEBUGP("bmz8 algorithm search\n");
 		        return bmz8_search(mphf, key, keylen);
 		case CMPH_BRZ: /* included -- Fabiano */
-		        DEBUGP("brz algorithm search\n");		         
+		        DEBUGP("brz algorithm search\n");
 		        return brz_search(mphf, key, keylen);
 		case CMPH_FCH: /* included -- Fabiano */
-		        DEBUGP("fch algorithm search\n");		         
+		        DEBUGP("fch algorithm search\n");
 		        return fch_search(mphf, key, keylen);
 		case CMPH_BDZ: /* included -- Fabiano */
-		        DEBUGP("bdz algorithm search\n");		         
+		        DEBUGP("bdz algorithm search\n");
 		        return bdz_search(mphf, key, keylen);
 		case CMPH_BDZ_PH: /* included -- Fabiano */
-		        DEBUGP("bdz_ph algorithm search\n");		         
+		        DEBUGP("bdz_ph algorithm search\n");
 		        return bdz_ph_search(mphf, key, keylen);
 		case CMPH_CHD_PH: /* included -- Fabiano */
-		        DEBUGP("chd_ph algorithm search\n");		         
+		        DEBUGP("chd_ph algorithm search\n");
 		        return chd_ph_search(mphf, key, keylen);
 		case CMPH_CHD: /* included -- Fabiano */
-		        DEBUGP("chd algorithm search\n");		         
+		        DEBUGP("chd algorithm search\n");
 		        return chd_search(mphf, key, keylen);
 		default:
 			assert(0);
@@ -692,7 +692,7 @@ cmph_uint32 cmph_size(cmph_t *mphf)
 {
 	return mphf->size;
 }
-	
+
 void cmph_destroy(cmph_t *mphf)
 {
 	switch(mphf->algo)
@@ -724,7 +724,7 @@ void cmph_destroy(cmph_t *mphf)
 		case CMPH_CHD: /* included -- Fabiano */
 			chd_destroy(mphf);
 			return;
-		default: 
+		default:
 			assert(0);
 	}
 	assert(0);
@@ -735,12 +735,12 @@ void cmph_destroy(cmph_t *mphf)
 /** \fn void cmph_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf
- *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size()
  */
 void cmph_pack(cmph_t *mphf, void *packed_mphf)
 {
 	// packing algorithm type to be used in cmph.c
-	cmph_uint32 * ptr = (cmph_uint32 *) packed_mphf; 
+	cmph_uint32 * ptr = (cmph_uint32 *) packed_mphf;
 	*ptr++ = mphf->algo;
 	DEBUGP("mphf->algo = %u\n", mphf->algo);
 	switch(mphf->algo)
@@ -772,7 +772,7 @@ void cmph_pack(cmph_t *mphf, void *packed_mphf)
 		case CMPH_CHD: /* included -- Fabiano */
 			chd_pack(mphf, ptr);
 			break;
-		default: 
+		default:
 			assert(0);
 	}
 	return;
@@ -782,7 +782,7 @@ void cmph_pack(cmph_t *mphf, void *packed_mphf)
  *  \brief Return the amount of space needed to pack mphf.
  *  \param mphf pointer to a mphf
  *  \return the size of the packed function or zero for failures
- */ 
+ */
 cmph_uint32 cmph_packed_size(cmph_t *mphf)
 {
 	switch(mphf->algo)
@@ -805,14 +805,14 @@ cmph_uint32 cmph_packed_size(cmph_t *mphf)
 			return chd_ph_packed_size(mphf);
 		case CMPH_CHD: /* included -- Fabiano */
 			return chd_packed_size(mphf);
-		default: 
+		default:
 			assert(0);
 	}
 	return 0; // FAILURE
 }
 
 /** cmph_uint32 cmph_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
- *  \brief Use the packed mphf to do a search. 
+ *  \brief Use the packed mphf to do a search.
  *  \param  packed_mphf pointer to the packed mphf
  *  \param key key to be hashed
  *  \param keylen key legth in bytes
@@ -842,7 +842,7 @@ cmph_uint32 cmph_search_packed(void *packed_mphf, const char *key, cmph_uint32 k
 			return chd_ph_search_packed(++ptr, key, keylen);
 		case CMPH_CHD: /* included -- Fabiano */
 			return chd_search_packed(++ptr, key, keylen);
-		default: 
+		default:
 			assert(0);
 	}
 	return 0; // FAILURE

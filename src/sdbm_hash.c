@@ -4,6 +4,7 @@
 sdbm_state_t *sdbm_state_new()
 {
 	sdbm_state_t *state = (sdbm_state_t *)malloc(sizeof(sdbm_state_t));
+        if (!state) return NULL;
 	state->hashfunc = CMPH_HASH_SDBM;
 	return state;
 }

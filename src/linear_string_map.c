@@ -12,6 +12,7 @@ struct __linear_string_map_t {
 
 lsmap_t *lsmap_new() {
   lsmap_t* lsmap = (lsmap_t*)malloc(sizeof(lsmap_t));
+  if (!lsmap) return NULL;
   lsmap->key = "dummy node";
   lsmap->next = NULL;
   return lsmap;
@@ -42,7 +43,7 @@ void* lsmap_search(lsmap_t *lsmap, const char *key) {
   }
   return NULL;
 }
-      
+
 void lsmap_foreach_key(lsmap_t *lsmap, void (*f)(const char*)) {
   while (lsmap->next != NULL) {
     f(lsmap->key);
@@ -65,4 +66,3 @@ void lsmap_destroy(lsmap_t *lsmap) {
   }
   free(lsmap);
 }
-  

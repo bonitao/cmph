@@ -41,7 +41,7 @@ void hashtree_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	while(*hashptr != CMPH_HASH_COUNT)
 	{
 		if (i >= 3) break; //hashtree only uses three hash functions
-		hashtree->hashfuncs[i] = *hashptr;	
+		hashtree->hashfuncs[i] = *hashptr;
 		++i, ++hashptr;
 	}
 }
@@ -55,8 +55,8 @@ cmph_t *hashtree_new(cmph_config_t *mph, double c)
 	cmph_uint32 iterations = 20;
 	cmph_uint8 *visited = NULL;
 	hashtree_config_data_t *hashtree = (hashtree_config_data_t *)mph->data;
-	hashtree->m = mph->key_source->nkeys;	
-	hashtree->n = ceil(c * mph->key_source->nkeys);	
+	hashtree->m = mph->key_source->nkeys;
+	hashtree->n = ceil(c * mph->key_source->nkeys);
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", hashtree->m, hashtree->n, c);
 	hashtree->graph = graph_new(hashtree->n, hashtree->m);
 	DEBUGP("Created graph\n");
@@ -87,12 +87,12 @@ cmph_t *hashtree_new(cmph_config_t *mph, double c)
 				fprintf(stderr, "Acyclic graph creation failure - %u iterations remaining\n", iterations);
 			}
 			if (iterations == 0) break;
-		} 
-		else break;	
+		}
+		else break;
 	}
 	if (iterations == 0)
 	{
-		graph_destroy(hashtree->graph);	
+		graph_destroy(hashtree->graph);
 		return NULL;
 	}
 
@@ -115,7 +115,7 @@ cmph_t *hashtree_new(cmph_config_t *mph, double c)
 			hashtree_traverse(hashtree, visited, i);
 		}
 	}
-	graph_destroy(hashtree->graph);	
+	graph_destroy(hashtree->graph);
 	free(visited);
 	hashtree->graph = NULL;
 
@@ -144,7 +144,7 @@ static void hashtree_traverse(hashtree_config_data_t *hashtree, cmph_uint8 *visi
 	graph_iterator_t it = graph_neighbors_it(hashtree->graph, v);
 	cmph_uint32 neighbor = 0;
 	SETBIT(visited,v);
-	
+
 	DEBUGP("Visiting vertex %u\n", v);
 	while((neighbor = graph_next_neighbor(hashtree->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
@@ -157,7 +157,7 @@ static void hashtree_traverse(hashtree_config_data_t *hashtree, cmph_uint8 *visi
 		hashtree_traverse(hashtree, visited, neighbor);
 	}
 }
-		
+
 static int hashtree_gen_edges(cmph_config_t *mph)
 {
 	cmph_uint32 e;
@@ -165,7 +165,7 @@ static int hashtree_gen_edges(cmph_config_t *mph)
 	int cycles = 0;
 
 	DEBUGP("Generating edges for %u vertices with hash functions %s and %s\n", hashtree->n, cmph_hash_names[hashtree->hashfuncs[0]], cmph_hash_names[hashtree->hashfuncs[1]]);
-	graph_clear_edges(hashtree->graph);	
+	graph_clear_edges(hashtree->graph);
 	mph->key_source->rewind(mph->key_source->data);
 	for (e = 0; e < mph->key_source->nkeys; ++e)
 	{
@@ -176,7 +176,7 @@ static int hashtree_gen_edges(cmph_config_t *mph)
 		h1 = hash(hashtree->hashes[0], key, keylen) % hashtree->n;
 		h2 = hash(hashtree->hashes[1], key, keylen) % hashtree->n;
 		if (h1 == h2) if (++h2 >= hashtree->n) h2 = 0;
-		if (h1 == h2) 
+		if (h1 == h2)
 		{
 			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
@@ -216,7 +216,7 @@ int hashtree_dump(cmph_t *mphf, FILE *fd)
 
 	fwrite(&(data->n), sizeof(cmph_uint32), 1, fd);
 	fwrite(&(data->m), sizeof(cmph_uint32), 1, fd);
-	
+
 	fwrite(data->g, sizeof(cmph_uint32)*data->n, 1, fd);
 	#ifdef DEBUG
 	fprintf(stderr, "G: ");
@@ -253,8 +253,8 @@ void hashtree_load(FILE *f, cmph_t *mphf)
 	}
 
 	DEBUGP("Reading m and n\n");
-	fread(&(hashtree->n), sizeof(cmph_uint32), 1, f);	
-	fread(&(hashtree->m), sizeof(cmph_uint32), 1, f);	
+	fread(&(hashtree->n), sizeof(cmph_uint32), 1, f);
+	fread(&(hashtree->m), sizeof(cmph_uint32), 1, f);
 
 	hashtree->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*hashtree->n);
 	fread(hashtree->g, hashtree->n*sizeof(cmph_uint32), 1, f);
@@ -265,7 +265,7 @@ void hashtree_load(FILE *f, cmph_t *mphf)
 	#endif
 	return;
 }
-		
+
 
 cmph_uint32 hashtree_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
@@ -280,7 +280,7 @@ cmph_uint32 hashtree_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 void hashtree_destroy(cmph_t *mphf)
 {
 	hashtree_data_t *data = (hashtree_data_t *)mphf->data;
-	free(data->g);	
+	free(data->g);
 	hash_state_destroy(data->hashes[0]);
 	hash_state_destroy(data->hashes[1]);
 	free(data->hashes);

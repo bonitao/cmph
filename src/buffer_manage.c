@@ -16,7 +16,7 @@ buffer_manage_t * buffer_manage_new(cmph_uint32 memory_avail, cmph_uint32 nentri
 {
 	cmph_uint32 memory_avail_entry, i;
 	buffer_manage_t *buff_manage = (buffer_manage_t *)malloc(sizeof(buffer_manage_t));
-	assert(buff_manage);
+        if (!buff_manage) return NULL;
 	buff_manage->memory_avail = memory_avail;
 	buff_manage->buffer_entries = (buffer_entry_t **)calloc((size_t)nentries, sizeof(buffer_entry_t *));
 	buff_manage->memory_avail_list = (cmph_uint32 *)calloc((size_t)nentries, sizeof(cmph_uint32));
@@ -26,7 +26,7 @@ buffer_manage_t * buffer_manage_new(cmph_uint32 memory_avail, cmph_uint32 nentri
 	for(i = 0; i < buff_manage->nentries; i++)
 	{
 		buff_manage->buffer_entries[i] = buffer_entry_new(memory_avail_entry);
-	}	
+	}
 	return buff_manage;
 }
 
@@ -54,7 +54,7 @@ cmph_uint8 * buffer_manage_read_key(buffer_manage_t * buffer_manage, cmph_uint32
 }
 
 void buffer_manage_destroy(buffer_manage_t * buffer_manage)
-{ 
+{
 	cmph_uint32 i;
 	for(i = 0; i < buffer_manage->nentries; i++)
 	{
