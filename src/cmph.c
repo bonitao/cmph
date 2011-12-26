@@ -18,18 +18,18 @@
 
 const char *cmph_names[] = {"bmz", "bmz8", "chm", "brz", "fch", "bdz", "bdz_ph", "chd_ph", "chd", NULL };
 
-typedef struct 
+typedef struct
 {
 	void *vector;
-	cmph_uint32 position; // access position when data is a vector	
+	cmph_uint32 position; // access position when data is a vector
 } cmph_vector_t;
 
 
 
-/** 
+/**
  * Support a vector of struct as the source of keys.
  *
- * E.g. The keys could be the fieldB's in a vector of struct rec where 
+ * E.g. The keys could be the fieldB's in a vector of struct rec where
  * struct rec is defined as:
  * struct rec {
  *    fieldA;
@@ -37,7 +37,7 @@ typedef struct
  *    fieldC;
  * }
  */
-typedef struct 
+typedef struct
 {
 	void *vector;					/* Pointer to the vector of struct */
 	cmph_uint32 position; 			/* current position */
@@ -61,7 +61,7 @@ static int key_nlfile_read(void *data, char **key, cmph_uint32 *keylen)
 	while(1)
 	{
 		char buf[BUFSIZ];
-		char *c = fgets(buf, BUFSIZ, fd); 
+		char *c = fgets(buf, BUFSIZ, fd);
 		if (c == NULL) return -1;
 		if (feof(fd)) return -1;
 		*key = (char *)realloc(*key, *keylen + strlen(buf) + 1);
@@ -156,8 +156,12 @@ static cmph_uint32 count_nlfile_keys(FILE *fd)
 	while(1)
 	{
 		char buf[BUFSIZ];
-		ptr = fgets(buf, BUFSIZ, fd); 
+		ptr = fgets(buf, BUFSIZ, fd);
 		if (feof(fd)) break;
+                if (ferror(fd) || ptr == NULL) {
+                  perror("Error reading input file");
+                  return 0;
+                }
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		++count;
 	}
