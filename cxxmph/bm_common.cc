@@ -1,4 +1,6 @@
+#include <cmath>
 #include <fstream>
+#include <limits>
 #include <iostream>
 #include <set>
 
@@ -32,9 +34,15 @@ bool UrlsBenchmark::SetUp() {
 
 bool SearchUrlsBenchmark::SetUp() {
   if (!UrlsBenchmark::SetUp()) return false;
+  int32_t miss_ratio_int32 = std::numeric_limits<int32_t>::max() * miss_ratio_;
+  forced_miss_urls_.resize(nsearches_);
   random_.resize(nsearches_);
   for (int i = 0; i < nsearches_; ++i) {
     random_[i] = urls_[random() % urls_.size()];
+    if (random() < miss_ratio_int32) {
+      forced_miss_urls_[i] = random_[i].as_string() + ".force_miss";
+      random_[i] = forced_miss_urls_[i];
+    }
   }
   return true;
 }

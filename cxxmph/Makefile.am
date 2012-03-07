@@ -14,7 +14,7 @@ mph_map_test_SOURCES = mph_map_test.cc
 mph_index_test_LDADD   = libcxxmph.la
 mph_index_test_SOURCES = mph_index_test.cc
 
-bm_index_LDADD = libcxxmph.la
+bm_index_LDADD = libcxxmph.la -lcmph
 bm_index_SOURCES = bm_common.cc bm_index.cc 
 
 trigraph_test_LDADD   = libcxxmph.la

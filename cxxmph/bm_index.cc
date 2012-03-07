@@ -1,3 +1,6 @@
+#include <cmph.h>
+
+#include <cstdio>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -56,6 +59,56 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
   SimpleMPHIndex<StringPiece> index_;
 };
 
+class BM_CmphIndexSearch : public SearchUrlsBenchmark {
+ public:
+  BM_CmphIndexSearch(const std::string& urls_file, int nsearches)
+      : SearchUrlsBenchmark(urls_file, nsearches) { }
+  ~BM_CmphIndexSearch() { if (index_) cmph_destroy(index_); }
+  virtual void Run() {
+    for (auto it = random_.begin(); it != random_.end(); ++it) {
+      auto idx = cmph_search(index_, it->data(), it->length());
+      // Collision check to be fair with STL
+      if (strcmp(urls_[idx].c_str(), it->data()) != 0) idx = -1;
+    }
+  }
+ protected:
+  virtual bool SetUp() {
+   if (!SearchUrlsBenchmark::SetUp()) {
+      cerr << "Parent class setup failed." << endl;
+      return false;
+    }
+    FILE* f = fopen(urls_file_.c_str(), "r");
+    if (!f) {
+      cerr << "Faied to open " << urls_file_ << endl; 
+      return false;
+    }
+    cmph_io_adapter_t* source = cmph_io_nlfile_adapter(f);
+    if (!source) {
+      cerr << "Faied to create io adapter for " << urls_file_ << endl; 
+      return false;
+    }
+    cmph_config_t* config = cmph_config_new(source);
+    if (!config) {
+      cerr << "Failed to create config" << endl;
+      return false;
+    }
+    cmph_config_set_algo(config, CMPH_BDZ);
+    cmph_t* mphf = cmph_new(config);
+    if (!mphf) {
+      cerr << "Failed to create mphf." << endl;
+      return false;
+    }
+
+    cmph_config_destroy(config);
+    cmph_io_nlfile_adapter_destroy(source);
+    fclose(f);
+    index_ = mphf;
+    return true;
+  }
+  cmph_t* index_;
+};
+    
+
 class BM_STLIndexSearch : public SearchUrlsBenchmark {
  public:
   BM_STLIndexSearch(const std::string& urls_file, int nsearches)
@@ -80,10 +133,13 @@ class BM_STLIndexSearch : public SearchUrlsBenchmark {
 };
 
 int main(int argc, char** argv) {
+/*
   Benchmark::Register(new BM_MPHIndexCreate("URLS100k"));
   Benchmark::Register(new BM_STLIndexCreate("URLS100k"));
   Benchmark::Register(new BM_MPHIndexSearch("URLS100k", 100*1000*1000));
   Benchmark::Register(new BM_STLIndexSearch("URLS100k", 100*1000*1000));
+*/
+  Benchmark::Register(new BM_CmphIndexSearch("URLS100k", 100*1000*1000));
   Benchmark::RunAll();
   return 0;
 }
