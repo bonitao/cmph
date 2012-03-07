@@ -186,7 +186,6 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  assert(slack_.empty());
   if (index_.size() == 0) return -1;
   return index_.index(k);
 }

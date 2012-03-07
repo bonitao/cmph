@@ -129,17 +129,15 @@ class BM_STLIndexSearch : public SearchUrlsBenchmark {
    index.swap(index_);
    return true;
   }
-  std::unordered_map<StringPiece, uint32_t> index_;
+  unordered_map<StringPiece, uint32_t> index_;
 };
 
 int main(int argc, char** argv) {
-/*
   Benchmark::Register(new BM_MPHIndexCreate("URLS100k"));
   Benchmark::Register(new BM_STLIndexCreate("URLS100k"));
-  Benchmark::Register(new BM_MPHIndexSearch("URLS100k", 100*1000*1000));
-  Benchmark::Register(new BM_STLIndexSearch("URLS100k", 100*1000*1000));
-*/
-  Benchmark::Register(new BM_CmphIndexSearch("URLS100k", 100*1000*1000));
+  Benchmark::Register(new BM_MPHIndexSearch("URLS100k", 10*1000*1000));
+  Benchmark::Register(new BM_STLIndexSearch("URLS100k", 10*1000*1000));
+  Benchmark::Register(new BM_CmphIndexSearch("URLS100k", 10*1000*1000));
   Benchmark::RunAll();
   return 0;
 }

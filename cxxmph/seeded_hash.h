@@ -19,13 +19,6 @@ struct seeded_hash_function {
   }
 };
 
-struct seeded_identity_function {
-  template <class Key>
-  uint32_t operator()(const Key& k, uint32_t seed) const {
-    return k ^ seed;
-  }
-};
-
 struct Murmur2 {
   template<class Key>
   uint32_t operator()(const Key& k) const {
@@ -78,6 +71,7 @@ template <> struct seeded_hash<std::hash<short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
+/*
 template <> struct seeded_hash<std::hash<int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned int> >
@@ -90,6 +84,7 @@ template <> struct seeded_hash<std::hash<long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
+*/
 
 }  // namespace cxxmph
 
