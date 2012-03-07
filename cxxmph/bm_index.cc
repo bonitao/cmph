@@ -42,7 +42,7 @@ class BM_STLIndexCreate : public UrlsBenchmark {
 class BM_MPHIndexSearch : public SearchUrlsBenchmark {
  public:
   BM_MPHIndexSearch(const std::string& urls_file, int nsearches)
-      : SearchUrlsBenchmark(urls_file, nsearches) { }
+      : SearchUrlsBenchmark(urls_file, nsearches, 0) { }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto idx = index_.index(*it);
@@ -62,7 +62,7 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
 class BM_CmphIndexSearch : public SearchUrlsBenchmark {
  public:
   BM_CmphIndexSearch(const std::string& urls_file, int nsearches)
-      : SearchUrlsBenchmark(urls_file, nsearches) { }
+      : SearchUrlsBenchmark(urls_file, nsearches, 0) { }
   ~BM_CmphIndexSearch() { if (index_) cmph_destroy(index_); }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
@@ -112,7 +112,7 @@ class BM_CmphIndexSearch : public SearchUrlsBenchmark {
 class BM_STLIndexSearch : public SearchUrlsBenchmark {
  public:
   BM_STLIndexSearch(const std::string& urls_file, int nsearches)
-      : SearchUrlsBenchmark(urls_file, nsearches) { }
+      : SearchUrlsBenchmark(urls_file, nsearches, 0) { }
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto idx = index_.find(*it);

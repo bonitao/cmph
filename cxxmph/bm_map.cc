@@ -10,24 +10,11 @@
 
   namespace cxxmph {
 
-  uint64_t myfind(const unordered_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
+  template<class Container, class T>
+  const T* myfind(const Container& mymap, const T& k) {
     auto it = mymap.find(k);
-    if (it == mymap.end()) return -1;
-    return it->second;
-  }
-
-  uint64_t myfind(const mph_map<uint64_t, uint64_t>& mymap, const uint64_t& k) {
-    return mymap.find(k)->second;
-  }
-
-  const StringPiece& myfind(const unordered_map<StringPiece, StringPiece, Murmur2StringPiece>& mymap, const StringPiece& k) {
-    auto it = mymap.find(k);
-    if (it == mymap.end()) return ".force_miss";
-    return it->second;
-  }
-  StringPiece myfind(const mph_map<StringPiece, StringPiece>& mymap, const StringPiece& k) {
-    auto it = mymap.find(k);
-    return it->second;
+    if (it == mymap.end()) return NULL;
+    return &it->second;
   }
 
   template <class MapType>
@@ -45,25 +32,14 @@
 template <class MapType>
 class BM_SearchUrls : public SearchUrlsBenchmark {
  public:
-  BM_SearchUrls(const std::string& urls_file, int nsearches) 
-      : SearchUrlsBenchmark(urls_file, nsearches) { }
+  BM_SearchUrls(const std::string& urls_file, int nsearches, float miss_ratio) 
+      : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
   virtual void Run() {
-    fprintf(stderr, "Running benchmark\n");
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      if (it->ends_with(".force_miss")) {
-        fprintf(stderr, "About to miss\n");
-      } else {
-        fprintf(stderr, "No miss\n");
-      }
-      fprintf(stderr, "it: *%s\n", it->as_string().c_str());
       auto v = myfind(mymap_, *it);
-      fprintf(stderr, "v: %s, it: *%s\n", v.as_string().c_str(), it->as_string().c_str());
-      if (v != *it && !it->ends_with(".force_miss")) {
-        fprintf(stderr, "Looked for %s got %s\n", it->data(), v.data());
-	exit(-1);
-      }
+      assert(it->ends_with(".force_miss") ^ v != NULL);
+      assert(!v || *v == *it);
     }
-    fprintf(stderr, "Done running benchmark\n");
   }
  protected:
   virtual bool SetUp() {
@@ -96,8 +72,8 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
-      if (v != *it) {
-        fprintf(stderr, "Looked for %lu got %lu\n", *it, v);
+      if (*v != *it) {
+        fprintf(stderr, "Looked for %lu got %lu\n", *it, *v);
 	exit(-1);
       }
     }
@@ -115,8 +91,10 @@ int main(int argc, char** argv) {
   Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
   */
-  // Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000));
-  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 10));
+  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
+  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur2StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   /*
   Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);

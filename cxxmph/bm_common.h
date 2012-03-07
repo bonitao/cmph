@@ -31,8 +31,8 @@ class UrlsBenchmark : public Benchmark {
 
 class SearchUrlsBenchmark : public UrlsBenchmark {
  public:
-  SearchUrlsBenchmark(const std::string& urls_file, uint32_t nsearches)
-      : UrlsBenchmark(urls_file), nsearches_(nsearches), miss_ratio_(0.2) {}
+  SearchUrlsBenchmark(const std::string& urls_file, uint32_t nsearches, float miss_ratio)
+      : UrlsBenchmark(urls_file), nsearches_(nsearches), miss_ratio_(miss_ratio) {}
  protected:
   virtual bool SetUp();
   const uint32_t nsearches_; 
