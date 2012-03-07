@@ -71,7 +71,6 @@ template <> struct seeded_hash<std::hash<short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned short> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-/*
 template <> struct seeded_hash<std::hash<int> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned int> >
@@ -84,7 +83,6 @@ template <> struct seeded_hash<std::hash<long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned long long> >
 { typedef seeded_hash_function<Murmur2> hash_function; };
-*/
 
 }  // namespace cxxmph
 
