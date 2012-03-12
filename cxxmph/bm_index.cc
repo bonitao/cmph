@@ -21,7 +21,7 @@ class BM_MPHIndexCreate : public UrlsBenchmark {
  protected:
   virtual void Run() {
     SimpleMPHIndex<StringPiece> index;
-    index.Reset(urls_.begin(), urls_.end());
+    index.Reset(urls_.begin(), urls_.end(), urls_.size());
   }
 };
 
@@ -53,7 +53,7 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
  protected:
   virtual bool SetUp () {
    if (!SearchUrlsBenchmark::SetUp()) return false;
-   index_.Reset(urls_.begin(), urls_.end());
+   index_.Reset(urls_.begin(), urls_.end(), urls_.size());
    return true;
   }
   SimpleMPHIndex<StringPiece> index_;

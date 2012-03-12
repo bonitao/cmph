@@ -13,7 +13,8 @@ namespace cxxmph {
 template<class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
-  if (it == mymap.end()) return NULL;
+  auto end = mymap.end();
+  if (it == end) return NULL;
   return &it->second;
 }
 

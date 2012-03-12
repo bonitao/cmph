@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   keys.push_back("algume");
 
   SimpleMPHIndex<string> mph_index;
-  if (!mph_index.Reset(keys.begin(), keys.end())) { exit(-1); }
+  if (!mph_index.Reset(keys.begin(), keys.end(), keys.size())) { exit(-1); }
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
      ids.push_back(mph_index.index(keys[i]));

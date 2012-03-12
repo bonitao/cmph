@@ -48,7 +48,7 @@ class MPHIndex {
   ~MPHIndex();
 
   template <class SeededHashFcn, class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end);
+  bool Reset(ForwardIterator begin, ForwardIterator end, uint32_t size);
   template <class SeededHashFcn, class Key>  // must agree with Reset
   // Get a unique identifier for k, in the range [0;size()). If x wasn't part
   // of the input in the last Reset call, returns a random value.
@@ -120,12 +120,13 @@ class MPHIndex {
 
 // Template method needs to go in the header file.
 template <class SeededHashFcn, class ForwardIterator>
-bool MPHIndex::Reset(ForwardIterator begin, ForwardIterator end) {
+bool MPHIndex::Reset(
+    ForwardIterator begin, ForwardIterator end, uint32_t size) {
   if (end == begin) {
     clear();
     return true;
   }
-  m_ = end - begin;
+  m_ = size;
   r_ = static_cast<uint32_t>(ceil((c_*m_)/3));
   if ((r_ % 2) == 0) r_ += 1;
   n_ = 3*r_;
@@ -204,8 +205,8 @@ template <class Key, class HashFcn = typename seeded_hash<std::hash<Key> >::hash
 class SimpleMPHIndex : public MPHIndex {
  public:
   template <class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end) {
-    return MPHIndex::Reset<HashFcn>(begin, end);
+  bool Reset(ForwardIterator begin, ForwardIterator end, uint32_t size) {
+    return MPHIndex::Reset<HashFcn>(begin, end, size);
   }
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
   uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
