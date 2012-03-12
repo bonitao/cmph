@@ -31,5 +31,8 @@ int main(int argc, char** argv) {
   auto it1 = hollow_iterator<vector<int>>(&v, &p, v.begin());
   auto it2 = hollow_const_iterator<vector<int>>(&v, &p, v.begin());
   if (it1 != it2) exit(-1);
+
+  hollow_iterator<vector<int>> default_constructed;
+  default_constructed = hollow_iterator<vector<int>>(&v, &p, v.begin());
 }
 

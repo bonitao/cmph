@@ -7,6 +7,7 @@
 // and should not be used if performance is a concern. In fact, you should only
 // use it for educational purposes.
 
+#include <iostream>
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
@@ -71,9 +72,8 @@ class mph_map {
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
-  size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
-  // FIXME: not sure if this has the semantics I want
-  void rehash(size_type nbuckets /*ignored*/) { pack(); }
+  size_type bucket_count() const { return index_.size() + slack_.bucket_count(); }
+  void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
   EqualKey equal_;
@@ -131,6 +131,7 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   }
   values_.push_back(x);
   present_.push_back(true);
+  ++size_;
   slack_.insert(make_pair(x.first, values_.size() - 1));
   if (should_pack) pack();
   it = find(x.first);
@@ -143,10 +144,12 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
   assert(success);
-  std::vector<value_type> new_values(index_.size());
-  std::vector<bool> new_present(index_.size(), false);
-  for (iterator it(begin()), it_end(end()); it != it_end; ++it) {
-    size_type id = index_.index(it->first);
+  std::vector<value_type> new_values(index_.perfect_hash_size());
+  new_values.reserve(new_values.size() * 2);
+  std::vector<bool> new_present(index_.perfect_hash_size(), false);
+  new_present.reserve(new_present.size() * 2);
+  for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
+    size_type id = index_.perfect_hash(it->first);
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;
@@ -168,11 +171,13 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
   present_.clear();
   slack_.clear();
   index_.clear();
+  size_ = 0;
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
   present_[pos - begin] = false;
   *pos = value_type();
+  --size_;
 }
 MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   iterator it = find(k);
@@ -214,6 +219,13 @@ MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
   return insert(make_pair(k, data_type())).first->second;
 }
+MPH_MAP_METHOD_DECL(void_type, rehash)(size_type nbuckets) {
+  pack();
+  vector<value_type>(values_.begin(), values_.end()).swap(values_);
+  vector<bool>(present_.begin(), present_.end()).swap(present_);
+  slack_type().swap(slack_);
+}
+
 
 }  // namespace cxxmph
 

@@ -17,7 +17,7 @@ struct hollow_iterator_base
   typedef typename iterator::pointer pointer;
 
   hollow_iterator_base(container* c, presence* p, iterator it)
-      : c_(c), p_(p), it_(it) { find_present(); }
+      : c_(c), p_(p), it_(it) { if (c_) find_present(); }
   self_reference operator++() {
     ++it_; find_present();
   }
@@ -44,6 +44,7 @@ struct hollow_iterator : public hollow_iterator_base<
     container_type, std::vector<bool>, typename container_type::iterator> {
   typedef hollow_iterator_base<
       container_type, std::vector<bool>, typename container_type::iterator> parent_class;
+  hollow_iterator() : parent_class(NULL, NULL, typename container_type::iterator())  { }
   hollow_iterator(typename parent_class::container* c,
                   typename parent_class::presence* p,
                   typename parent_class::iterator it)
@@ -58,6 +59,7 @@ struct hollow_const_iterator : public hollow_iterator_base<
   typedef hollow_const_iterator<container_type> self_type;
   typedef hollow_iterator<container_type> non_const_type;
   hollow_const_iterator(non_const_type rhs) : parent_class(rhs.c_, rhs.p_, typename container_type::const_iterator(rhs.it_)) { }
+  hollow_const_iterator() : parent_class(NULL, NULL, typename container_type::iterator())  { }
   hollow_const_iterator(const typename parent_class::container* c,
                         const typename parent_class::presence* p,
                         typename parent_class::iterator it)
