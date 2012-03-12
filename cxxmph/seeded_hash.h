@@ -6,8 +6,11 @@
 #include <cstdlib>
 #include <unordered_map>  // for std::hash
 
-#include "MurmurHash2.h"
+#include "MurmurHash3.h"
 #include "stringpiece.h"
+
+// From murmur, only used naively to extend 32 bits functions to 64 bits.
+uint32_t fmix ( uint32_t h );
 
 namespace cxxmph {
 
@@ -17,72 +20,106 @@ struct seeded_hash_function {
   uint32_t operator()(const Key& k, uint32_t seed) const {
     return HashFcn()(k) ^ seed;
   }
+  template <class Key>
+  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+    for (int i = 0; i < 4; ++i) {
+      out[i] = HashFcn()(k) ^ seed;
+      seed = fmix(seed);
+    }
+  }
 };
 
-struct Murmur2 {
+struct Murmur3 {
   template<class Key>
   uint32_t operator()(const Key& k) const {
-    return MurmurHash2(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */);
+    uint32_t out;
+    MurmurHash3_x86_32(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */, &out);
+    return out;
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t* out) const {
+    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */, out);
   }
 };
-struct Murmur2StringPiece {
+
+struct Murmur3StringPiece {
   template <class Key>
   uint32_t operator()(const Key& k) const {
     StringPiece s(k);
-    return MurmurHash2(s.data(), s.length(), 1 /* seed */);
+    uint32_t out;
+    MurmurHash3_x86_32(s.data(), s.length(), 1 /* seed */, &out);
+    return out;
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t* out) const {
+    StringPiece s(k);
+    MurmurHash3_x64_128(s.data(), s.length(), 1 /* seed */, out);
   }
 };
 
 template <>
-struct seeded_hash_function<Murmur2> {
+struct seeded_hash_function<Murmur3> {
   template <class Key>
   uint32_t operator()(const Key& k, uint32_t seed) const {
-    return MurmurHash2(reinterpret_cast<const void*>(&k), sizeof(Key), seed);
+    uint32_t out;
+    MurmurHash3_x86_32(reinterpret_cast<const void*>(&k), sizeof(Key), seed, &out);
+    return out;
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), seed, out);
   }
 };
 
 template <>
-struct seeded_hash_function<Murmur2StringPiece> {
+struct seeded_hash_function<Murmur3StringPiece> {
   template <class Key>
   uint32_t operator()(const Key& k, uint32_t seed) const {
     StringPiece s(k);
-    return MurmurHash2(s.data(), s.length(), seed);
+    uint32_t out;
+    MurmurHash3_x86_32(s.data(), s.length(), seed, &out);
+    return out;
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+    StringPiece s(k);
+    MurmurHash3_x64_128(s.data(), s.length(), seed, out);
   }
 };
 
 template <class HashFcn> struct seeded_hash
 { typedef seeded_hash_function<HashFcn> hash_function; };
-// Use Murmur2 instead for all types defined in std::hash, plus
+// Use Murmur3 instead for all types defined in std::hash, plus
 // std::string which is commonly extended.
 template <> struct seeded_hash<std::hash<char*> >
-{ typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
+{ typedef seeded_hash_function<Murmur3StringPiece> hash_function; };
 template <> struct seeded_hash<std::hash<const char*> >
-{ typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
+{ typedef seeded_hash_function<Murmur3StringPiece> hash_function; };
 template <> struct seeded_hash<std::hash<std::string> >
-{ typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
+{ typedef seeded_hash_function<Murmur3StringPiece> hash_function; };
 template <> struct seeded_hash<std::hash<cxxmph::StringPiece> >
-{ typedef seeded_hash_function<Murmur2StringPiece> hash_function; };
+{ typedef seeded_hash_function<Murmur3StringPiece> hash_function; };
 
 template <> struct seeded_hash<std::hash<char> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned char> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<short> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned short> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<int> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned int> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<long> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned long> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<long long> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned long long> >
-{ typedef seeded_hash_function<Murmur2> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 
 }  // namespace cxxmph
 

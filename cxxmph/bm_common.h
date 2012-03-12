@@ -6,14 +6,16 @@
 #include <string>
 #include <vector>
 #include <unordered_map>  // std::hash
-#include "MurmurHash2.h"
+#include "MurmurHash3.h"
 
 #include "benchmark.h"
 
 namespace std {
 template <> struct hash<cxxmph::StringPiece> {
   uint32_t operator()(const cxxmph::StringPiece& k) const {
-    return cxxmph::MurmurHash2(k.data(), k.length(), 1);
+    uint32_t out;
+    MurmurHash3_x86_32(k.data(), k.length(), 1, &out);
+    return out;
   }
 };
 }  // namespace std
