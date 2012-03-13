@@ -6,13 +6,14 @@
 // This class is about 20% to 100% slower than unordered_map (or ext/hash_map)
 // and should not be used if performance is a concern. In fact, you should only
 // use it for educational purposes.
+//
+// See http://www.strchr.com/crc32_popcnt and new Murmur3 function to try to beat stl
 
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
 #include <utility>  // for std::pair
 
-#include "MurmurHash2.h"
 #include "mph_index.h"
 
 namespace cxxmph {

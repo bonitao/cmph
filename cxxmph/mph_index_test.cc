@@ -7,7 +7,7 @@
 
 using std::string;
 using std::vector;
-using cxxmph::SimpleMPHIndex;
+using namespace cxxmph;
 
 int main(int argc, char** argv) {
 
@@ -38,4 +38,3 @@ int main(int argc, char** argv) {
   SimpleMPHIndex<string> other_mph_index;
   other_mph_index.deserialize(serialized);
 }
-  

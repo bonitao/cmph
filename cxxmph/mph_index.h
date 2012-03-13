@@ -157,7 +157,8 @@ bool MPHIndex::Mapping(
     std::vector<TriGraph::Edge>* edges, std::vector<uint32_t>* queue) {
   TriGraph graph(n_, m_);
   for (ForwardIterator it = begin; it != end; ++it) { 
-    uint32_t h[3];
+    uint32_t h[4];
+    // SeededHashFcn().hash64(*it, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
     for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
     uint32_t v0 = h[0] % r_;
     uint32_t v1 = h[1] % r_ + r_;
@@ -200,7 +201,7 @@ uint32_t MPHIndex::index(const Key& key) const {
 
 // Simple wrapper around MPHIndex to simplify calling code. Please refer to the
 // MPHIndex class for documentation.
-template <class Key, class HashFcn = typename seeded_hash<std::hash<Key> >::hash_function>
+template <class Key, class HashFcn = typename seeded_hash<std::hash<Key>>::hash_function>
 class SimpleMPHIndex : public MPHIndex {
  public:
   template <class ForwardIterator>
