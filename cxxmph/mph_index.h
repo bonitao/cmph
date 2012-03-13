@@ -159,8 +159,8 @@ bool MPHIndex::Mapping(
   TriGraph graph(n_, m_);
   for (ForwardIterator it = begin; it != end; ++it) { 
     uint32_t h[4];
-    // SeededHashFcn().hash64(*it, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
-    for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
+    SeededHashFcn().hash64(*it, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
+    // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
     uint32_t v0 = h[0] % r_;
     uint32_t v1 = h[1] % r_ + r_;
     uint32_t v2 = h[2] % r_ + (r_ << 1);
@@ -176,8 +176,9 @@ bool MPHIndex::Mapping(
 
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
-  uint32_t h[3];
-  for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
+  uint32_t h[4];
+  SeededHashFcn().hash64(key, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
+  // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
   assert(r_);
   h[0] = h[0] % r_;
   h[1] = h[1] % r_ + r_;
