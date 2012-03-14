@@ -126,7 +126,7 @@ class mph_map {
    std::vector<bool> present_;
    std::vector<uint8_t> nests_;
    SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
-   // TODO(davi) optimize slack to no hold a copy of the key
+   // TODO(davi) optimize slack to hold 128 unique bits from hash64 as key
    typedef unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
    slack_type slack_;
    size_type size_;
