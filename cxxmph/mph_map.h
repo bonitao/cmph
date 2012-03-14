@@ -236,6 +236,8 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
+  return slow_find(k, index_.perfect_hash(k));
+  /*
   uint32_t h[4];
   index_.hash_vector(k, h);
   auto nest = get_nest_value(h);
@@ -246,6 +248,7 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   nest = index_.cuckoo_nest(h);
   assert(index_.perfect_hash(k) == index_.cuckoo_hash(h, nest));
   return slow_find(k, index_.cuckoo_hash(h, nest));
+  */
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfect_hash) const {
@@ -263,6 +266,8 @@ MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfe
 }
 
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
+  return slow_find(k, index_.perfect_hash(k));
+  /*
   uint32_t h[4];
   index_.hash_vector(k, h);
   auto nest = get_nest_value(h);
@@ -273,6 +278,7 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   nest = index_.cuckoo_nest(h);
   // assert(index_.perfect_hash(k) == index_.cuckoo_hash(h, nest));
   return slow_find(k, index_.cuckoo_hash(h, nest));
+  */
 }
 
 MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k, uint32_t perfect_hash) {
