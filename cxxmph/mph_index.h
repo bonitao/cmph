@@ -68,8 +68,8 @@ class MPHIndex {
   // Crazy functions. Ignore.
   template <class SeededHashFcn>  // must agree with Reset
   uint32_t cuckoo_hash(const uint32_t* h, uint8_t nest) const;
-  template <class SeededHashFcn, class Key>  // must agree with Reset
-  uint8_t cuckoo_nest(const Key& x, const uint32_t* h) const;
+  template <class SeededHashFcn>  // must agree with Reset
+  uint8_t cuckoo_nest(const uint32_t* h) const;
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t cuckoo_nest_index(const Key& x, uint32_t* h) const;
   template <class SeededHashFcn, class Key>  // must agree with Reset
@@ -197,24 +197,28 @@ void MPHIndex::hash_vector(const Key& key, uint32_t* h) const {
   SeededHashFcn().hash64(key, hash_seed_[0], h);
 }
 
-template <class SeededHashFcn, class Key>
-uint8_t MPHIndex::cuckoo_nest(const Key& key, const uint32_t* h) const {
+template <class SeededHashFcn>  // must agree with Reset
+uint8_t MPHIndex::cuckoo_nest(const uint32_t* h) const {
   uint32_t x[4];
+  if (!g_size_) return 0;
   x[0] = (h[0] % r_) + nest_displacement_[0];
   x[1] = (h[1] % r_) + nest_displacement_[1];
   x[2] = (h[2] % r_) + nest_displacement_[2];
+  assert((x[0] >> 2) <g_size_);
+  assert((x[1] >> 2) <g_size_);
+  assert((x[2] >> 2) <g_size_);
   return (get_2bit_value(g_, x[0]) + get_2bit_value(g_, x[1]) + get_2bit_value(g_, x[2])) % 3;
 }
 
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
   uint32_t h[4];
+  if (!g_size_) return 0;
   SeededHashFcn().hash64(key, hash_seed_[0], h);
   // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
   h[2] = (h[2] % r_) + nest_displacement_[2];
-  if (!g_size_) return 0;
   // cerr << "g_.size() " << g_size_ << " h0 >> 2 " << (h[0] >> 2) << endl;
   assert((h[0] >> 2) <g_size_);
   assert((h[1] >> 2) <g_size_);
@@ -245,7 +249,7 @@ class SimpleMPHIndex : public MPHIndex {
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
   uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
   uint32_t minimal_perfect_hash(const Key& key) const { return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
-  uint8_t cuckoo_nest(const Key& key, const uint32_t* h) const { return MPHIndex::cuckoo_nest<HashFcn>(key, h); }
+  uint8_t cuckoo_nest(const uint32_t* h) const { return MPHIndex::cuckoo_nest<HashFcn>(h); }
   uint32_t cuckoo_hash(const uint32_t* h, uint8_t nest) const { return MPHIndex::cuckoo_hash<HashFcn>(h, nest); }
   void hash_vector(const Key& key, uint32_t* h) const { MPHIndex::hash_vector<HashFcn>(key, h); }
 };
