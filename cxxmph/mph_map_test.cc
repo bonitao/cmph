@@ -17,6 +17,10 @@ int main(int argc, char** argv) {
   }
   for (int i = 0; i < num_keys; ++i) {
     auto it = b.find(i);
+    if (it == b.end()) {
+      std::cerr << "Failed to find " << i << std::endl;
+      exit(-1);
+    }
     if (it->first != it->second || it->first != i) {
       std::cerr << "Found " << it->first << " looking for " << i << std::endl;
       exit(-1);
