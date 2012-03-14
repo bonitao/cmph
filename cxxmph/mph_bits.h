@@ -4,6 +4,7 @@
 #include <stdint.h>  // for uint32_t and friends
 #include <cassert>
 #include <climits>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <limits>
@@ -13,47 +14,38 @@ namespace cxxmph {
 
 class dynamic_2bitset {
  public:
-  dynamic_2bitset() : data_(NULL), size_(0), one_initialized_(false)  {}
-  dynamic_2bitset(uint32_t size, bool one_initialized = false)
-      : data_(NULL), size_(0), one_initialized_(one_initialized) {
-    resize(size);
+  dynamic_2bitset() : fill_(false)  {}
+  dynamic_2bitset(uint32_t size, bool fill = false)
+      : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {
   }
-  ~dynamic_2bitset() { delete [] data_; }
 
   const uint8_t operator[](uint32_t i) const { return get(i); }
   uint8_t get(uint32_t i) const { 
     return (data_[(i >> 2)] >> (((i & 3) << 1)) & 3);
   }
   uint8_t set(uint32_t i, uint8_t v) { 
-    uint8_t sf = ((v << ((i & 3) << 1)) | dynamic_2bitset::vmask[i & 3]);
-    fprintf(stderr, "v %d sf %d\n", v, sf);
+    data_[(i >> 2)] |= ones() ^ dynamic_2bitset::vmask[i & 3];
     data_[(i >> 2)] &= ((v << ((i & 3) << 1)) | dynamic_2bitset::vmask[i & 3]);
+    assert(v <= 3);
     assert(get(i) == v);
   }
   void resize(uint32_t size) {
-    uint8_t* new_data = new uint8_t[size << 2];
-    assert(one_initialized_);
-    assert(one_initialized_ * ones() == ones());
-    memset(new_data, one_initialized_*ones(), size << 2);
-    assert(new_data[0] == ones());
-    uint8_t* old_data_ = data_;
-    for (int i = 0; i < size_; ++i) { 
-      data_ = old_data_;
-      auto v = get(i);
-      data_ = new_data;
-      set(i, v);
-    }
     size_ = size;
-    delete [] old_data_;
-    data_ = new_data;
-    assert(data_[0] == ones());
-    assert(get(0) == 3);
+    data_.resize(size >> 2, fill_*ones());
   }
+  void swap(dynamic_2bitset& other) {
+    std::swap(other.size_, size_);
+    std::swap(other.fill_, fill_);
+    std::swap(other.data_, data_);
+  }
+  void clear() { data_.clear(); }
+    
+  uint32_t size() const { return size_; }
   static const uint8_t vmask[];
  private:
-  uint8_t* data_;
   uint32_t size_;
-  bool one_initialized_;
+  bool fill_;
+  std::vector<uint8_t> data_;
   uint8_t ones() { return std::numeric_limits<uint8_t>::max(); }
 };
 
