@@ -73,7 +73,7 @@ class mph_map {
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
-  size_type bucket_count() const { return index_.size() + slack_.bucket_count(); }
+  size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
@@ -100,9 +100,17 @@ class mph_map {
      return hollow_const_iterator<std::vector<value_type>>(&values_, &present_, it);
    }
 
+   static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
+     d[(i >> 2)] &= ((v << ((i & 3) << 1)) | valuemask[i & 3]);
+   }
+   static uint32_t get_2bit_value(const uint8_t* d, uint32_t i) {
+     return (d[(i >> 2)] >> (((i & 3) << 1)) & 3);
+   }
+
    void pack();
    std::vector<value_type> values_;
    std::vector<bool> present_;
+   const uint8_t* nests_;
    SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to no hold a copy of the key
    typedef unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
@@ -187,28 +195,48 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto it = slack_.find(k);
-     if (it != slack_.end()) return make_iterator(values_.begin() + it->second);
+  uint32_t h[4];
+  auto nest = nests_[index_.hash_vector(k, reinterpret_cast<uint32_t*>(&h))];
+  if (nest != kNestCollision) {
+    auto vit = values_.begin() + h[nest];
+    if (equal_(k, vit->first)) return make_iterator(vit);
   }
-  if (__builtin_expect(index_.size() == 0, 0)) return end();
+  return slow_find(k);
+}
+
+MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k) const {
   auto id = index_.perfect_hash(k);
   if (!present_[id]) return end();
-  auto it = make_iterator(values_.begin() + id);
-  if (__builtin_expect(equal_(k, it->first), 1)) return it;
+  auto vit = values_.begin() + id;
+  if (equal_(k, vit->first)) return make_iterator(vit);
+
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(k);
+     if (it != slack_.end()) return make_iterator(values_.begin() + sit->second);
+  }
   return end();
 }
 
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto it = slack_.find(k);
-     if (it != slack_.end()) return make_iterator(values_.begin() + it->second);
+  uint32_t h[4];
+  auto nest = nests_[index_.hash_vector(k, reinterpret_cast<uint32_t*>(&h))];
+  if (nest != kNestCollision) {
+    auto vit = values_.begin() + h[nest];
+    if (equal_(k, vit->first)) return make_iterator(vit);
   }
-  if (__builtin_expect(index_.size() == 0, 0)) return end();
+  return slow_find(k);
+}
+
+MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k) {
   auto id = index_.perfect_hash(k);
   if (!present_[id]) return end();
-  auto it = make_iterator(values_.begin() + id);
-  if (__builtin_expect(equal_(k, it->first), 1)) return it;
+  auto vit = values_.begin() + id;
+  if (equal_(k, vit->first)) return make_iterator(vit);
+
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(k);
+     if (it != slack_.end()) return make_iterator(values_.begin() + sit->second);
+  }
   return end();
 }
 

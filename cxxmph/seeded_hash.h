@@ -65,9 +65,8 @@ struct Murmur3Fmix64bitsType {
   }
   template <class Key>
   void hash64(const Key& k, uint32_t* out) const {
-    uint64_t h = fmix(*reinterpret_cast<uint64_t*>(&k));
-    *reinterpret_cast<uint64_t*>(out) = h;
-    *reinterpret_cast<uint64_t*>(out + 2) = h;
+    *reinterpret_cast<uint64_t*>(out) = fmix(k);
+    *(out + 2) = fmix(*out);
   }
 };
 
@@ -145,9 +144,9 @@ template <> struct seeded_hash<std::hash<long> >
 template <> struct seeded_hash<std::hash<unsigned long> >
 { typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<long long> >
-{ typedef seeded_hash_function<Murmur3Fmix64bitsType> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 template <> struct seeded_hash<std::hash<unsigned long long> >
-{ typedef seeded_hash_function<Murmur3Fmix64bitsType> hash_function; };
+{ typedef seeded_hash_function<Murmur3> hash_function; };
 
 }  // namespace cxxmph
 
