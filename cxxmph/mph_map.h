@@ -106,8 +106,12 @@ class mph_map {
    const_iterator slow_find(const key_type& k, uint32_t perfect_hash) const;
    static const uint8_t kNestCollision = 3;  // biggest 2 bit value
    void set_nest_value(const uint32_t* h, uint8_t value) {
+     auto index = get_nest_index(h);
      assert(get_nest_index(h) < nests_.size() * 4);
-     set_2bit_value(&(nests_[0]), get_nest_index(h), value);
+     assert(get_nest_index(h) >> 2 < nests_.size());
+     assert(value < 4);
+     set_2bit_value(&nests_[0], index, value);
+     assert(get_2bit_value(&nests_[0], index) == value);
    }
    uint32_t get_nest_value(const uint32_t* h) const {
      assert(get_nest_index(h) < nests_.size() * 4);
@@ -151,8 +155,6 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   }
   values_.push_back(x);
   present_.push_back(true);
-  auto nests_size = nextpoweroftwo(ceil(values_.size() / 4.0) + 1)*10;
-  nests_.resize(nests_size, std::numeric_limits<uint8_t>::max());
   uint32_t h[4];
   index_.hash_vector(x.first, h);
   set_nest_value(h, kNestCollision);
@@ -191,12 +193,19 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
     assert(used_nests.size() > get_nest_index(h));
     if (used_nests[get_nest_index(h)]) {
       set_nest_value(h, kNestCollision);
+      assert(get_nest_value(h) == kNestCollision); 
       ++collisions;
     } else {
       set_nest_value(h, index_.cuckoo_nest(h));
-      assert(index_.perfect_hash(it->first) == index_.cuckoo_hash(h, index_.cuckoo_nest(h))); 
+      assert(get_nest_value(h) == index_.cuckoo_nest(h)); 
+      assert(index_.perfect_hash(it->first) == index_.cuckoo_hash(h, get_nest_value(h))); 
       used_nests[get_nest_index(h)] = true;
     }
+  }
+  for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
+    uint32_t h[4];
+    index_.hash_vector(it->first, h);
+    assert(get_nest_value(h) == kNestCollision || index_.perfect_hash(it->first) == index_.cuckoo_hash(h, get_nest_value(h))); 
   }
   fprintf(stderr, "Collision ratio: %f\n", collisions*1.0/size());
   values_.swap(new_values);
@@ -266,19 +275,22 @@ MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfe
 }
 
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  return slow_find(k, index_.perfect_hash(k));
-  /*
+  // return slow_find(k, index_.perfect_hash(k));
   uint32_t h[4];
   index_.hash_vector(k, h);
   auto nest = get_nest_value(h);
   if (__builtin_expect(nest != kNestCollision, 1)) {
     auto vit = values_.begin() + index_.cuckoo_hash(h, nest);
-    if (equal_(k, vit->first)) return make_iterator(vit);
+    assert(index_.perfect_hash(k) == index_.cuckoo_hash(h, nest));
+    if (equal_(k, vit->first)) {
+      fprintf(stderr, "fast\n");
+       return make_iterator(vit);
+    }
   }
   nest = index_.cuckoo_nest(h);
+   fprintf(stderr, "slow\n");
   // assert(index_.perfect_hash(k) == index_.cuckoo_hash(h, nest));
   return slow_find(k, index_.cuckoo_hash(h, nest));
-  */
 }
 
 MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k, uint32_t perfect_hash) {
