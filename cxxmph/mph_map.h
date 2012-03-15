@@ -69,8 +69,8 @@ class mph_map {
   void erase(iterator pos);
   void erase(const key_type& k);
   pair<iterator, bool> insert(const value_type& x);
-  iterator find(const key_type& k);
-  const_iterator find(const key_type& k) const;
+  iterator find(const key_type& k) { return slow_find(k, index_.perfect_hash(k)); }
+  const_iterator find(const key_type& k) const { return slow_find(k, index_.perfect_hash(k)); };
   typedef int32_t my_int32_t;  // help macros
   int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
@@ -103,6 +103,9 @@ class mph_map {
      return hollow_const_iterator<std::vector<value_type>>(&values_, &present_, it);
    }
 
+   // Experimental functions, not always faster
+   iterator fast_find(const key_type& k);
+   const_iterator fast_find(const key_type& k) const;
    iterator slow_find(const key_type& k, uint32_t perfect_hash);
    const_iterator slow_find(const key_type& k, uint32_t perfect_hash) const;
    static const uint8_t kNestCollision = 3;  // biggest 2 bit value
@@ -153,7 +156,7 @@ MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::mph_map() : size_(0) {
 }
 
 MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map() {
-  fprintf(stderr, "Fast taken: %d Fast: %d Slow %d very_slow %d ratio %f\n", fast_taken_, fast_, slow_, very_slow_, fast_*1.0/slow_);
+  // fprintf(stderr, "Fast taken: %d Fast: %d Slow %d very_slow %d ratio %f\n", fast_taken_, fast_, slow_, very_slow_, fast_*1.0/slow_);
 }
 
 MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
@@ -192,7 +195,7 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   new_values.reserve(new_values.size() * 2);
   std::vector<bool> new_present(index_.perfect_hash_size(), false);
   new_present.reserve(new_present.size() * 2);
-  auto new_nests_size = nextpoweroftwo(ceil(new_values.size())*100 + 1);
+  auto new_nests_size = nextpoweroftwo(ceil(new_values.size())*10000 + 1);
   dynamic_2bitset(new_nests_size, true /* fill with 1s */).swap(nests_);
   vector<bool> used_nests(nests_.size());
   uint32_t collisions = 0;
@@ -267,7 +270,7 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   erase(it);
 }
 
-MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
+MPH_MAP_METHOD_DECL(const_iterator, fast_find)(const key_type& k) const {
   uint32_t h[4];
   index_.hash_vector(k, h);
   auto nest = get_nest_value(h);
@@ -287,7 +290,7 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfect_hash) const {
-  if (__builtin_expect(index_.perfect_hash_size(), 0)) {
+  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
     if (__builtin_expect(present_[perfect_hash], true)) { 
       auto vit = values_.begin() + perfect_hash;
       if (equal_(k, vit->first)) return make_iterator(vit);
@@ -301,7 +304,7 @@ MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfe
   return end();
 }
 
-MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
+MPH_MAP_METHOD_DECL(iterator, fast_find)(const key_type& k) {
   uint32_t h[4];
   index_.hash_vector(k, h);
   auto nest = get_nest_value(h);
@@ -320,7 +323,7 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k, uint32_t perfect_hash) {
-  if (__builtin_expect(index_.perfect_hash_size(), 0)) {
+  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
     if (__builtin_expect(present_[perfect_hash], true)) { 
       auto vit = values_.begin() + perfect_hash;
       if (equal_(k, vit->first)) return make_iterator(vit);
