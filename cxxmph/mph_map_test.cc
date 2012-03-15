@@ -15,17 +15,20 @@ int main(int argc, char** argv) {
   for (int i = 0; i < num_keys; ++i) {
     b.insert(make_pair(i, i));
   }
-  for (int i = 0; i < num_keys; ++i) {
-    auto it = b.find(i);
+  b.rehash(b.size());
+  fprintf(stderr, "Insertion finished\n");
+  for (int i = 0; i < 1000000; ++i) {
+    auto it = b.find(i % num_keys);
     if (it == b.end()) {
       std::cerr << "Failed to find " << i << std::endl;
       exit(-1);
     }
-    if (it->first != it->second || it->first != i) {
+    if (it->first != it->second || it->first != i % num_keys) {
       std::cerr << "Found " << it->first << " looking for " << i << std::endl;
       exit(-1);
     }
   }
+  /*
   mph_map<string, int> h;
   h.insert(std::make_pair("-1",-1));
   mph_map<string, int>::const_iterator it;
@@ -55,4 +58,5 @@ int main(int argc, char** argv) {
        if (key < num_valid && it->second != key) exit(-1);
     }
   }
+  */
 }
