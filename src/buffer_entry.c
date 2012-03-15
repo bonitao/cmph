@@ -17,7 +17,7 @@ struct __buffer_entry_t
 buffer_entry_t * buffer_entry_new(cmph_uint32 capacity)
 {
 	buffer_entry_t *buff_entry = (buffer_entry_t *)malloc(sizeof(buffer_entry_t));
-	assert(buff_entry);
+        if (!buff_entry) return NULL;
 	buff_entry->fd = NULL;
 	buff_entry->buff = NULL;
 	buff_entry->capacity = capacity;
@@ -62,7 +62,7 @@ cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * 
 		free(buf);
 		return NULL;
 	}
-	if((buffer_entry->pos + lacked_bytes) > buffer_entry->nbytes) 
+	if((buffer_entry->pos + lacked_bytes) > buffer_entry->nbytes)
 	{
 		copied_bytes = buffer_entry->nbytes - buffer_entry->pos;
 		lacked_bytes = (buffer_entry->pos + lacked_bytes) - buffer_entry->nbytes;
@@ -71,7 +71,7 @@ cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * 
 	}
 	memcpy(keylen + copied_bytes, buffer_entry->buff + buffer_entry->pos, (size_t)lacked_bytes);
 	buffer_entry->pos += lacked_bytes;
-	
+
 	lacked_bytes = *keylen;
 	copied_bytes = 0;
 	buf = (cmph_uint8 *)malloc(*keylen + sizeof(*keylen));
@@ -83,7 +83,7 @@ cmph_uint8 * buffer_entry_read_key(buffer_entry_t * buffer_entry, cmph_uint32 * 
 			memcpy(buf + sizeof(*keylen), buffer_entry->buff + buffer_entry->pos, (size_t)copied_bytes);
                 }
 		buffer_entry_load(buffer_entry);
-	}        
+	}
 	memcpy(buf+sizeof(*keylen)+copied_bytes, buffer_entry->buff + buffer_entry->pos, (size_t)lacked_bytes);
 	buffer_entry->pos += lacked_bytes;
 	return buf;
@@ -97,7 +97,7 @@ void buffer_entry_destroy(buffer_entry_t * buffer_entry)
   buffer_entry->buff = NULL;
   buffer_entry->capacity = 0;
   buffer_entry->nbytes = 0;
-  buffer_entry->pos = 0;  
+  buffer_entry->pos = 0;
   buffer_entry->eof = 0;
   free(buffer_entry);
 }

@@ -22,13 +22,13 @@
 
 void usage(const char *prg)
 {
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);   
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph]  keysfile\n", prg);
 }
 void usage_long(const char *prg)
 {
 	cmph_uint32 i;
-	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph] keysfile\n", prg);   
-	fprintf(stderr, "Minimum perfect hashing tool\n\n"); 
+	fprintf(stderr, "usage: %s [-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c algorithm_dependent_value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b algorithm_dependent_value] [-t keys_per_bin] [-d tmp_dir] [-m file.mph] keysfile\n", prg);
+	fprintf(stderr, "Minimum perfect hashing tool\n\n");
 	fprintf(stderr, "  -h\t print this help message\n");
 	fprintf(stderr, "  -c\t c value determines:\n");
 	fprintf(stderr, "    \t  * the number of vertices in the graph for the algorithms BMZ and CHM\n");
@@ -57,7 +57,7 @@ void usage_long(const char *prg)
 	fprintf(stderr, "    \t    and its value should be an integer in the range [1,32]. Default is 4. The\n");
 	fprintf(stderr, "    \t    larger is this value, the slower is the construction of the functions.\n");
 	fprintf(stderr, "    \t    This parameter has no effect for other algorithms.\n\n");
-	fprintf(stderr, "  -t\t set the number of keys per bin for a t-perfect hashing function. A t-perfect\n");	
+	fprintf(stderr, "  -t\t set the number of keys per bin for a t-perfect hashing function. A t-perfect\n");
 	fprintf(stderr, "    \t hash function allows at most t collisions in a given bin. This parameter applies\n");
 	fprintf(stderr, "    \t only to the CHD and CHD_PH algorithms. Its value should be an integer in the\n");
 	fprintf(stderr, "    \t range [1,128]. Defaul is 1\n");
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 						break;
 					}
 				}
-				if (!valid) 
+				if (!valid)
 				{
 					fprintf(stderr, "Invalid mph algorithm: %s. It is not available in version %s\n", optarg, VERSION);
 					return -1;
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 						break;
 					}
 				}
-				if (!valid) 
+				if (!valid)
 				{
 					fprintf(stderr, "Invalid hash function: %s\n", optarg);
 					return -1;
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	keys_file = argv[optind];
-  
+
 	if (seed == UINT_MAX) seed = (cmph_uint32)time(NULL);
 	srand(seed);
 	int ret = 0;
@@ -232,7 +232,7 @@ int main(int argc, char **argv)
 		mphf_file = (char *)malloc(strlen(keys_file) + 5);
 		memcpy(mphf_file, keys_file, strlen(keys_file));
 		memcpy(mphf_file + strlen(keys_file), ".mph\0", (size_t)5);
-	}	
+	}
 
 	keys_fd = fopen(keys_file, "r");
 
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 		cmph_config_set_memory_availability(config, memory_availability);
 		cmph_config_set_b(config, b);
 		cmph_config_set_keys_per_bin(config, keys_per_bin);
-		
+
 		//if((mph_algo == CMPH_BMZ || mph_algo == CMPH_BRZ) && c >= 2.0) c=1.15;
 		if(mph_algo == CMPH_BMZ  && c >= 2.0) c=1.15;
 		if (c != 0) cmph_config_set_graphsize(config, c);
@@ -279,8 +279,8 @@ int main(int argc, char **argv)
 			free(mphf_file);
 			return -1;
 		}
-		cmph_dump(mphf, mphf_fd); 
-		cmph_destroy(mphf);	
+		cmph_dump(mphf, mphf_fd);
+		cmph_destroy(mphf);
 		fclose(mphf_fd);
 	}
 	else
@@ -329,7 +329,7 @@ int main(int argc, char **argv)
 			}
 			source->dispose(source->data, buf, buflen);
 		}
-		
+
 		cmph_destroy(mphf);
 		free(hashtable);
 	}
@@ -338,5 +338,5 @@ int main(int argc, char **argv)
 	free(tmp_dir);
         cmph_io_nlfile_adapter_destroy(source);
 	return ret;
-  
+
 }

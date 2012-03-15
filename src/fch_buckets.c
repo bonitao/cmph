@@ -20,7 +20,7 @@ typedef struct __fch_bucket_t
 
 
 
-static void fch_bucket_new(fch_bucket_t *bucket) 
+static void fch_bucket_new(fch_bucket_t *bucket)
 {
 	assert(bucket);
 	bucket->size = 0;
@@ -109,16 +109,16 @@ struct __fch_buckets_t
 {
   fch_bucket_t * values;
   cmph_uint32 nbuckets, max_size;
-  
+
 };
 
 fch_buckets_t * fch_buckets_new(cmph_uint32 nbuckets)
 {
 	cmph_uint32 i;
 	fch_buckets_t *buckets = (fch_buckets_t *)malloc(sizeof(fch_buckets_t));
-	assert(buckets);
+        if (!buckets) return NULL;
 	buckets->values = (fch_bucket_t *)calloc((size_t)nbuckets, sizeof(fch_bucket_t));
-	for (i = 0; i < nbuckets; i++) fch_bucket_new(buckets->values + i); 
+	for (i = 0; i < nbuckets; i++) fch_bucket_new(buckets->values + i);
 	assert(buckets->values);
 	buckets->nbuckets = nbuckets;
 	buckets->max_size = 0;
@@ -135,7 +135,7 @@ void fch_buckets_insert(fch_buckets_t * buckets, cmph_uint32 index, char * key, 
 {
 	assert(index < buckets->nbuckets);
 	fch_bucket_insert(buckets->values + index, key, length);
-	if (fch_bucket_size(buckets->values + index) > buckets->max_size) 
+	if (fch_bucket_size(buckets->values + index) > buckets->max_size)
 	{
 		buckets->max_size = fch_bucket_size(buckets->values + index);
 	}
@@ -170,16 +170,16 @@ cmph_uint32 fch_buckets_get_nbuckets(fch_buckets_t * buckets)
 	return buckets->nbuckets;
 }
 
-cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets) 
+cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 {
 	cmph_uint32 i = 0;
 	cmph_uint32 sum = 0, value;
 	cmph_uint32 *nbuckets_size = (cmph_uint32 *) calloc((size_t)buckets->max_size + 1, sizeof(cmph_uint32));
 	cmph_uint32 * sorted_indexes = (cmph_uint32 *) calloc((size_t)buckets->nbuckets, sizeof(cmph_uint32));
-	
+
 	// collect how many buckets for each size.
 	for(i = 0; i < buckets->nbuckets; i++) nbuckets_size[fch_bucket_size(buckets->values + i)] ++;
-	
+
 	// calculating offset considering a decreasing order of buckets size.
 	value = nbuckets_size[buckets->max_size];
 	nbuckets_size[buckets->max_size] = sum;
@@ -188,13 +188,13 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 		sum += value;
 		value = nbuckets_size[i];
 		nbuckets_size[i] = sum;
-		
+
 	}
-	for(i = 0; i < buckets->nbuckets; i++) 
+	for(i = 0; i < buckets->nbuckets; i++)
 	{
 		sorted_indexes[nbuckets_size[fch_bucket_size(buckets->values + i)]] = (cmph_uint32)i;
 		nbuckets_size[fch_bucket_size(buckets->values + i)] ++;
-	}	
+	}
 	free(nbuckets_size);
 	return sorted_indexes;
 }
@@ -208,7 +208,7 @@ void fch_buckets_print(fch_buckets_t * buckets)
 void fch_buckets_destroy(fch_buckets_t * buckets)
 {
 	cmph_uint32 i;
-	for (i = 0; i < buckets->nbuckets; i++) fch_bucket_destroy(buckets->values + i); 
+	for (i = 0; i < buckets->nbuckets; i++) fch_bucket_destroy(buckets->values + i);
 	free(buckets->values);
 	free(buckets);
 }

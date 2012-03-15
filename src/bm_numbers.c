@@ -128,4 +128,3 @@ int main(int argc, char** argv) {
   lsmap_destroy(g_created_mphf);
   return 0;
 }
-

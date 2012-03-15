@@ -23,7 +23,7 @@ fch_config_data_t *fch_config_new()
 {
 	fch_config_data_t *fch;
 	fch = (fch_config_data_t *)malloc(sizeof(fch_config_data_t));
-	assert(fch);
+        if (!fch) return NULL;
 	memset(fch, 0, sizeof(fch_config_data_t));
 	fch->hashfuncs[0] = CMPH_HASH_JENKINS;
 	fch->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -50,7 +50,7 @@ void fch_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	while(*hashptr != CMPH_HASH_COUNT)
 	{
 		if (i >= 2) break; //fch only uses two hash functions
-		fch->hashfuncs[i] = *hashptr;	
+		fch->hashfuncs[i] = *hashptr;
 		++i, ++hashptr;
 	}
 }
@@ -88,36 +88,36 @@ static fch_buckets_t * mapping(cmph_config_t *mph)
 	fch_buckets_t *buckets = NULL;
 	fch_config_data_t *fch = (fch_config_data_t *)mph->data;
 	if (fch->h1) hash_state_destroy(fch->h1);
-	fch->h1 = hash_state_new(fch->hashfuncs[0], fch->m);  
+	fch->h1 = hash_state_new(fch->hashfuncs[0], fch->m);
 	fch->b = fch_calc_b(fch->c, fch->m);
 	fch->p1 = fch_calc_p1(fch->m);
 	fch->p2 = fch_calc_p2(fch->b);
 	//DEBUGP("b:%u   p1:%f   p2:%f\n", fch->b, fch->p1, fch->p2);
 	buckets = fch_buckets_new(fch->b);
 
-	mph->key_source->rewind(mph->key_source->data);  
+	mph->key_source->rewind(mph->key_source->data);
 	for(i = 0; i < fch->m; i++)
 	{
 		cmph_uint32 h1, keylen;
 		char *key = NULL;
-		mph->key_source->read(mph->key_source->data, &key, &keylen);	
+		mph->key_source->read(mph->key_source->data, &key, &keylen);
 		h1 = hash(fch->h1, key, keylen) % fch->m;
 		h1 = mixh10h11h12 (fch->b, fch->p1, fch->p2, h1);
 		fch_buckets_insert(buckets, h1, key, keylen);
 		key = NULL; // transger memory ownership
-		
+
 	}
-	return buckets;  
+	return buckets;
 }
 
 
-// returns the buckets indexes sorted by their sizes. 
+// returns the buckets indexes sorted by their sizes.
 static cmph_uint32 * ordering(fch_buckets_t * buckets)
 {
   return fch_buckets_get_indexes_sorted_by_size(buckets);
 }
 
-/* Check whether function h2 causes collisions among the keys of each bucket */ 
+/* Check whether function h2 causes collisions among the keys of each bucket */
 static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t * buckets, cmph_uint32 *sorted_indexes)
 {
 	//cmph_uint32 max_size = fch_buckets_get_max_size(buckets);
@@ -146,7 +146,7 @@ static cmph_uint8 check_for_collisions_h2(fch_config_data_t *fch, fch_buckets_t 
 }
 
 static void permut(cmph_uint32 * vector, cmph_uint32 n)
-{ 
+{
   cmph_uint32 i, j, b;
   for (i = 0; i < n; i++) {
     j = (cmph_uint32) rand() % n;
@@ -179,12 +179,12 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 	{
 		map_table[random_table[i]] = i;
 	}
-	do {   
+	do {
 		if (fch->h2) hash_state_destroy(fch->h2);
-		fch->h2 = hash_state_new(fch->hashfuncs[1], fch->m);  
+		fch->h2 = hash_state_new(fch->hashfuncs[1], fch->m);
 		restart = check_for_collisions_h2(fch, buckets, sorted_indexes);
 		filled_count = 0;
-		if (!restart) 
+		if (!restart)
 		{
 			searching_iterations++; iteration_to_generate_h2 = 0;
 			//DEBUGP("searching_iterations: %u\n", searching_iterations);
@@ -192,7 +192,7 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 		else {
 			iteration_to_generate_h2++;
 			//DEBUGP("iteration_to_generate_h2: %u\n", iteration_to_generate_h2);
-		}		
+		}
 		for(i = 0; (i < nbuckets) && !restart; i++) {
 			cmph_uint32 bucketsize = fch_buckets_get_size(buckets, sorted_indexes[i]);
 			if (bucketsize == 0)
@@ -204,8 +204,8 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 			for(z = 0; (z < (fch->m - filled_count)) && restart; z++) {
 				char * key = fch_buckets_get_key(buckets, sorted_indexes[i], INDEX);
 				cmph_uint32 keylen = fch_buckets_get_keylength(buckets, sorted_indexes[i], INDEX);
-				cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;				
-				counter = 0; 
+				cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;
+				counter = 0;
 				restart = 0; // false
 				fch->g[sorted_indexes[i]] = (fch->m + random_table[filled_count + z] - h2) % fch->m;
 				//DEBUGP("g[%u]: %u\n", sorted_indexes[i], fch->g[sorted_indexes[i]]);
@@ -217,7 +217,7 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 					h2 = hash(fch->h2, key, keylen) % fch->m;
 					index = (h2 + fch->g[sorted_indexes[i]]) % fch->m;
 					//DEBUGP("key:%s  keylen:%u  index: %u  h2:%u  bucketsize:%u\n", key, keylen, index, h2, bucketsize);
-					if (map_table[index] >= filled_count) {  
+					if (map_table[index] >= filled_count) {
 						cmph_uint32 y  = map_table[index];
 						cmph_uint32 ry = random_table[y];
 						random_table[y] = random_table[filled_count];
@@ -225,19 +225,19 @@ static cmph_uint8 searching(fch_config_data_t *fch, fch_buckets_t *buckets, cmph
 						map_table[random_table[y]] = y;
 						map_table[random_table[filled_count]] = filled_count;
 						filled_count++;
-						counter ++; 
+						counter ++;
 					}
-					else { 
+					else {
 						restart = 1; // true
 						filled_count = filled_count - counter;
-						counter = 0; 
+						counter = 0;
 						break;
 					}
 					j = (j + 1) % bucketsize;
-				} while(j % bucketsize != INDEX); 
+				} while(j % bucketsize != INDEX);
 			}
 			//getchar();
-		}              
+		}
 	} while(restart  && (searching_iterations < 10) && (iteration_to_generate_h2 < 1000));
 	free(map_table);
 	free(random_table);
@@ -264,7 +264,7 @@ cmph_t *fch_new(cmph_config_t *mph, double c)
 	fch->h2 = NULL;
 	fch->g = NULL;
 	do
-	{	  
+	{	
 		if (mph->verbosity)
 		{
 			fprintf(stderr, "Entering mapping step for mph creation of %u keys\n", fch->m);
@@ -283,7 +283,7 @@ cmph_t *fch_new(cmph_config_t *mph, double c)
 		}
 		restart_mapping = searching(fch, buckets, sorted_indexes);
 		iterations--;
-		
+
         } while(restart_mapping && iterations > 0);
 	if (buckets) fch_buckets_destroy(buckets);
 	if (sorted_indexes) free (sorted_indexes);
@@ -317,7 +317,7 @@ int fch_dump(cmph_t *mphf, FILE *fd)
 	char *buf = NULL;
 	cmph_uint32 buflen;
 	register size_t nbytes;
-	
+
 	fch_data_t *data = (fch_data_t *)mphf->data;
 	__cmph_dump(mphf, fd);
 
@@ -365,7 +365,7 @@ void fch_load(FILE *f, cmph_t *mphf)
 	nbytes = fread(buf, (size_t)buflen, (size_t)1, f);
 	fch->h1 = hash_state_load(buf, buflen);
 	free(buf);
-	
+
 	//DEBUGP("Loading fch mphf\n");
 	mphf->data = fch;
 	//DEBUGP("Reading h2\n");
@@ -376,8 +376,8 @@ void fch_load(FILE *f, cmph_t *mphf)
 	nbytes = fread(buf, (size_t)buflen, (size_t)1, f);
 	fch->h2 = hash_state_load(buf, buflen);
 	free(buf);
-	
-	
+
+
 	//DEBUGP("Reading m and n\n");
 	nbytes = fread(&(fch->m), sizeof(cmph_uint32), (size_t)1, f);
 	nbytes = fread(&(fch->c), sizeof(double), (size_t)1, f);
@@ -418,7 +418,7 @@ void fch_destroy(cmph_t *mphf)
 /** \fn void fch_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf
- *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size()
  */
 void fch_pack(cmph_t *mphf, void *packed_mphf)
 {
@@ -450,37 +450,37 @@ void fch_pack(cmph_t *mphf, void *packed_mphf)
 	// packing b
 	*((cmph_uint32 *) ptr) = data->b;
 	ptr += sizeof(data->b);
-	
+
 	// packing p1
-	*((cmph_uint64 *)ptr) = (cmph_uint64)data->p1; 
+	*((cmph_uint64 *)ptr) = (cmph_uint64)data->p1;
 	ptr += sizeof(data->p1);
 
 	// packing p2
-	*((cmph_uint64 *)ptr) = (cmph_uint64)data->p2; 
+	*((cmph_uint64 *)ptr) = (cmph_uint64)data->p2;
 	ptr += sizeof(data->p2);
 
 	// packing g
-	memcpy(ptr, data->g, sizeof(cmph_uint32)*(data->b));	
+	memcpy(ptr, data->g, sizeof(cmph_uint32)*(data->b));
 }
 
 /** \fn cmph_uint32 fch_packed_size(cmph_t *mphf);
  *  \brief Return the amount of space needed to pack mphf.
  *  \param mphf pointer to a mphf
  *  \return the size of the packed function or zero for failures
- */ 
+ */
 cmph_uint32 fch_packed_size(cmph_t *mphf)
 {
 	fch_data_t *data = (fch_data_t *)mphf->data;
-	CMPH_HASH h1_type = hash_get_type(data->h1); 
-	CMPH_HASH h2_type = hash_get_type(data->h2); 
+	CMPH_HASH h1_type = hash_get_type(data->h1);
+	CMPH_HASH h2_type = hash_get_type(data->h2);
 
-	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) +
 			4*sizeof(cmph_uint32) + 2*sizeof(double) + sizeof(cmph_uint32)*(data->b));
 }
 
 
 /** cmph_uint32 fch_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
- *  \brief Use the packed mphf to do a search. 
+ *  \brief Use the packed mphf to do a search.
  *  \param  packed_mphf pointer to the packed mphf
  *  \param key key to be hashed
  *  \param keylen key legth in bytes
@@ -495,12 +495,12 @@ cmph_uint32 fch_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
 	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
 	h2_ptr += 4;
-	
-	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));
-	
-	register cmph_uint32 m = *g_ptr++;  
 
-	register cmph_uint32 b = *g_ptr++;  
+	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));
+
+	register cmph_uint32 m = *g_ptr++;
+
+	register cmph_uint32 b = *g_ptr++;
 
 	register double p1 = (double)(*((cmph_uint64 *)g_ptr));
 	g_ptr += 2;
@@ -508,10 +508,9 @@ cmph_uint32 fch_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register double p2 = (double)(*((cmph_uint64 *)g_ptr));
 	g_ptr += 2;
 
-	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % m; 
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % m;
 	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % m;
 
 	h1 = mixh10h11h12 (b, p1, p2, h1);
 	return (h2 + g_ptr[h1]) % m;
 }
-

@@ -16,7 +16,7 @@ buffer_manager_t * buffer_manager_new(cmph_uint32 memory_avail, cmph_uint32 nent
 {
 	cmph_uint32 memory_avail_entry, i;
 	buffer_manager_t *buff_manager = (buffer_manager_t *)malloc(sizeof(buffer_manager_t));
-	assert(buff_manager);
+        if (!buff_manager) return NULL;
 	buff_manager->memory_avail = memory_avail;
 	buff_manager->buffer_entries = (buffer_entry_t **)calloc((size_t)nentries, sizeof(buffer_entry_t *));
 	buff_manager->memory_avail_list = (cmph_uint32 *)calloc((size_t)nentries, sizeof(cmph_uint32));
@@ -26,7 +26,7 @@ buffer_manager_t * buffer_manager_new(cmph_uint32 memory_avail, cmph_uint32 nent
 	for(i = 0; i < buff_manager->nentries; i++)
 	{
 		buff_manager->buffer_entries[i] = buffer_entry_new(memory_avail_entry);
-	}	
+	}
 	return buff_manager;
 }
 
@@ -52,7 +52,7 @@ cmph_uint8 * buffer_manager_read_key(buffer_manager_t * buffer_manager, cmph_uin
 }
 
 void buffer_manager_destroy(buffer_manager_t * buffer_manager)
-{ 
+{
 	cmph_uint32 i;
 	for(i = 0; i < buffer_manager->nentries; i++)
 	{
