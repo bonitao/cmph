@@ -25,6 +25,7 @@
 #include <stdint.h>
 
 #include <cassert>
+#include <climits>
 #include <cmath>
 #include <unordered_map>  // for std::hash
 #include <vector>
@@ -35,6 +36,7 @@ using std::cerr;
 using std::endl;
 
 #include "seeded_hash.h"
+#include "mph_bits.h"
 #include "trigraph.h"
 
 namespace cxxmph {
@@ -42,13 +44,13 @@ namespace cxxmph {
 class MPHIndex {
  public:
   MPHIndex(double c = 1.23, uint8_t b = 7) :
-      c_(c), b_(b), m_(0), n_(0), k_(0), r_(0),
+      c_(c), b_(b), m_(0), n_(0), k_(0), r_(1),
       g_(NULL), g_size_(0), ranktable_(NULL), ranktable_size_(0),
       deserialized_(false) { }
   ~MPHIndex();
 
   template <class SeededHashFcn, class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end);
+  bool Reset(ForwardIterator begin, ForwardIterator end, uint32_t size);
   template <class SeededHashFcn, class Key>  // must agree with Reset
   // Get a unique identifier for k, in the range [0;size()). If x wasn't part
   // of the input in the last Reset call, returns a random value.
@@ -62,6 +64,16 @@ class MPHIndex {
   uint32_t perfect_hash(const Key& x) const;
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
+
+  // Crazy functions. Ignore.
+  template <class SeededHashFcn>  // must agree with Reset
+  uint32_t cuckoo_hash(const uint32_t* h, uint8_t nest) const;
+  template <class SeededHashFcn>  // must agree with Reset
+  uint8_t cuckoo_nest(const uint32_t* h) const;
+  template <class SeededHashFcn, class Key>  // must agree with Reset
+  uint32_t cuckoo_nest_index(const Key& x, uint32_t* h) const;
+  template <class SeededHashFcn, class Key>  // must agree with Reset
+  void hash_vector(const Key& x, uint32_t* h) const;
 
   // Serialization for mmap usage - not tested well, ping me if you care. 
   // Serialized tables are not guaranteed to work across versions or different
@@ -94,6 +106,8 @@ class MPHIndex {
 
   // Partition vertex count, derived from c parameter.
   uint32_t r_;
+  uint32_t nest_displacement_[3];  // derived from r_
+
   // The array containing the minimal perfect hash function graph. Do not use
   // c++ vector to make mmap based backing easier.
   const uint8_t* g_;
@@ -108,26 +122,26 @@ class MPHIndex {
   bool deserialized_;
 
   static const uint8_t valuemask[];
-  static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
-    d[(i >> 2)] &= ((v << ((i & 3) << 1)) | valuemask[i & 3]);
-  }
-  static uint32_t get_2bit_value(const uint8_t* d, uint32_t i) {
-    return (d[(i >> 2)] >> (((i & 3) << 1)) & 3);
-  }
-
-  
 };
 
 // Template method needs to go in the header file.
 template <class SeededHashFcn, class ForwardIterator>
-bool MPHIndex::Reset(ForwardIterator begin, ForwardIterator end) {
+bool MPHIndex::Reset(
+    ForwardIterator begin, ForwardIterator end, uint32_t size) {
   if (end == begin) {
     clear();
     return true;
   }
-  m_ = end - begin;
+  m_ = size;
   r_ = static_cast<uint32_t>(ceil((c_*m_)/3));
   if ((r_ % 2) == 0) r_ += 1;
+  nest_displacement_[0] = 0;
+  nest_displacement_[1] = r_;
+  nest_displacement_[2] = (r_ << 1);
+  // This can be used to speed mods, but increases occupation too much. 
+  // Needs to try http://gmplib.org/manual/Integer-Exponentiation.html instead
+  // r_ = nextpoweroftwo(r_);
+
   n_ = 3*r_;
   k_ = 1U << b_;
 
@@ -173,21 +187,44 @@ bool MPHIndex::Mapping(
   return false;
 }
 
+template <class SeededHashFcn>
+uint32_t MPHIndex::cuckoo_hash(const uint32_t* h, uint8_t nest) const {
+  return (h[nest] %  r_) + nest_displacement_[nest];
+}
+
+template <class SeededHashFcn, class Key>
+void MPHIndex::hash_vector(const Key& key, uint32_t* h) const {
+  SeededHashFcn().hash64(key, hash_seed_[0], h);
+}
+
+template <class SeededHashFcn>  // must agree with Reset
+uint8_t MPHIndex::cuckoo_nest(const uint32_t* h) const {
+  uint32_t x[4];
+  if (!g_size_) return 0;
+  x[0] = (h[0] % r_) + nest_displacement_[0];
+  x[1] = (h[1] % r_) + nest_displacement_[1];
+  x[2] = (h[2] % r_) + nest_displacement_[2];
+  assert((x[0] >> 2) <g_size_);
+  assert((x[1] >> 2) <g_size_);
+  assert((x[2] >> 2) <g_size_);
+  return (get_2bit_value(g_, x[0]) + get_2bit_value(g_, x[1]) + get_2bit_value(g_, x[2])) % 3;
+}
+
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
   uint32_t h[4];
-  SeededHashFcn().hash64(key, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
+  if (!g_size_) return 0;
+  SeededHashFcn().hash64(key, hash_seed_[0], h);
   // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
-  assert(r_);
-  h[0] = h[0] % r_;
-  h[1] = h[1] % r_ + r_;
-  h[2] = h[2] % r_ + (r_ << 1);
-  assert(g_size_);
+  h[0] = (h[0] % r_) + nest_displacement_[0];
+  h[1] = (h[1] % r_) + nest_displacement_[1];
+  h[2] = (h[2] % r_) + nest_displacement_[2];
   // cerr << "g_.size() " << g_size_ << " h0 >> 2 " << (h[0] >> 2) << endl;
   assert((h[0] >> 2) <g_size_);
   assert((h[1] >> 2) <g_size_);
   assert((h[2] >> 2) <g_size_);
-  uint32_t vertex = h[(get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3];
+  uint8_t nest = (get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3;
+  uint32_t vertex = h[nest];
   return vertex;
 }
 template <class SeededHashFcn, class Key>
@@ -206,12 +243,15 @@ template <class Key, class HashFcn = typename seeded_hash<std::hash<Key>>::hash_
 class SimpleMPHIndex : public MPHIndex {
  public:
   template <class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end) {
-    return MPHIndex::Reset<HashFcn>(begin, end);
+  bool Reset(ForwardIterator begin, ForwardIterator end, uint32_t size) {
+    return MPHIndex::Reset<HashFcn>(begin, end, size);
   }
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
   uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
   uint32_t minimal_perfect_hash(const Key& key) const { return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
+  uint8_t cuckoo_nest(const uint32_t* h) const { return MPHIndex::cuckoo_nest<HashFcn>(h); }
+  uint32_t cuckoo_hash(const uint32_t* h, uint8_t nest) const { return MPHIndex::cuckoo_hash<HashFcn>(h, nest); }
+  void hash_vector(const Key& key, uint32_t* h) const { MPHIndex::hash_vector<HashFcn>(key, h); }
 };
 
 }  // namespace cxxmph

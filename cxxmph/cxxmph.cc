@@ -63,8 +63,8 @@ int main(int argc, char** argv) {
   for (int i = 0; i < keys.size(); ++i) table[keys[i]] = keys[i];
   mph_map<string, string>::const_iterator it = table.begin();
   mph_map<string, string>::const_iterator end = table.end();
-  for (; it != end; ++it) {
-    cout << (it - table.begin()) << ": " << it->first
+  for (int i = 0; it != end; ++it, ++i) {
+    cout << i << ": " << it->first
          <<" -> " << it->second << endl;
   }
 }

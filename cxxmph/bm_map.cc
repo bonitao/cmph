@@ -13,7 +13,8 @@ namespace cxxmph {
 template<class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
-  if (it == mymap.end()) return NULL;
+  auto end = mymap.end();
+  if (it == end) return NULL;
   return &it->second;
 }
 
@@ -48,6 +49,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       mymap_[*it] = *it;
     }
     mymap_.rehash(mymap_.bucket_count());
+    fprintf(stderr, "Occupation: %f\n", static_cast<float>(mymap_.size())/mymap_.bucket_count());
     return true;
   }
   MapType mymap_;
@@ -56,7 +58,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
 template <class MapType>
 class BM_SearchUint64 : public SearchUint64Benchmark {
  public:
-  BM_SearchUint64() : SearchUint64Benchmark(10000, 10*1000*1000) { }
+  BM_SearchUint64() : SearchUint64Benchmark(100000, 10*1000*1000) { }
   virtual bool SetUp() {
     if (!SearchUint64Benchmark::SetUp()) return false;
     for (int i = 0; i < values_.size(); ++i) {
@@ -93,7 +95,7 @@ int main(int argc, char** argv) {
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
+  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::RunAll();
 }

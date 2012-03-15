@@ -11,21 +11,32 @@ using cxxmph::mph_map;
 
 int main(int argc, char** argv) {
   mph_map<int64_t, int64_t> b;
-  for (int i = 0; i < 100*1000; ++i) {
+  int32_t num_keys = 1000*10;
+  for (int i = 0; i < num_keys; ++i) {
     b.insert(make_pair(i, i));
   }
-  for (int i = 0; i < 1000*1000; ++i) {
-    b.find(i);
+  b.rehash(b.size());
+  fprintf(stderr, "Insertion finished\n");
+  for (int i = 0; i < 1000000; ++i) {
+    auto it = b.find(i % num_keys);
+    if (it == b.end()) {
+      std::cerr << "Failed to find " << i << std::endl;
+      exit(-1);
+    }
+    if (it->first != it->second || it->first != i % num_keys) {
+      std::cerr << "Found " << it->first << " looking for " << i << std::endl;
+      exit(-1);
+    }
   }
   /*
   mph_map<string, int> h;
   h.insert(std::make_pair("-1",-1));
   mph_map<string, int>::const_iterator it;
   for (it = h.begin(); it != h.end(); ++it) {
-    std::cerr << it->first << " -> " << it->second << std::endl;
+    if (it->second != -1) exit(-1);
   }
-  std::cerr << "Search -1 gives " << h.find("-1")->second << std::endl;
-  for (int i = 0; i < 100; ++i) {
+  int32_t num_valid = 100;
+  for (int i = 0; i < num_valid; ++i) {
      char buf[10];    
      snprintf(buf, 10, "%d", i);
      h.insert(std::make_pair(buf, i));
@@ -34,18 +45,18 @@ int main(int argc, char** argv) {
     for (int i = 1000; i > 0; --i) {
        char buf[10];    
        snprintf(buf, 10, "%d", i - 1);
-       h.find(buf);
-       std::cerr << "Search " << i - 1 << " gives " << h.find(buf)->second << std::endl;
+       auto it = h.find(buf);
+       if (i < num_valid && it->second != i - 1) exit(-1);
     }
   }
   for (int j = 0; j < 100; ++j) {
     for (int i = 1000; i > 0; --i) {
        char buf[10];    
-       snprintf(buf, 10, "%d", i*100 - 1);
-       h.find(buf);
-       std::cerr << "Search " << i*100 - 1 << " gives " << h.find(buf)->second << std::endl;
+       int key = i*100 - 1;
+       snprintf(buf, 10, "%d", key);
+       auto it = h.find(buf);
+       if (key < num_valid && it->second != key) exit(-1);
     }
   }
   */
-
 }

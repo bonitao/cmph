@@ -9,8 +9,10 @@
 #include "MurmurHash3.h"
 #include "stringpiece.h"
 
-// From murmur, only used naively to extend 32 bits functions to 64 bits.
+// From murmur, only used naively to extend 32 bits functions to 128 bits.
 uint32_t fmix ( uint32_t h );
+// Used for a quick and dirty hash function for integers. Probably a bad idea.
+uint64_t fmix ( uint64_t h );
 
 namespace cxxmph {
 
@@ -57,6 +59,18 @@ struct Murmur3StringPiece {
   }
 };
 
+struct Murmur3Fmix64bitsType {
+  template <class Key>
+  uint32_t operator()(const Key& k) const {
+    return fmix(*reinterpret_cast<const uint64_t*>(&k));
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t* out) const {
+    *reinterpret_cast<uint64_t*>(out) = fmix(k);
+    *(out + 2) = fmix(*out);
+  }
+};
+
 template <>
 struct seeded_hash_function<Murmur3> {
   template <class Key>
@@ -86,6 +100,20 @@ struct seeded_hash_function<Murmur3StringPiece> {
     MurmurHash3_x64_128(s.data(), s.length(), seed, out);
   }
 };
+
+template <>
+struct seeded_hash_function<Murmur3Fmix64bitsType> {
+  template <class Key>
+  uint32_t operator()(const Key& k, uint32_t seed) const {
+    return fmix(k + seed);
+  }
+  template <class Key>
+  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+    *reinterpret_cast<uint64_t*>(out) = fmix(k ^ seed);
+    *(out + 2) = fmix(*out);
+  }
+};
+
 
 template <class HashFcn> struct seeded_hash
 { typedef seeded_hash_function<HashFcn> hash_function; };
