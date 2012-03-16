@@ -45,7 +45,8 @@ class MPHIndex {
  public:
   MPHIndex(double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), r_(1),
-      g_(NULL), g_size_(0), ranktable_(NULL), ranktable_size_(0),
+      g_(NULL), g_size_(0),
+      ranktable_(NULL), ranktable_size_(0),
       deserialized_(false) { }
   ~MPHIndex();
 
@@ -112,6 +113,7 @@ class MPHIndex {
   // c++ vector to make mmap based backing easier.
   const uint8_t* g_;
   uint32_t g_size_;
+  uint8_t threebit_mod3[10];  // speed up mod3 calculation for 3bit ints
   // The table used for the rank step of the minimal perfect hash function
   const uint32_t* ranktable_;
   uint32_t ranktable_size_;
@@ -135,12 +137,13 @@ bool MPHIndex::Reset(
   m_ = size;
   r_ = static_cast<uint32_t>(ceil((c_*m_)/3));
   if ((r_ % 2) == 0) r_ += 1;
-  nest_displacement_[0] = 0;
-  nest_displacement_[1] = r_;
-  nest_displacement_[2] = (r_ << 1);
   // This can be used to speed mods, but increases occupation too much. 
   // Needs to try http://gmplib.org/manual/Integer-Exponentiation.html instead
   // r_ = nextpoweroftwo(r_);
+  nest_displacement_[0] = 0;
+  nest_displacement_[1] = r_;
+  nest_displacement_[2] = (r_ << 1);
+  for (int i = 0; i < sizeof(threebit_mod3); ++i) threebit_mod3[i] = i % 3;
 
   n_ = 3*r_;
   k_ = 1U << b_;
@@ -215,15 +218,18 @@ uint32_t MPHIndex::perfect_hash(const Key& key) const {
   uint32_t h[4];
   if (!g_size_) return 0;
   SeededHashFcn().hash64(key, hash_seed_[0], h);
-  // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(key, hash_seed_[i]);
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
   h[2] = (h[2] % r_) + nest_displacement_[2];
+  // h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
+  // h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
+  // h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
   // cerr << "g_.size() " << g_size_ << " h0 >> 2 " << (h[0] >> 2) << endl;
   assert((h[0] >> 2) <g_size_);
   assert((h[1] >> 2) <g_size_);
   assert((h[2] >> 2) <g_size_);
-  uint8_t nest = (get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])) % 3;
+  uint8_t nest = threebit_mod3[
+      get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])];
   uint32_t vertex = h[nest];
   return vertex;
 }

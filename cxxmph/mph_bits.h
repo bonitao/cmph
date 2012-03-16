@@ -2,6 +2,8 @@
 #define __CXXMPH_MPH_BITS_H__
 
 #include <stdint.h>  // for uint32_t and friends
+
+#include <array>
 #include <cassert>
 #include <climits>
 #include <cmath>
@@ -9,6 +11,7 @@
 #include <cstring>
 #include <limits>
 #include <vector>
+#include <utility>
 
 namespace cxxmph {
 
@@ -61,6 +64,9 @@ static uint32_t nextpoweroftwo(uint32_t k) {
   for (int i=1; i<sizeof(uint32_t)*CHAR_BIT; i<<=1) k = k | k >> i;
   return k+1;
 }
+
+// Interesting bit tricks that might end up here:
+// http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
   
 }  // namespace cxxmph
 
