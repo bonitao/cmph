@@ -45,7 +45,6 @@ class MPHIndex {
  public:
   MPHIndex(double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), r_(1),
-      g_(NULL), g_size_(0),
       ranktable_(NULL), ranktable_size_(0),
       deserialized_(false) { }
   ~MPHIndex();
@@ -103,10 +102,8 @@ class MPHIndex {
   uint32_t r_;
   uint32_t nest_displacement_[3];  // derived from r_
 
-  // The array containing the minimal perfect hash function graph. Do not use
-  // c++ vector to make mmap based backing easier.
-  const uint8_t* g_;
-  uint32_t g_size_;
+  // The array containing the minimal perfect hash function graph.
+  dynamic_2bitset g_;
   uint8_t threebit_mod3[10];  // speed up mod3 calculation for 3bit ints
   // The table used for the rank step of the minimal perfect hash function
   const uint32_t* ranktable_;
@@ -156,6 +153,7 @@ bool MPHIndex::Reset(
   }
   if (iterations == 0) return false;
   Assigning(edges, queue);
+  fprintf(stderr, "Assignment finished\n");
   std::vector<TriGraph::Edge>().swap(edges);
   Ranking();
   deserialized_ = false;
@@ -192,7 +190,7 @@ void MPHIndex::hash_vector(const Key& key, uint32_t* h) const {
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
   uint32_t h[4];
-  if (!g_size_) return 0;
+  if (!g_.size()) return 0;
   SeededHashFcn().hash64(key, hash_seed_[0], h);
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
@@ -200,12 +198,11 @@ uint32_t MPHIndex::perfect_hash(const Key& key) const {
   // h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
   // h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
   // h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
-  // cerr << "g_.size() " << g_size_ << " h0 >> 2 " << (h[0] >> 2) << endl;
-  assert((h[0] >> 2) <g_size_);
-  assert((h[1] >> 2) <g_size_);
-  assert((h[2] >> 2) <g_size_);
+  assert((h[0]) < g_.size());
+  assert((h[1]) < g_.size());
+  assert((h[2]) < g_.size());
   uint8_t nest = threebit_mod3[
-      get_2bit_value(g_, h[0]) + get_2bit_value(g_, h[1]) + get_2bit_value(g_, h[2])];
+      g_[h[0]] + g_[h[1]] + g_[h[2]]];
   uint32_t vertex = h[nest];
   return vertex;
 }

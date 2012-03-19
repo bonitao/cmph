@@ -33,8 +33,10 @@ int main(int argc, char** argv) {
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
+   /*
   char* serialized = new char[mph_index.serialize_bytes_needed()];
   mph_index.serialize(serialized);
   SimpleMPHIndex<string> other_mph_index;
   other_mph_index.deserialize(serialized);
+  */
 }

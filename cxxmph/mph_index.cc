@@ -44,9 +44,6 @@ MPHIndex::~MPHIndex() {
 }
 
 void MPHIndex::clear() {
-  if (!deserialized_) delete [] g_;
-  g_ = NULL;
-  g_size_ = 0;
   if (!deserialized_) delete [] ranktable_;
   ranktable_ = NULL;
   ranktable_size_ = 0;
@@ -113,13 +110,9 @@ void MPHIndex::Assigning(
     const vector<TriGraph::Edge>& edges, const vector<uint32_t>& queue) {
   uint32_t current_edge = 0;
   vector<bool> marked_vertices(n_ + 1);
+  dynamic_2bitset().swap(g_);
   // Initialize vector of half nibbles with all bits set.
-  g_size_ = static_cast<uint32_t>(ceil(n_/4.0));
-  if (!deserialized_) delete [] g_;
-  g_ = NULL;
-  uint8_t* g = new uint8_t[g_size_];
-  memset(g, std::numeric_limits<uint8_t>::max(), g_size_);
-  assert(g[g_size_ - 1] == 255);
+  dynamic_2bitset g(n_, true /* set bits to 1 */);
 
   uint32_t nedges = m_;  // for legibility
   for (int i = nedges - 1; i + 1 >= 1; --i) {
@@ -133,35 +126,35 @@ void MPHIndex::Assigning(
     */
     if (!marked_vertices[e[0]]) {
       if (!marked_vertices[e[1]]) {
-        set_2bit_value(g, e[1], kUnassigned);
+        g.set(e[1], kUnassigned);
         marked_vertices[e[1]] = true;
       }
       if (!marked_vertices[e[2]]) {
-        set_2bit_value(g, e[2], kUnassigned);
+        g.set(e[2], kUnassigned);
 	assert(marked_vertices.size() > e[2]);
         marked_vertices[e[2]] = true;
       }
-      set_2bit_value(g, e[0], (6 - (get_2bit_value(g, e[1]) + get_2bit_value(g, e[2]))) % 3);
+      g.set(e[0], (6 - (g[e[1]] + g[e[2]])) % 3);
       marked_vertices[e[0]] = true;
     } else if (!marked_vertices[e[1]]) {
       if (!marked_vertices[e[2]]) {
-        set_2bit_value(g, e[2], kUnassigned);
+        g.set(e[2], kUnassigned);
         marked_vertices[e[2]] = true;
       }
-      set_2bit_value(g, e[1], (7 - (get_2bit_value(g, e[0]) + get_2bit_value(g, e[2]))) % 3);
+      g.set(e[1], (7 - (g[e[0]] + g[e[2]])) % 3);
       marked_vertices[e[1]] = true;
     } else {
-      set_2bit_value(g, e[2], (8 - (get_2bit_value(g, e[0]) + get_2bit_value(g, e[1]))) % 3);
+      g.set(e[2], (8 - (g[e[0]] + g[e[1]])) % 3);
       marked_vertices[e[2]] = true;
     }
     /*
     cerr << "A: " << e[0] << " " << e[1] << " " << e[2] << " -> "
-        << get_2bit_value(g, e[0]) << " "
-        << get_2bit_value(g, e[1]) << " "
-        << get_2bit_value(g, e[2]) << " " << endl;
+        << static_cast<uint32_t>(g[e[0]]) << " "
+        << static_cast<uint32_t>(g[e[1]]) << " "
+        << static_cast<uint32_t>(g[e[2]]) << " " << endl;
     */
   }
-  g_ = g;
+  g_.swap(g);
 }
 
 void MPHIndex::Ranking() {
@@ -194,19 +187,17 @@ uint32_t MPHIndex::Rank(uint32_t vertex) const {
   uint32_t beg_idx_v = index << b_;
   uint32_t beg_idx_b = beg_idx_v >> 2;
   uint32_t end_idx_b = vertex >> 2;
-  while (beg_idx_b < end_idx_b) base_rank += kBdzLookupIndex[g_[beg_idx_b++]];
+  while (beg_idx_b < end_idx_b) base_rank += kBdzLookupIndex[g_.data()[beg_idx_b++]];
   beg_idx_v = beg_idx_b << 2;
   // cerr << "beg_idx_v: " << beg_idx_v << endl;
   // cerr << "base rank: " << base_rank << endl;
-  /*
   cerr << "G: ";
   for (unsigned int i = 0; i < n_; ++i) {
-    cerr << get_2bit_value(g_, i) << " ";
+    cerr << static_cast<uint32_t>(g_[i]) << " ";
   }
   cerr << endl;
-  */
   while (beg_idx_v < vertex) {
-    if (get_2bit_value(g_, beg_idx_v) != kUnassigned) ++base_rank;
+    if (g_[beg_idx_v] != kUnassigned) ++base_rank;
     ++beg_idx_v;
   }
   // cerr << "Base rank: " << base_rank << endl;
@@ -214,21 +205,12 @@ uint32_t MPHIndex::Rank(uint32_t vertex) const {
 }
 
 uint32_t MPHIndex::serialize_bytes_needed() const {
-  return sizeof(MPHIndex) + g_size_ + ranktable_size_*sizeof(uint32_t);
+  return 0;
 }
 void MPHIndex::serialize(char* memory) const {
-  memcpy(memory, this, sizeof(MPHIndex));
-  memcpy(memory + sizeof(MPHIndex), g_, g_size_);
-  memcpy(memory + sizeof(MPHIndex) + g_size_,
-      ranktable_, ranktable_size_*sizeof(uint32_t));
 }
 
 bool MPHIndex::deserialize(const char* serialized_memory) {
-  memcpy(this, serialized_memory, sizeof(MPHIndex)); 
-  g_ = reinterpret_cast<const uint8_t*>(serialized_memory + sizeof(MPHIndex));
-  ranktable_ = reinterpret_cast<const uint32_t*>(
-      serialized_memory + sizeof(MPHIndex) + g_size_);
-  deserialized_ = true;
   return true;
 }
 

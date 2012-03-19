@@ -40,10 +40,18 @@ int main(int argc, char** argv) {
   if (size_corner1.size() != 1) exit(-1);
   dynamic_2bitset size_corner2(2);
   if (size_corner2.size() != 2) exit(-1);
-  (dynamic_2bitset(4)).swap(size_corner2);
+  (dynamic_2bitset(4, true)).swap(size_corner2);
   if (size_corner2.size() != 4) exit(-1);
+  for (int i = 0; i < size_corner2.size(); ++i) {
+    if (size_corner2[i] != 3) exit(-1);
+  }
+  size_corner2.clear();
+  if (size_corner2.size() != 0) exit(-1);
 
-
+  dynamic_2bitset empty;
+  empty.clear();
+  dynamic_2bitset large(1000, true);
+  empty.swap(large);
 }
   
   

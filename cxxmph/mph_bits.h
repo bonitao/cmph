@@ -17,16 +17,23 @@ namespace cxxmph {
 
 class dynamic_2bitset {
  public:
-  dynamic_2bitset() : fill_(false)  {}
+  dynamic_2bitset() : size_(0), fill_(false)  {}
   dynamic_2bitset(uint32_t size, bool fill = false)
       : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {
+   if (data_.size()) fprintf(stderr, "creating %p size %d\n", &data_[0], data_.size());
+  }
+  ~dynamic_2bitset() {
+    if (data_.size()) fprintf(stderr, "Deleting %p size %d\n", &data_[0], data_.size());
   }
 
   const uint8_t operator[](uint32_t i) const { return get(i); }
-  uint8_t get(uint32_t i) const { 
+  const uint8_t get(uint32_t i) const { 
+    assert(i < size());
+    assert((i >> 2) < data_.size());
     return (data_[(i >> 2)] >> (((i & 3) << 1)) & 3);
   }
   uint8_t set(uint32_t i, uint8_t v) { 
+    assert((i >> 2) < data_.size());
     data_[(i >> 2)] |= ones() ^ dynamic_2bitset::vmask[i & 3];
     data_[(i >> 2)] &= ((v << ((i & 3) << 1)) | dynamic_2bitset::vmask[i & 3]);
     assert(v <= 3);
@@ -39,17 +46,18 @@ class dynamic_2bitset {
   void swap(dynamic_2bitset& other) {
     std::swap(other.size_, size_);
     std::swap(other.fill_, fill_);
-    std::swap(other.data_, data_);
+    other.data_.swap(data_);
   }
-  void clear() { data_.clear(); }
+  void clear() { data_.clear(); size_ = 0; }
     
   uint32_t size() const { return size_; }
   static const uint8_t vmask[];
- private:
+  const std::vector<uint8_t>& data() const { return data_; }
+// private:
   uint32_t size_;
   bool fill_;
   std::vector<uint8_t> data_;
-  uint8_t ones() { return std::numeric_limits<uint8_t>::max(); }
+  const uint8_t ones() { return std::numeric_limits<uint8_t>::max(); }
 };
 
 static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
@@ -67,6 +75,8 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 
 // Interesting bit tricks that might end up here:
 // http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
+// Fast a % (k*2^t)
+// http://www.azillionmonkeys.com/qed/adiv.html
   
 }  // namespace cxxmph
 
