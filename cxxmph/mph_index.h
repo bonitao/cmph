@@ -45,8 +45,7 @@ class MPHIndex {
  public:
   MPHIndex(double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), r_(1),
-      ranktable_(NULL), ranktable_size_(0),
-      deserialized_(false) { }
+      ranktable_(NULL), ranktable_size_(0) { }
   ~MPHIndex();
 
   template <class SeededHashFcn, class ForwardIterator>
@@ -68,13 +67,6 @@ class MPHIndex {
   // Crazy functions. Ignore.
   template <class SeededHashFcn, class Key>  // must agree with Reset
   void hash_vector(const Key& x, uint32_t* h) const;
-
-  // Serialization for mmap usage - not tested well, ping me if you care. 
-  // Serialized tables are not guaranteed to work across versions or different
-  // endianness (although they could easily be made to be).
-  uint32_t serialize_bytes_needed() const;
-  void serialize(char *memory) const;
-  bool deserialize(const char* serialized_memory);
 
  private:
   template <class SeededHashFcn, class ForwardIterator>
@@ -111,10 +103,6 @@ class MPHIndex {
   // The selected hash seed triplet for finding the edges in the minimal
   // perfect hash function graph.
   uint32_t hash_seed_[3];
-
-  bool deserialized_;
-
-  static const uint8_t valuemask[];
 };
 
 // Template method needs to go in the header file.
@@ -153,10 +141,8 @@ bool MPHIndex::Reset(
   }
   if (iterations == 0) return false;
   Assigning(edges, queue);
-  fprintf(stderr, "Assignment finished\n");
   std::vector<TriGraph::Edge>().swap(edges);
   Ranking();
-  deserialized_ = false;
   return true;
 }
 

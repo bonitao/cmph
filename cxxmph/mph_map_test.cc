@@ -16,7 +16,6 @@ int main(int argc, char** argv) {
     b.insert(make_pair(i, i));
   }
   b.rehash(b.size());
-  fprintf(stderr, "Insertion finished\n");
   for (int i = 0; i < 1000000; ++i) {
     auto it = b.find(i % num_keys);
     if (it == b.end()) {

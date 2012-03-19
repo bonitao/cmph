@@ -20,10 +20,6 @@ class dynamic_2bitset {
   dynamic_2bitset() : size_(0), fill_(false)  {}
   dynamic_2bitset(uint32_t size, bool fill = false)
       : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {
-   if (data_.size()) fprintf(stderr, "creating %p size %d\n", &data_[0], data_.size());
-  }
-  ~dynamic_2bitset() {
-    if (data_.size()) fprintf(stderr, "Deleting %p size %d\n", &data_[0], data_.size());
   }
 
   const uint8_t operator[](uint32_t i) const { return get(i); }
@@ -53,19 +49,13 @@ class dynamic_2bitset {
   uint32_t size() const { return size_; }
   static const uint8_t vmask[];
   const std::vector<uint8_t>& data() const { return data_; }
-// private:
+ private:
   uint32_t size_;
   bool fill_;
   std::vector<uint8_t> data_;
   const uint8_t ones() { return std::numeric_limits<uint8_t>::max(); }
 };
 
-static void set_2bit_value(uint8_t *d, uint32_t i, uint8_t v) {
-  d[(i >> 2)] &= ((v << ((i & 3) << 1)) | dynamic_2bitset::vmask[i & 3]);
-}
-static uint32_t get_2bit_value(const uint8_t* d, uint32_t i) {
-  return (d[(i >> 2)] >> (((i & 3) << 1)) & 3);
-}
 static uint32_t nextpoweroftwo(uint32_t k) {
   if (k == 0) return 1;
   k--;

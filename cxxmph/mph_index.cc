@@ -37,14 +37,12 @@ static uint8_t kBdzLookupIndex[] =
 
 namespace cxxmph {
 
-const uint8_t MPHIndex::valuemask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
-
 MPHIndex::~MPHIndex() {
   clear();
 }
 
 void MPHIndex::clear() {
-  if (!deserialized_) delete [] ranktable_;
+  delete [] ranktable_;
   ranktable_ = NULL;
   ranktable_size_ = 0;
   // TODO(davi) implement me
@@ -162,7 +160,7 @@ void MPHIndex::Ranking() {
   uint32_t size = k_ >> 2U;
   ranktable_size_ = static_cast<uint32_t>(
       ceil(n_ / static_cast<double>(k_)));
-  if (!deserialized_) delete [] ranktable_;
+  delete [] ranktable_;
   ranktable_ = NULL;
   uint32_t* ranktable = new uint32_t[ranktable_size_];
   memset(ranktable, 0, ranktable_size_*sizeof(uint32_t));
@@ -191,27 +189,17 @@ uint32_t MPHIndex::Rank(uint32_t vertex) const {
   beg_idx_v = beg_idx_b << 2;
   // cerr << "beg_idx_v: " << beg_idx_v << endl;
   // cerr << "base rank: " << base_rank << endl;
-  cerr << "G: ";
-  for (unsigned int i = 0; i < n_; ++i) {
-    cerr << static_cast<uint32_t>(g_[i]) << " ";
-  }
-  cerr << endl;
+  // cerr << "G: ";
+  // for (unsigned int i = 0; i < n_; ++i) {
+  //  cerr << static_cast<uint32_t>(g_[i]) << " ";
+  // }
+  // cerr << endl;
   while (beg_idx_v < vertex) {
     if (g_[beg_idx_v] != kUnassigned) ++base_rank;
     ++beg_idx_v;
   }
   // cerr << "Base rank: " << base_rank << endl;
   return base_rank;
-}
-
-uint32_t MPHIndex::serialize_bytes_needed() const {
-  return 0;
-}
-void MPHIndex::serialize(char* memory) const {
-}
-
-bool MPHIndex::deserialize(const char* serialized_memory) {
-  return true;
 }
 
 }  // namespace cxxmph
