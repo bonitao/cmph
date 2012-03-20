@@ -68,10 +68,6 @@ class MPHIndex {
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
 
-  // Crazy functions. Ignore.
-  template <class SeededHashFcn, class Key>  // must agree with Reset
-  void hash_vector(const Key& x, uint32_t* h) const;
-
  private:
   template <class SeededHashFcn, class ForwardIterator>
   bool Mapping(ForwardIterator begin, ForwardIterator end,
@@ -160,8 +156,7 @@ bool MPHIndex::Mapping(
     std::vector<TriGraph::Edge>* edges, std::vector<uint32_t>* queue) {
   TriGraph graph(n_, m_);
   for (ForwardIterator it = begin; it != end; ++it) { 
-    uint32_t h[4];
-    SeededHashFcn().hash64(*it, hash_seed_[0], reinterpret_cast<uint32_t*>(&h));
+    h128 h = SeededHashFcn().hash128(*it, hash_seed_[0]);
     // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
     uint32_t v0 = h[0] % r_;
     uint32_t v1 = h[1] % r_ + r_;
@@ -177,15 +172,9 @@ bool MPHIndex::Mapping(
 }
 
 template <class SeededHashFcn, class Key>
-void MPHIndex::hash_vector(const Key& key, uint32_t* h) const {
-  SeededHashFcn().hash64(key, hash_seed_[0], h);
-}
-
-template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
-  uint32_t h[4];
   if (!g_.size()) return 0;
-  SeededHashFcn().hash64(key, hash_seed_[0], h);
+  h128 h = SeededHashFcn().hash128(key, hash_seed_[0]);
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
   h[2] = (h[2] % r_) + nest_displacement_[2];
@@ -222,7 +211,6 @@ class SimpleMPHIndex : public MPHIndex {
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
   uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
   uint32_t minimal_perfect_hash(const Key& key) const { return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
-  void hash_vector(const Key& key, uint32_t* h) const { MPHIndex::hash_vector<HashFcn>(key, h); }
 };
 
 }  // namespace cxxmph

@@ -16,6 +16,16 @@ uint64_t fmix ( uint64_t h );
 
 namespace cxxmph {
 
+struct h128 {
+  uint32_t operator[](uint8_t i) const { return uint32[i]; }
+  uint32_t& operator[](uint8_t i) { return uint32[i]; }
+  uint64_t* uint64ptr(bool second) { return reinterpret_cast<uint64_t*>(&uint32[static_cast<uint8_t>(second) << 1]); }
+  uint64_t uint64(bool second) const { return *reinterpret_cast<const uint64_t*>(&uint32[static_cast<uint8_t>(second) << 1]); }
+  bool operator==(const h128 rhs) const { return uint64(0) == rhs.uint64(0) && uint64(1) == rhs.uint64(1); }
+
+  uint32_t uint32[4];
+};
+
 template <class HashFcn>
 struct seeded_hash_function {
   template <class Key>
@@ -23,11 +33,13 @@ struct seeded_hash_function {
     return HashFcn()(k) ^ seed;
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+  h128 hash128(const Key& k, uint32_t seed) const {
+    h128 h;
     for (int i = 0; i < 4; ++i) {
-      out[i] = HashFcn()(k) ^ seed;
+      h.uint32[i] = HashFcn()(k) ^ seed;
       seed = fmix(seed);
     }
+    return h;
   }
 };
 
@@ -39,8 +51,10 @@ struct Murmur3 {
     return out;
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t* out) const {
-    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */, out);
+  h128 hash128(const Key& k) const {
+    h128 h;
+    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), 1 /* seed */, &h);
+    return h;
   }
 };
 
@@ -53,9 +67,11 @@ struct Murmur3StringPiece {
     return out;
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t* out) const {
+  h128 hash128(const Key& k) const {
+    h128 h;
     StringPiece s(k);
-    MurmurHash3_x64_128(s.data(), s.length(), 1 /* seed */, out);
+    MurmurHash3_x64_128(s.data(), s.length(), 1 /* seed */, &h);
+    return h;
   }
 };
 
@@ -65,9 +81,10 @@ struct Murmur3Fmix64bitsType {
     return fmix(*reinterpret_cast<const uint64_t*>(&k));
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t* out) const {
-    *reinterpret_cast<uint64_t*>(out) = fmix(k);
-    *(out + 2) = fmix(*out);
+  h128 hash128(const Key& k) const {
+    h128 h;
+    *h.uint64ptr(0) = fmix(k);
+    *h.uint64ptr(1) = fmix(h.uint64(0));
   }
 };
 
@@ -80,8 +97,10 @@ struct seeded_hash_function<Murmur3> {
     return out;
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
-    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), seed, out);
+  h128 hash128(const Key& k, uint32_t seed) const {
+    h128 h;
+    MurmurHash3_x64_128(reinterpret_cast<const void*>(&k), sizeof(Key), seed, &h);
+    return h;
   }
 };
 
@@ -95,9 +114,11 @@ struct seeded_hash_function<Murmur3StringPiece> {
     return out;
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
+  h128 hash128(const Key& k, uint32_t seed) const {
+    h128 h;
     StringPiece s(k);
-    MurmurHash3_x64_128(s.data(), s.length(), seed, out);
+    MurmurHash3_x64_128(s.data(), s.length(), seed, &h);
+    return h;
   }
 };
 
@@ -108,9 +129,11 @@ struct seeded_hash_function<Murmur3Fmix64bitsType> {
     return fmix(k + seed);
   }
   template <class Key>
-  void hash64(const Key& k, uint32_t seed, uint32_t* out) const {
-    *reinterpret_cast<uint64_t*>(out) = fmix(k ^ seed);
-    *(out + 2) = fmix(*out);
+  h128 hash128(const Key& k, uint32_t seed) const {
+    h128 h;
+    *h.uint64ptr(0) = fmix(k ^ seed);
+    *h.uint64ptr(1) = fmix(h.uint64(0));
+    return h;
   }
 };
 

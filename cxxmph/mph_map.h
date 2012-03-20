@@ -199,8 +199,6 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
   present_[pos - begin] = false;
-  uint32_t h[4];
-  index_.hash_vector(pos->first, &h);
   *pos = value_type();
   --size_;
 }

@@ -27,6 +27,9 @@ cxxmph_LDADD   = libcxxmph.la
 cxxmph_SOURCES = cxxmph.cc
 
 hollow_iterator_test_SOURCES = hollow_iterator_test.cc
+seeded_hash_test_SOURCES = seeded_hash_test.cc
+
 mph_bits_test_SOURCES = mph_bits_test.cc
+mph_bits_test_LDADD   = libcxxmph.la
 mph_bits_test_LDADD   = libcxxmph.la
 
