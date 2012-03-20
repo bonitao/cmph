@@ -67,6 +67,8 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 // http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
 // Fast a % (k*2^t)
 // http://www.azillionmonkeys.com/qed/adiv.html
+// rank and select:
+// http://vigna.dsi.unimi.it/ftp/papers/Broadword.pdf
   
 }  // namespace cxxmph
 

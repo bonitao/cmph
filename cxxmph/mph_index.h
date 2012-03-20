@@ -15,6 +15,10 @@
 // traditional hash function over a key and doing 2-3 conflict resolutions on
 // 100byte-ish strings.
 //
+// Thesis presenting this and similar algorithms:
+// http://homepages.dcc.ufmg.br/~fbotelho/en/talks/thesis2008/thesis.pdf
+//
+//
 // Notes:
 //
 // Most users can use the SimpleMPHIndex wrapper instead of the MPHIndex which
@@ -80,7 +84,11 @@ class MPHIndex {
   uint32_t Rank(uint32_t vertex) const;
 
   // Algorithm parameters
-  double c_;  // Number of bits per key (? is it right)
+  // Perfect hash function density. If this was a 2graph,
+  // then probability of having an acyclic graph would be 
+  // sqrt(1-(2/c)^2). See section 3 for details.
+  // http://www.it-c.dk/people/pagh/papers/simpleperf.pdf
+  double c_;
   uint8_t b_;  // Number of bits of the kth index in the ranktable
 
   // Values used during generation
