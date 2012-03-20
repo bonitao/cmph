@@ -65,6 +65,7 @@ class MPHIndex {
   uint32_t perfect_hash_size() const { return n_; }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t perfect_hash(const Key& x) const;
+  uint32_t minimal_perfect_hash_size() const { return size(); }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
 

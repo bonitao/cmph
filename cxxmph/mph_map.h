@@ -172,6 +172,7 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
     size_type id = index_.perfect_hash(it->first);
+    assert(id < index_.perfect_hash_size());
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;

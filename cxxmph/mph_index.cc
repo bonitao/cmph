@@ -180,20 +180,26 @@ void MPHIndex::Ranking() {
 }
 
 uint32_t MPHIndex::Rank(uint32_t vertex) const {
+  if (!g_.size()) return 0;
   uint32_t index = vertex >> b_;
   uint32_t base_rank = ranktable_[index];
   uint32_t beg_idx_v = index << b_;
   uint32_t beg_idx_b = beg_idx_v >> 2;
   uint32_t end_idx_b = vertex >> 2;
-  while (beg_idx_b < end_idx_b) base_rank += kBdzLookupIndex[g_.data()[beg_idx_b++]];
+  while (beg_idx_b < end_idx_b) {
+     assert(g_.data().size() > beg_idx_b);
+     base_rank += kBdzLookupIndex[g_.data()[beg_idx_b++]];
+  }
   beg_idx_v = beg_idx_b << 2;
-  // cerr << "beg_idx_v: " << beg_idx_v << endl;
-  // cerr << "base rank: " << base_rank << endl;
-  // cerr << "G: ";
-  // for (unsigned int i = 0; i < n_; ++i) {
-  //  cerr << static_cast<uint32_t>(g_[i]) << " ";
-  // }
-  // cerr << endl;
+  /*
+  cerr << "beg_idx_v: " << beg_idx_v << endl;
+  cerr << "base rank: " << base_rank << endl;
+  cerr << "G: ";
+  for (unsigned int i = 0; i < n_; ++i) {
+   cerr << static_cast<uint32_t>(g_[i]) << " ";
+  }
+  cerr << endl;
+  */
   while (beg_idx_v < vertex) {
     if (g_[beg_idx_v] != kUnassigned) ++base_rank;
     ++beg_idx_v;
