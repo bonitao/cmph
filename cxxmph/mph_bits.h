@@ -62,30 +62,19 @@ static uint32_t nextpoweroftwo(uint32_t k) {
   for (int i=1; i<sizeof(uint32_t)*CHAR_BIT; i<<=1) k = k | k >> i;
   return k+1;
 }
-
-template <int n, int mask = (1 << 7)> struct bitcount {
-enum { value = (n & mask ? 1:0) + bitcount<n, (mask >> 1)>::value };
-};
-template <int n> struct bitcount<n, 0> { enum { value = 0 }; };
-
-template <int size, int index = size>
-class CompileTimeRankTable {
-public:
-CompileTimeRankTable() : current(bitcount<index - 1>::value) { }
-int operator[] (int i) { return *(&current + size - i - 1); }
-private:
-unsigned char current;
-CompileTimeRankTable<index -1> next;
-};
-template <int size> class CompileTimeRankTable<size, 0> { };
-typedef CompileTimeRankTable<256> Ranktable;
-
 // Interesting bit tricks that might end up here:
 // http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
 // Fast a % (k*2^t)
 // http://www.azillionmonkeys.com/qed/adiv.html
 // rank and select:
 // http://vigna.dsi.unimi.it/ftp/papers/Broadword.pdf
+
+struct Ranktable { static uint8_t get(uint8_t); };
+static uint8_t rank64(uint64_t bits) {
+  auto bytes = reinterpret_cast<const uint8_t*>(&bits);
+  return Ranktable::get(bytes[0]) + Ranktable::get(bytes[1]) +
+         Ranktable::get(bytes[2]) + Ranktable::get(bytes[3]);
+};
   
 }  // namespace cxxmph
 
