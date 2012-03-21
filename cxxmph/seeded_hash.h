@@ -4,6 +4,7 @@
 #include <stdint.h>  // for uint32_t and friends
 
 #include <cstdlib>
+#include <cstring>
 #include <unordered_map>  // for std::hash
 
 #include "MurmurHash3.h"
@@ -17,13 +18,15 @@ uint64_t fmix ( uint64_t h );
 namespace cxxmph {
 
 struct h128 {
-  uint32_t operator[](uint8_t i) const { return uint32[i]; }
+  const uint32_t& operator[](uint8_t i) const { return uint32[i]; }
   uint32_t& operator[](uint8_t i) { return uint32[i]; }
-  uint64_t* uint64ptr(bool second) { return reinterpret_cast<uint64_t*>(&uint32[static_cast<uint8_t>(second) << 1]); }
-  uint64_t uint64(bool second) const { return *reinterpret_cast<const uint64_t*>(&uint32[static_cast<uint8_t>(second) << 1]); }
-  bool operator==(const h128 rhs) const { return uint64(0) == rhs.uint64(0) && uint64(1) == rhs.uint64(1); }
+  const uint64_t get64(bool second) const { return (static_cast<uint64_t>(uint32[second << 1]) << 32) | uint32[1 + (second << 1)]; }
+  void set64(uint64_t v, bool second) { uint32[second << 1] = v >> 32; uint32[1+(second<<1)] = ((v << 32) >> 32); }
+  bool operator==(const h128 rhs) const { return memcmp(uint32, rhs.uint32, sizeof(uint32)) == 0; }
 
   uint32_t uint32[4];
+
+  struct hash32 { uint32_t operator()(const cxxmph::h128& h) const { return h[3]; } };
 };
 
 template <class HashFcn>
@@ -83,8 +86,8 @@ struct Murmur3Fmix64bitsType {
   template <class Key>
   h128 hash128(const Key& k) const {
     h128 h;
-    *h.uint64ptr(0) = fmix(k);
-    *h.uint64ptr(1) = fmix(h.uint64(0));
+    h.set64(fmix(k), 0);
+    h.set64(fmix(h.get64(0)), 1);
   }
 };
 
@@ -131,8 +134,8 @@ struct seeded_hash_function<Murmur3Fmix64bitsType> {
   template <class Key>
   h128 hash128(const Key& k, uint32_t seed) const {
     h128 h;
-    *h.uint64ptr(0) = fmix(k ^ seed);
-    *h.uint64ptr(1) = fmix(h.uint64(0));
+    h.set64(fmix(k ^ seed), 0);
+    h.set64(fmix(h.get64(0)), 1);
     return h;
   }
 };

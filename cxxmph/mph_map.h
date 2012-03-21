@@ -112,10 +112,11 @@ class mph_map {
    std::vector<value_type> values_;
    std::vector<bool> present_;
    SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
-   // TODO(davi) optimize slack to hold 128 unique bits from hash64 as key
-   typedef unordered_map<Key, uint32_t, HashFcn, EqualKey, Alloc> slack_type;
+   // TODO(davi) optimize slack to use hash from index rather than calculate its own
+   typedef unordered_map<h128, uint32_t, h128::hash32> slack_type;
    slack_type slack_;
    size_type size_;
+   typename seeded_hash<HashFcn>::hash_function hasher128_;
 
    mutable uint64_t fast_;
    mutable uint64_t fast_taken_;
@@ -148,7 +149,9 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   values_.push_back(x);
   present_.push_back(true);
   ++size_;
-  slack_.insert(make_pair(x.first, values_.size() - 1));
+  h128 h = hasher128_.hash128(x.first, 0);
+  if (slack_.find(h) != slack_.end()) should_pack = true;  // unavoidable pack
+  else slack_.insert(std::make_pair(h, values_.size() - 1));
   if (should_pack) pack();
   it = find(x.first);
   slow_ = 0;
@@ -218,7 +221,7 @@ MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t perfe
   }
   if (__builtin_expect(!slack_.empty(), 0)) {
      ++very_slow_;
-     auto sit = slack_.find(k);
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
   }
   return end();
@@ -233,7 +236,7 @@ MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k, uint32_t perfect_has
   }
   if (__builtin_expect(!slack_.empty(), 0)) {
      ++very_slow_;
-     auto sit = slack_.find(k);
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
   }
   return end();

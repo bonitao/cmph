@@ -63,6 +63,23 @@ static uint32_t nextpoweroftwo(uint32_t k) {
   return k+1;
 }
 
+template <int n, int mask = (1 << 7)> struct bitcount {
+enum { value = (n & mask ? 1:0) + bitcount<n, (mask >> 1)>::value };
+};
+template <int n> struct bitcount<n, 0> { enum { value = 0 }; };
+
+template <int size, int index = size>
+class CompileTimeRankTable {
+public:
+CompileTimeRankTable() : current(bitcount<index - 1>::value) { }
+int operator[] (int i) { return *(&current + size - i - 1); }
+private:
+unsigned char current;
+CompileTimeRankTable<index -1> next;
+};
+template <int size> class CompileTimeRankTable<size, 0> { };
+typedef CompileTimeRankTable<256> Ranktable;
+
 // Interesting bit tricks that might end up here:
 // http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
 // Fast a % (k*2^t)

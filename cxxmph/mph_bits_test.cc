@@ -4,6 +4,8 @@
 #include "mph_bits.h"
 
 using cxxmph::dynamic_2bitset;
+using cxxmph::Ranktable;
+
 int main(int argc, char** argv) {
   dynamic_2bitset small(256, true);
   for (int i = 0; i < small.size(); ++i) small.set(i, i % 4);
@@ -52,6 +54,12 @@ int main(int argc, char** argv) {
   empty.clear();
   dynamic_2bitset large(1000, true);
   empty.swap(large);
+  
+  Ranktable ranktable;
+  if (ranktable[0] != 0) exit(-1);
+  if (ranktable[1] != 1) exit(-1);
+  if (ranktable[2] != 1) exit(-1);
+  if (ranktable[255] != 8) exit(-1);
 }
   
   

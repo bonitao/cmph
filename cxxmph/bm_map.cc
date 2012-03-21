@@ -8,6 +8,9 @@ using cxxmph::mph_map;
 using std::string;
 using std::unordered_map;
 
+// Another reference benchmark:
+// http://blog.aggregateknowledge.com/tag/bigmemory/
+
 namespace cxxmph {
 
 template<class MapType, class T>
