@@ -76,4 +76,3 @@ void vstack_reserve(vstack_t *stack, cmph_uint32 size)
 		DEBUGP("Increased\n");
 	}
 }
-		

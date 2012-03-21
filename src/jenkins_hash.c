@@ -28,16 +28,16 @@
  have at least 1/4 probability of changing.
  * If mix() is run forward, every bit of c will change between 1/3 and
  2/3 of the time.  (Well, 22/100 and 78/100 for some 2-bit deltas.)
- mix() was built out of 36 single-cycle latency instructions in a 
+ mix() was built out of 36 single-cycle latency instructions in a
  structure that could supported 2x parallelism, like so:
- a -= b; 
+ a -= b;
  a -= c; x = (c>>13);
  b -= c; a ^= x;
  b -= a; x = (a<<8);
  c -= a; b ^= x;
  c -= b; x = (b>>13);
  ...
- Unfortunately, superscalar Pentiums and Sparcs can't take advantage 
+ Unfortunately, superscalar Pentiums and Sparcs can't take advantage
  of that parallelism.  They've also turned some of those single-cycle
  latency instructions into multi-cycle latency instructions.  Still,
  this is the fastest good hash I could find.  There were about 2^^68
@@ -87,6 +87,7 @@ acceptable.  Do NOT use for cryptographic purposes.
 jenkins_state_t *jenkins_state_new(cmph_uint32 size) //size of hash table
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
+        if (!state) return NULL;
 	DEBUGP("Initializing jenkins hash\n");
 	state->seed = ((cmph_uint32)rand() % size);
 	return state;
@@ -121,28 +122,28 @@ static inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_u
 	hashes[2]  += length;
 	switch(len)              /* all the case statements fall through */
 	{
-		case 11: 
+		case 11:
 			hashes[2] +=((cmph_uint32)k[10]<<24);
-		case 10: 
+		case 10:
 			hashes[2] +=((cmph_uint32)k[9]<<16);
-		case 9 : 
+		case 9 :
 			hashes[2] +=((cmph_uint32)k[8]<<8);
 			/* the first byte of hashes[2] is reserved for the length */
-		case 8 : 
+		case 8 :
 			hashes[1] +=((cmph_uint32)k[7]<<24);
-		case 7 : 
+		case 7 :
 			hashes[1] +=((cmph_uint32)k[6]<<16);
-		case 6 : 
+		case 6 :
 			hashes[1] +=((cmph_uint32)k[5]<<8);
 		case 5 :
 			hashes[1] +=(cmph_uint8) k[4];
-		case 4 : 
+		case 4 :
 			hashes[0] +=((cmph_uint32)k[3]<<24);
-		case 3 : 
+		case 3 :
 			hashes[0] +=((cmph_uint32)k[2]<<16);
-		case 2 : 
+		case 2 :
 			hashes[0] +=((cmph_uint32)k[1]<<8);
-		case 1 : 
+		case 1 :
 			hashes[0] +=(cmph_uint8)k[0];
 			/* case 0: nothing left to add */
 	}
@@ -158,13 +159,13 @@ cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keyl
 /*	cmph_uint32 a, b, c;
 	cmph_uint32 len, length;
 
-	// Set up the internal state 
+	// Set up the internal state
 	length = keylen;
 	len = length;
-	a = b = 0x9e3779b9;  // the golden ratio; an arbitrary value 
-	c = state->seed;   // the previous hash value - seed in our case 
+	a = b = 0x9e3779b9;  // the golden ratio; an arbitrary value
+	c = state->seed;   // the previous hash value - seed in our case
 
-	// handle most of the key 
+	// handle most of the key
 	while (len >= 12)
 	{
 		a += (k[0] +((cmph_uint32)k[1]<<8) +((cmph_uint32)k[2]<<16) +((cmph_uint32)k[3]<<24));
@@ -176,37 +177,37 @@ cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keyl
 
 	// handle the last 11 bytes
 	c  += length;
-	switch(len)              /// all the case statements fall through 
+	switch(len)              /// all the case statements fall through
 	{
-		case 11: 
+		case 11:
 			c +=((cmph_uint32)k[10]<<24);
-		case 10: 
+		case 10:
 			c +=((cmph_uint32)k[9]<<16);
-		case 9 : 
+		case 9 :
 			c +=((cmph_uint32)k[8]<<8);
-			// the first byte of c is reserved for the length 
-		case 8 : 
+			// the first byte of c is reserved for the length
+		case 8 :
 			b +=((cmph_uint32)k[7]<<24);
-		case 7 : 
+		case 7 :
 			b +=((cmph_uint32)k[6]<<16);
-		case 6 : 
+		case 6 :
 			b +=((cmph_uint32)k[5]<<8);
-		case 5 : 
+		case 5 :
 			b +=k[4];
-		case 4 : 
+		case 4 :
 			a +=((cmph_uint32)k[3]<<24);
-		case 3 : 
+		case 3 :
 			a +=((cmph_uint32)k[2]<<16);
-		case 2 : 
+		case 2 :
 			a +=((cmph_uint32)k[1]<<8);
-		case 1 : 
+		case 1 :
 			a +=k[0];
-		// case 0: nothing left to add 
+		// case 0: nothing left to add
 	}
 
 	mix(a,b,c);
 
-	/// report the result 
+	/// report the result
 
 	return c;
 	*/
@@ -221,7 +222,7 @@ void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
 {
 	*buflen = sizeof(cmph_uint32);
 	*buf = (char *)malloc(sizeof(cmph_uint32));
-	if (!*buf) 
+	if (!*buf)
 	{
 		*buflen = UINT_MAX;
 		return;
@@ -252,7 +253,7 @@ jenkins_state_t *jenkins_state_load(const char *buf, cmph_uint32 buflen)
 /** \fn void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed);
  *  \brief Support the ability to pack a jenkins function into a preallocated contiguous memory space pointed by jenkins_packed.
  *  \param state points to the jenkins function
- *  \param jenkins_packed pointer to the contiguous memory area used to store the jenkins function. The size of jenkins_packed must be at least jenkins_state_packed_size() 
+ *  \param jenkins_packed pointer to the contiguous memory area used to store the jenkins function. The size of jenkins_packed must be at least jenkins_state_packed_size()
  */
 void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed)
 {
@@ -265,7 +266,7 @@ void jenkins_state_pack(jenkins_state_t *state, void *jenkins_packed)
 /** \fn cmph_uint32 jenkins_state_packed_size(jenkins_state_t *state);
  *  \brief Return the amount of space needed to pack a jenkins function.
  *  \return the size of the packed function or zero for failures
- */ 
+ */
 cmph_uint32 jenkins_state_packed_size(void)
 {
 	return sizeof(cmph_uint32);

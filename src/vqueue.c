@@ -12,7 +12,7 @@ vqueue_t * vqueue_new(cmph_uint32 capacity)
 {
   size_t capacity_plus_one = capacity + 1;
   vqueue_t *q = (vqueue_t *)malloc(sizeof(vqueue_t));
-  assert(q);
+  if (!q) return NULL;
   q->values = (cmph_uint32 *)calloc(capacity_plus_one, sizeof(cmph_uint32));
   q->beg = q->end = 0;
   q->capacity = (cmph_uint32) capacity_plus_one;
@@ -43,7 +43,7 @@ void vqueue_print(vqueue_t * q)
   cmph_uint32 i;
   for (i = q->beg; i != q->end; i = (i + 1)%q->capacity)
     fprintf(stderr, "%u\n", q->values[(i + 1)%q->capacity]);
-} 
+}
 
 void vqueue_destroy(vqueue_t *q)
 {

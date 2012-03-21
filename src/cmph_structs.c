@@ -28,7 +28,7 @@ void __cmph_dump(cmph_t *mphf, FILE *fd)
 	nbytes = fwrite(cmph_names[mphf->algo], (size_t)(strlen(cmph_names[mphf->algo]) + 1), (size_t)1, fd);
 	nbytes = fwrite(&(mphf->size), sizeof(mphf->size), (size_t)1, fd);
 }
-cmph_t *__cmph_load(FILE *f) 
+cmph_t *__cmph_load(FILE *f)
 {
 	cmph_t *mphf = NULL;
 	cmph_uint32 i;
@@ -36,7 +36,7 @@ cmph_t *__cmph_load(FILE *f)
 	char *ptr = algo_name;
 	CMPH_ALGO algo = CMPH_COUNT;
 	register size_t nbytes;
-	
+
 	DEBUGP("Loading mphf\n");
 	while(1)
 	{
@@ -52,7 +52,7 @@ cmph_t *__cmph_load(FILE *f)
 			algo = i;
 		}
 	}
-	if (algo == CMPH_COUNT) 
+	if (algo == CMPH_COUNT)
 	{
 		DEBUGP("Algorithm %s not found\n", algo_name);
 		return NULL;
@@ -65,5 +65,3 @@ cmph_t *__cmph_load(FILE *f)
 
 	return mphf;
 }
-
-

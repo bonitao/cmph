@@ -1,8 +1,9 @@
 bin_PROGRAMS = cmph
+noinst_PROGRAMS = bm_numbers
 lib_LTLIBRARIES = libcmph.la
 include_HEADERS = cmph.h cmph_types.h cmph_time.h chd_ph.h
 libcmph_la_SOURCES =  hash.h hash.c \
-		      jenkins_hash.h jenkins_hash.c\
+		      jenkins_hash.h jenkins_hash.c MurmurHash2.h\
 		      hash_state.h debug.h \
 		      vstack.h vstack.c vqueue.h vqueue.c\
 		      graph.h graph.c bitbool.h \
@@ -23,9 +24,14 @@ libcmph_la_SOURCES =  hash.h hash.c \
 		      select.h select.c select_lookup_tables.h \
 		      compressed_seq.h compressed_seq.c \
 		      compressed_rank.h compressed_rank.c \
+                      linear_string_map.h linear_string_map.c \
+		      cmph_benchmark.h cmph_benchmark.c \
 		      cmph_time.h
 
 libcmph_la_LDFLAGS = -version-info 0:0:0
 
 cmph_SOURCES = 	main.c wingetopt.h wingetopt.c
 cmph_LDADD = libcmph.la
+
+bm_numbers_SOURCES = bm_numbers.c
+bm_numbers_LDADD = libcmph.la

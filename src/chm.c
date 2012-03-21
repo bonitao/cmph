@@ -21,7 +21,7 @@ chm_config_data_t *chm_config_new(void)
 {
 	chm_config_data_t *chm = NULL;
 	chm = (chm_config_data_t *)malloc(sizeof(chm_config_data_t));
-	assert(chm);
+        if (!chm) return NULL;
 	memset(chm, 0, sizeof(chm_config_data_t));
 	chm->hashfuncs[0] = CMPH_HASH_JENKINS;
 	chm->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -45,7 +45,7 @@ void chm_config_set_hashfuncs(cmph_config_t *mph, CMPH_HASH *hashfuncs)
 	while(*hashptr != CMPH_HASH_COUNT)
 	{
 		if (i >= 2) break; //chm only uses two hash functions
-		chm->hashfuncs[i] = *hashptr;	
+		chm->hashfuncs[i] = *hashptr;
 		++i, ++hashptr;
 	}
 }
@@ -61,7 +61,7 @@ cmph_t *chm_new(cmph_config_t *mph, double c)
 	chm_config_data_t *chm = (chm_config_data_t *)mph->data;
 	chm->m = mph->key_source->nkeys;
 	if (c == 0) c = 2.09;
-	chm->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);	
+	chm->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", chm->m, chm->n, c);
 	chm->graph = graph_new(chm->n, chm->m);
 	DEBUGP("Created graph\n");
@@ -92,12 +92,12 @@ cmph_t *chm_new(cmph_config_t *mph, double c)
 				fprintf(stderr, "Acyclic graph creation failure - %u iterations remaining\n", iterations);
 			}
 			if (iterations == 0) break;
-		} 
-		else break;	
+		}
+		else break;
 	}
 	if (iterations == 0)
 	{
-		graph_destroy(chm->graph);	
+		graph_destroy(chm->graph);
 		return NULL;
 	}
 
@@ -120,7 +120,7 @@ cmph_t *chm_new(cmph_config_t *mph, double c)
 			chm_traverse(chm, visited, i);
 		}
 	}
-	graph_destroy(chm->graph);	
+	graph_destroy(chm->graph);
 	free(visited);
 	chm->graph = NULL;
 
@@ -149,7 +149,7 @@ static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint3
 	graph_iterator_t it = graph_neighbors_it(chm->graph, v);
 	cmph_uint32 neighbor = 0;
 	SETBIT(visited,v);
-	
+
 	DEBUGP("Visiting vertex %u\n", v);
 	while((neighbor = graph_next_neighbor(chm->graph, &it)) != GRAPH_NO_NEIGHBOR)
 	{
@@ -162,7 +162,7 @@ static void chm_traverse(chm_config_data_t *chm, cmph_uint8 *visited, cmph_uint3
 		chm_traverse(chm, visited, neighbor);
 	}
 }
-		
+
 static int chm_gen_edges(cmph_config_t *mph)
 {
 	cmph_uint32 e;
@@ -170,7 +170,7 @@ static int chm_gen_edges(cmph_config_t *mph)
 	int cycles = 0;
 
 	DEBUGP("Generating edges for %u vertices with hash functions %s and %s\n", chm->n, cmph_hash_names[chm->hashfuncs[0]], cmph_hash_names[chm->hashfuncs[1]]);
-	graph_clear_edges(chm->graph);	
+	graph_clear_edges(chm->graph);
 	mph->key_source->rewind(mph->key_source->data);
 	for (e = 0; e < mph->key_source->nkeys; ++e)
 	{
@@ -181,7 +181,7 @@ static int chm_gen_edges(cmph_config_t *mph)
 		h1 = hash(chm->hashes[0], key, keylen) % chm->n;
 		h2 = hash(chm->hashes[1], key, keylen) % chm->n;
 		if (h1 == h2) if (++h2 >= chm->n) h2 = 0;
-		if (h1 == h2) 
+		if (h1 == h2)
 		{
 			if (mph->verbosity) fprintf(stderr, "Self loop for key %u\n", e);
 			mph->key_source->dispose(mph->key_source->data, key, keylen);
@@ -205,7 +205,7 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 	cmph_uint32 two = 2; //number of hash functions
 	chm_data_t *data = (chm_data_t *)mphf->data;
 	register size_t nbytes;
-	
+
 	__cmph_dump(mphf, fd);
 
 	nbytes = fwrite(&two, sizeof(cmph_uint32), (size_t)1, fd);
@@ -223,7 +223,7 @@ int chm_dump(cmph_t *mphf, FILE *fd)
 
 	nbytes = fwrite(&(data->n), sizeof(cmph_uint32), (size_t)1, fd);
 	nbytes = fwrite(&(data->m), sizeof(cmph_uint32), (size_t)1, fd);
-	
+
 	nbytes = fwrite(data->g, sizeof(cmph_uint32)*data->n, (size_t)1, fd);
 /*	#ifdef DEBUG
 	fprintf(stderr, "G: ");
@@ -260,8 +260,8 @@ void chm_load(FILE *f, cmph_t *mphf)
 	}
 
 	DEBUGP("Reading m and n\n");
-	nbytes = fread(&(chm->n), sizeof(cmph_uint32), (size_t)1, f);	
-	nbytes = fread(&(chm->m), sizeof(cmph_uint32), (size_t)1, f);	
+	nbytes = fread(&(chm->n), sizeof(cmph_uint32), (size_t)1, f);
+	nbytes = fread(&(chm->m), sizeof(cmph_uint32), (size_t)1, f);
 
 	chm->g = (cmph_uint32 *)malloc(sizeof(cmph_uint32)*chm->n);
 	nbytes = fread(chm->g, chm->n*sizeof(cmph_uint32), (size_t)1, f);
@@ -272,7 +272,7 @@ void chm_load(FILE *f, cmph_t *mphf)
 	#endif
 	return;
 }
-		
+
 
 cmph_uint32 chm_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
@@ -287,7 +287,7 @@ cmph_uint32 chm_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 void chm_destroy(cmph_t *mphf)
 {
 	chm_data_t *data = (chm_data_t *)mphf->data;
-	free(data->g);	
+	free(data->g);
 	hash_state_destroy(data->hashes[0]);
 	hash_state_destroy(data->hashes[1]);
 	free(data->hashes);
@@ -298,7 +298,7 @@ void chm_destroy(cmph_t *mphf)
 /** \fn void chm_pack(cmph_t *mphf, void *packed_mphf);
  *  \brief Support the ability to pack a perfect hash function into a preallocated contiguous memory space pointed by packed_mphf.
  *  \param mphf pointer to the resulting mphf
- *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size() 
+ *  \param packed_mphf pointer to the contiguous memory area used to store the resulting mphf. The size of packed_mphf must be at least cmph_packed_size()
  */
 void chm_pack(cmph_t *mphf, void *packed_mphf)
 {
@@ -332,26 +332,26 @@ void chm_pack(cmph_t *mphf, void *packed_mphf)
 	ptr += sizeof(data->m);
 
 	// packing g
-	memcpy(ptr, data->g, sizeof(cmph_uint32)*data->n);	
+	memcpy(ptr, data->g, sizeof(cmph_uint32)*data->n);
 }
 
 /** \fn cmph_uint32 chm_packed_size(cmph_t *mphf);
  *  \brief Return the amount of space needed to pack mphf.
  *  \param mphf pointer to a mphf
  *  \return the size of the packed function or zero for failures
- */ 
+ */
 cmph_uint32 chm_packed_size(cmph_t *mphf)
 {
 	chm_data_t *data = (chm_data_t *)mphf->data;
-	CMPH_HASH h1_type = hash_get_type(data->hashes[0]); 
-	CMPH_HASH h2_type = hash_get_type(data->hashes[1]); 
+	CMPH_HASH h1_type = hash_get_type(data->hashes[0]);
+	CMPH_HASH h2_type = hash_get_type(data->hashes[1]);
 
-	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) + 
+	return (cmph_uint32)(sizeof(CMPH_ALGO) + hash_state_packed_size(h1_type) + hash_state_packed_size(h2_type) +
 			4*sizeof(cmph_uint32) + sizeof(cmph_uint32)*data->n);
 }
 
 /** cmph_uint32 chm_search(void *packed_mphf, const char *key, cmph_uint32 keylen);
- *  \brief Use the packed mphf to do a search. 
+ *  \brief Use the packed mphf to do a search.
  *  \param  packed_mphf pointer to the packed mphf
  *  \param key key to be hashed
  *  \param keylen key legth in bytes
@@ -366,16 +366,16 @@ cmph_uint32 chm_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
 	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
 	h2_ptr += 4;
-	
+
 	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));
-	
-	register cmph_uint32 n = *g_ptr++;  
-	register cmph_uint32 m = *g_ptr++;  
-	
-	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n; 
-	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n; 
+
+	register cmph_uint32 n = *g_ptr++;
+	register cmph_uint32 m = *g_ptr++;
+
+	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n;
+	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n;
 	DEBUGP("key: %s h1: %u h2: %u\n", key, h1, h2);
 	if (h1 == h2 && ++h2 >= n) h2 = 0;
 	DEBUGP("key: %s g[h1]: %u g[h2]: %u edges: %u\n", key, g_ptr[h1], g_ptr[h2], m);
-	return (g_ptr[h1] + g_ptr[h2]) % m;	
+	return (g_ptr[h1] + g_ptr[h2]) % m;
 }

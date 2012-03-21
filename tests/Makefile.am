@@ -1,4 +1,6 @@
-noinst_PROGRAMS = graph_tests packed_mphf_tests mphf_tests select_tests compressed_seq_tests compressed_rank_tests
+TESTS = $(check_PROGRAMS)
+check_PROGRAMS = graph_tests select_tests compressed_seq_tests compressed_rank_tests cmph_benchmark_test
+noinst_PROGRAMS = packed_mphf_tests mphf_tests
 
 INCLUDES = -I../src/
 
@@ -19,3 +21,6 @@ compressed_seq_tests_LDADD = ../src/libcmph.la
 
 compressed_rank_tests_SOURCES = compressed_rank_tests.c
 compressed_rank_tests_LDADD = ../src/libcmph.la
+
+cmph_benchmark_test_SOURCES = cmph_benchmark_test.c
+cmph_benchmark_test_LDADD = ../src/libcmph.la

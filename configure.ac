@@ -1,16 +1,16 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Makefile.am)
+AC_INIT
+AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE(cmph, 1.0)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
-AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_PROG_LIBTOOL
+LT_INIT
 AC_SYS_EXTRA_LARGEFILE
 if test "x$ac_cv_sys_largefile_CFLAGS" = "xno" ; then
 	ac_cv_sys_largefile_CFLAGS=""
@@ -25,17 +25,32 @@ CFLAGS="$CFLAGS $ac_cv_sys_largefile_CFLAGS"
 LDFLAGS="$LDFLAGS $ac_cv_sys_largefile_LDFLAGS"
 LIBS="$LIBS $ac_cv_sys_largefile_LIBS"
 
-
 dnl Checks for headers
 AC_CHECK_HEADERS([getopt.h math.h])
 
 dnl Checks for libraries.
-AC_CHECK_LIBM  
+LT_LIB_M  
 LDFLAGS="$LIBM $LDFLAGS"
 CFLAGS="-Wall -Werror"
 
-dnl Checks for library functions.
+AC_PROG_CXX
+AC_ENABLE_CXXMPH
+if test x$cxxmph = xtrue; then
+  AC_COMPILE_STDCXX_0X
+  if test x$ac_cv_cxx_compile_cxx0x_native = "xno"; then
+    if test x$ac_cv_cxx_compile_cxx0x_cxx = "xyes"; then
+      CXXFLAGS="$CXXFLAGS -std=c++0x"
+    elif test x$ac_cv_cxx_compile_cxx0x_gxx = "xyes"; then
+      CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+    else
+      AC_MSG_ERROR("cxxmph demands a working c++0x compiler.")
+    fi
+  fi
+  AC_SUBST([CXXMPH], "cxxmph")
+fi
 
 AC_CHECK_SPOON
-dnl AC_OUTPUT(Makefile tests/Makefile samples/Makefile)
-AC_OUTPUT(Makefile src/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc)
+dnl AC_CONFIG_FILES([Makefile tests/Makefile samples/Makefile])
+AC_OUTPUT
+AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc])
+AC_OUTPUT
