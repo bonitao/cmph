@@ -170,7 +170,9 @@ void MPHIndex::Ranking() {
   while (1) {
     if (i == ranktable_size_) break;
     uint32_t nbytes = size < nbytes_total ? size : nbytes_total;
-    for (uint32_t j = 0; j < nbytes; ++j) count += kBdzLookupIndex[g_[offset + j]];
+    for (uint32_t j = 0; j < nbytes; ++j) {
+      count += kBdzLookupIndex[g_.data()[offset + j]];
+    }
     ranktable[i] = count;
     offset += nbytes;
     nbytes_total -= size;
