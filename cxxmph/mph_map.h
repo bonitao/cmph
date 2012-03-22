@@ -69,8 +69,8 @@ class mph_map {
   void erase(iterator pos);
   void erase(const key_type& k);
   pair<iterator, bool> insert(const value_type& x);
-  iterator find(const key_type& k) { return slow_find(k, index_.minimal_perfect_hash(k)); }
-  const_iterator find(const key_type& k) const { return slow_find(k, index_.minimal_perfect_hash(k)); };
+  iterator find(const key_type& k);
+  const_iterator find(const key_type& k) const;
   typedef int32_t my_int32_t;  // help macros
   int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
@@ -103,11 +103,6 @@ class mph_map {
      return hollow_const_iterator<std::vector<value_type>>(&values_, &present_, it);
    }
 
-   // Experimental functions, not always faster
-   iterator fast_find(const key_type& k);
-   iterator slow_find(const key_type& k, uint32_t minimal_perfect_hash);
-   const_iterator slow_find(const key_type& k, uint32_t minimal_perfect_hash) const;
-
    void pack();
    std::vector<value_type> values_;
    std::vector<bool> present_;
@@ -117,11 +112,6 @@ class mph_map {
    slack_type slack_;
    size_type size_;
    typename seeded_hash<HashFcn>::hash_function hasher128_;
-
-   mutable uint64_t fast_;
-   mutable uint64_t fast_taken_;
-   mutable uint64_t slow_;
-   mutable uint64_t very_slow_;
 };
 
 MPH_MAP_TMPL_SPEC
@@ -135,7 +125,6 @@ MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::mph_map() : size_(0) {
 }
 
 MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map() {
-  // fprintf(stderr, "Fast taken: %d Fast: %d Slow %d very_slow %d ratio %f\n", fast_taken_, fast_, slow_, very_slow_, fast_*1.0/slow_);
 }
 
 MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
@@ -154,10 +143,6 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   else slack_.insert(std::make_pair(h, values_.size() - 1));
   if (should_pack) pack();
   it = find(x.first);
-  slow_ = 0;
-  very_slow_ = 0;
-  fast_ = 0;
-  fast_taken_ = 0;
   return make_pair(it, true);
 }
 
@@ -212,30 +197,30 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   erase(it);
 }
 
-MPH_MAP_METHOD_DECL(const_iterator, slow_find)(const key_type& k, uint32_t minimal_perfect_hash) const {
+MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
     if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
       auto vit = values_.begin() + minimal_perfect_hash;
       if (equal_(k, vit->first)) return make_iterator(vit);
     }
   }
   if (__builtin_expect(!slack_.empty(), 0)) {
-     ++very_slow_;
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
   }
   return end();
 }
 
-MPH_MAP_METHOD_DECL(iterator, slow_find)(const key_type& k, uint32_t minimal_perfect_hash) {
+MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
     if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
       auto vit = values_.begin() + minimal_perfect_hash;
       if (equal_(k, vit->first)) return make_iterator(vit);
     }
   }
   if (__builtin_expect(!slack_.empty(), 0)) {
-     ++very_slow_;
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
   }
