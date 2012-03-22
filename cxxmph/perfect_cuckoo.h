@@ -58,7 +58,7 @@ class perfect_cuckoo_map {
   const data_type& operator[](const key_type &k) const;
 
   size_type bucket_count() const { return values_.size(); }
-  void rehash(size_type nbuckets /*ignored*/); 
+  void rehash(size_type nbuckets /*ignored*/) { pack(true); }
 
  private:
   uint32_t n_;  // number of keys
@@ -90,17 +90,20 @@ PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   if (bit) {
     values_.push_back(x);
     present_.push_back(true);
-    pack();
+    pack(false);
   } else {
     bit = true;
-    set_nibble(r, p[1] & 1, get_nibble(r, p[1] & 1) + 1);
-    if (sum_nibbles() + superblock_[p[0]].offset > superblock_[p[0]+1].offset) {
+    auto rank = get_nibble(r, p[1] & 1);
+    set_nibble(r, p[1] & 1, rank + 1);
+    if (rank + 1 > 15 || 
+        (p[0] + 1 < superblock_.size() &&
+         sum_nibbles() + superblock_[p[0]].offset > superblock_[p[0]+1].offset) {
       values_.push_back(x);
       present_.push_back(true);
-      pack();
+      pack(false);
     } else {
       uint32_t pos = findpos(seed_, x, superblock_); 
-      for (int i = superblock_[p[0] + 1].offset - 1; i > pos; i++) {
+      for (int i = superblock_[p[0] + 1].offset - 1; i > pos; --i) {
         values_[i] = values_[i-1];
       }
       values_[pos] = x;
