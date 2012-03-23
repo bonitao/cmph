@@ -1,10 +1,13 @@
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <string>
 #include <vector>
 
-#include "mph_index.h"
+#include "rank_index.h"
 
+using std::cerr;
+using std::endl;
 using std::string;
 using std::vector;
 using namespace cxxmph;
@@ -23,7 +26,7 @@ int main(int argc, char** argv) {
   keys.push_back("diogo");
   keys.push_back("algume");
 
-  SimpleMPHIndex<string> mph_index;
+  SimpleRankIndex<string> mph_index;
   if (!mph_index.Reset(keys.begin(), keys.end(), keys.size())) { exit(-1); }
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
@@ -33,10 +36,4 @@ int main(int argc, char** argv) {
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
-   /*
-  char* serialized = new char[mph_index.serialize_bytes_needed()];
-  mph_index.serialize(serialized);
-  SimpleMPHIndex<string> other_mph_index;
-  other_mph_index.deserialize(serialized);
-  */
 }

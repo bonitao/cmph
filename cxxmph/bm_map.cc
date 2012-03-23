@@ -51,7 +51,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
       mymap_[*it] = *it;
     }
-    // mymap_.rehash(mymap_.bucket_count());
+    mymap_.rehash(mymap_.bucket_count());
     fprintf(stderr, "Occupation: %f\n", static_cast<float>(mymap_.size())/mymap_.bucket_count());
     return true;
   }
@@ -67,7 +67,7 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     for (int i = 0; i < values_.size(); ++i) {
       mymap_[values_[i]] = values_[i];
     }
-    // mymap_.rehash(mymap_.bucket_count());
+    mymap_.rehash(mymap_.bucket_count());
     // Double check if everything is all right
     for (int i = 0; i < values_.size(); ++i) {
       if (mymap_[values_[i]] != values_[i]) return false;
