@@ -34,8 +34,8 @@
 #include "string_util.h"
 #include "hollow_iterator.h"
 #include "mph_bits.h"
-#include "mph_index.h"
-#include "seeded_hash.h"
+#include "rank_index.h"
+#include "hollow_iterator.h"
 
 namespace cxxmph {
 
@@ -116,9 +116,9 @@ class mph_map_base {
    }
 
    void pack();
-   vector<value_type> values_;
-   vector<bool> present_;
-   FlexibleMPHIndex<minimal, square, Key, typename seeded_hash<HashFcn>::hash_function> index_;
+   std::vector<value_type> values_;
+   std::vector<bool> present_;
+   SimpleRankIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to use hash from index rather than calculate its own
    typedef std::unordered_map<h128, uint32_t, h128::hash32> slack_type;
    slack_type slack_;
@@ -163,10 +163,10 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   bool success = index_.Reset(
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
-  if (!success) { exit(-1); }
-  vector<value_type> new_values(index_.size());
+  assert(success);
+  std::vector<value_type> new_values(index_.size());
   new_values.reserve(new_values.size() * 2);
-  vector<bool> new_present(index_.size(), false);
+  std::vector<bool> new_present(index_.size(), false);
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
     size_type id = index_.index(it->first);
@@ -209,30 +209,39 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   erase(it);
 }
 
-MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  auto idx = index(k);
-  typename vector<value_type>::const_iterator vit = values_.begin() + idx;
-  if (idx == -1 || !equal_(vit->first, k)) return end();
-  return make_solid(&values_, &present_, vit);;
+MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
+  if (__builtin_expect(index_.size(), 1)) {
+    auto index = index_.index(k);
+    if (__builtin_expect(present_[index], true)) { 
+      auto vit = values_.begin() + index;
+      if (equal_(k, vit->first)) return make_iterator(vit);
+    }
+  }
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
+     if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
+  }
+  return end();
 }
 
-MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
-  auto idx = index(k);
-  typename vector<value_type>::iterator vit = values_.begin() + idx;
-  if (idx == -1 || !equal_(vit->first, k)) return end();
-  return make_solid(&values_, &present_, vit);;
-}
-
-MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
+  if (__builtin_expect(index_.size(), 1)) {
+    auto index = index_.index(k);
+    if (__builtin_expect(present_[index], true)) { 
+      auto vit = values_.begin() + index;
+      if (equal_(k, vit->first)) return make_iterator(vit);
+    }
+  }
   if (__builtin_expect(!slack_.empty(), 0)) {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;
   }
-  if (__builtin_expect(index_.size(), 1)) {
-    auto id = index_.index(k);
-    if (__builtin_expect(present_[id], true)) return id;
-  }
-  return -1;
+  return end();
+}
+
+MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+  if (index_.size() == 0) return -1;
+  return index_.index(k);
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
