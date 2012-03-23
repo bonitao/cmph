@@ -70,7 +70,7 @@ class perfect_cuckoo_map {
     uint8_t block_rank[1 + 6/2];  // first is seed, max 16 keys per block
     std::bitset<64> block[7];  // use 4 bits and a table to weight latter blocks more
   };
-  
+
   vector<superblock> superblock_;
   vector<bool> present_;  // not really needed, but easier for initial code 
 };
