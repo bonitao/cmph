@@ -61,120 +61,114 @@ class perfect_cuckoo_map {
   void rehash(size_type nbuckets /*ignored*/) { pack(true); }
 
  private:
+  bool pack(bool minimal = false);
+  bool pack_bucket(bool minimal = false);
+
   uint32_t n_;  // number of keys
   uint32_t seed_;
   seeded_hash<hasher> hasher_;
 
-  struct superblock {
-    uint32_t offset;
-    uint8_t block_rank[1 + 6/2];  // first is seed, max 16 keys per block
-    std::bitset<64> block[7];  // use 4 bits and a table to weight latter blocks more
-  };
-
-  vector<superblock> superblock_;
-  vector<bool> present_;  // not really needed, but easier for initial code 
+  typedef vector<vector<value_type> > values_type;
+  values_type values_;
+  typedef vector<pair<perfect_cuckoo_cache_line, vector<value_type>::iterator>> index_type; 
+  index_type index_; 
 };
 
-PC_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::perfect_cuckoo_map()
-    : size_(0), m_(2), superblock_(m_) {
+  
+PC_MAP_TMPL_SPEC PC_MAP_CLASS_SPEC::perfect_cuckoo_map()
+    : n_(0), seed_(random()), index_(1) {
 }
 
 PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
-  auto it = find(x.first);
-  if (it != end()) return make_pair(it, false);
-
+  auto h = hasher_(x, seed_);
+  auto b = h & (index_.size() - 1);
+  values_[b].push_back(x);
   ++n_;
-  uint32_t p[3];
-  find_block(hasher_(k, seed), superblock_, p);
-  auto bit = superblock_[p[0]].block[p[1]][p[2]];
-  if (bit) {
-    values_.push_back(x);
-    present_.push_back(true);
-    pack(false);
-  } else {
-    bit = true;
-    auto rank = get_nibble(r, p[1] & 1);
-    set_nibble(r, p[1] & 1, rank + 1);
-    if (rank + 1 > 15 || 
-        (p[0] + 1 < superblock_.size() &&
-         sum_nibbles() + superblock_[p[0]].offset > superblock_[p[0]+1].offset) {
-      values_.push_back(x);
-      present_.push_back(true);
-      pack(false);
-    } else {
-      uint32_t pos = findpos(seed_, x, superblock_); 
-      for (int i = superblock_[p[0] + 1].offset - 1; i > pos; --i) {
-        values_[i] = values_[i-1];
-      }
-      values_[pos] = x;
+  if (!index_[b].first.insert(h)) {
+    if (!pack_bucket(b)) {
+      pack();
     }
   }
 }
 
-PC_MAP_METHOD_DECL(void, findblock)(
-    uint32_t h, const vector<superblock>& superblocks, uint32_t *p) const {
-  (*p)[0] = h & (superblocks.size() - 1);
-  (*p)[1] = disperse_nibble[h >> 28];
-  (*p)[2] = (h & (ones() >> 4) >> (32 - 4 - 5));
-}
-
-PC_MAP_METHOD_DECL(uint32_t, findpos)(
-   uint32_t seed, const key_type& x,
-   const vector<superblock> superblocks) const {
-  uint32_t p[3];
-  find_block(hasher_(x, seed), superblock, p);
-  const superblock& s(new_superblock[p[0]]);
-  return sum_nibbles(s.rank[p[1]/2]) + p[2];
-}
-  
 PC_MAP_METHOD_DECL(bool, pack)(bool minimal) {
-  vector<value_type> new_values(values_.size()*2);
-  vector<bool> new_present(values_.size()*2);
-  vector<superblock> new_superblock(
-       max(nextpoweroftwo(values_.size())/64, 2));
-  auto iterations = 100;
-  seed = 0;
+  int iterations = 255;
+  uint32_t index_size = nextpoweroftwo(size());
+  uint32_t index_size /= perfect_cuckoo_cache_line::good_capacity();
+  index_type index(index_size);
+  vector<vector<uint32_t>> hashes(index_size);
+  uint32_t seed = 0;
   while (iterations) {
+    auto success = true;
     seed = random();
-    for (int i = 0; i < values_.size(); ++i) {
-      if (!present_[i]) continue;
-      uint32_t p[3];
-      find_block(hasher_(k, seed), new_superblock, p);
-      auto bit = new_superblock[p[0]].block[p[1]][p[2]];
-      if (bit) {
-        --iterations;
+    for (auto it = begin(), i = 0; it != end(); ++it, ++i) {
+      auto h = hasher_(*it, seed);
+      auto b = h & (index.size() - 1);
+      hashes[b].push_back(h);
+    }
+    for (uint32_t i = 0; i < index_size; ++i) {
+      if (!make_pccl(hashes[i], &index[i].first)) {
+        success = false;
         break;
-      } else {
-        bit = true;
-        uint8_t* r = new_superblock[p[0]].rank[p[1]/2];
-        set_nibble(r, p[1] & 1, get_nibble(r, p[1] & 1) + 1);
       }
     }
+    if (!success) continue;
+    vector<vector<uint32_t>>.swap(hashes);
+    values_type values(index_size);
+    for (int i = 0; i < index_size; ++i) values[i].resize(index_[i].first.size());
+    for (auto it = begin(), i = 0; it != end(); ++it, ++i) {
+      auto h = hasher_(*it, seed);
+      auto b = h & (index.size() - 1);
+      auto mph = index[b].first.minimal_perfect_hash(h);
+      values[b][mph] = *it; 
+    }
+    values.swap(values_);
+    break;
   }
-  if (iterations == 0) return false;
-  uint32_t offset = 0;
-  for (int i = 0; i < new_superblock_.size(); ++i) {
-    superblock& s(new_superblock[i]);
-    s.offset = offset;
-    if (minimal) offset += sum_nibbles(s.rank, 8);
-    else offset += nextpoweroftwo(sum_nibbles(s.rank, 8));
+}
+
+PC_MAP_METHOD_DECL(bool, pack_bucket)(uint32_t b) {
+  uint32_t seed = random();
+  perfect_cuckoo_cache_line pccl;
+  int iterations = 255;
+  while (iterations--) {
+    pccl.set_seed(random());
+    pccl.clear();
+    bool success = true;
+    for (auto it = values_[b].begin(), end = values_[b].end();
+         it != end; ++it) {
+      auto h = hasher_(*it, seed_);
+      if (!pccl.insert(h)) {
+        success = false;
+        break;
+      }
+    }
+    if (success) {
+      vector<value_type> v(values_[b].size());
+      for (auto it = values_[b].begin(), end = values_[b].end();
+         it != end; ++it) {
+        auto h = hasher_(*it, seed_);
+        auto i = pccl.minimal_perfect_hash(h);
+        swap(v[i], *it);
+      }
+      swap(values_[b], v);
+      swap(index_[b].first, pccl);
+      index_[b].second = values_[b].begin();
+      break;
+    }
   }
-  for (int i = 0; i < values_.size(); ++i) {
-    if (!present_[i]) continue;
-    uint32_t pos = findpos(seed, values_[i], new_superblock);
-    new_values[pos] = values_[i];
-    new_present[pos] = true;
-  }
-  seed_ = seed;
-  values_.swap(new_values);
-  present_.swap(new_present);
+  return iterations >= 0;
 }
 
 PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  return make_iterator(
-     values.begin() + findpos(seed_, k, superblock_));
+  auto h = hasher_(x, seed_);
+  auto b = h & (index_.size() - 1);
+  auto mph = index_[b].minimal_perfect_hash(h);
+  return index_[b].second + mph;
 }
 PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  return make_iterator(
-     values.begin() + findpos(seed_, k, superblock_));
+  auto h = hasher_(x, seed_);
+  auto b = h & (index_.size() - 1);
+  auto mph = index_[b].minimal_perfect_hash(h);
+  return index_[b].second + mph;
 }

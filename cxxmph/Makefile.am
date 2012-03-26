@@ -1,11 +1,6 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_index_test trigraph_test
-if USE_LIBCHECK
-  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test
-  check_LTLIBRARIES = libcxxmph_test.la
-endif
-
-noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
+check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_map_test mph_index_test trigraph_test perfect_cuckoo_cache_line_test
+noinst_PROGRAMS = bm_index bm_map
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
@@ -13,7 +8,7 @@ cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph
 
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
-libcxxmph_la_SOURCES = MurmurHash3.h MurmurHash3.cpp trigragh.h trigraph.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc mph_bits.h mph_bits.cc sux-0.7/rank9.cpp
+libcxxmph_la_SOURCES = MurmurHash3.h MurmurHash3.cpp trigragh.h trigraph.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc mph_bits.h mph_bits.cc
 libcxxmph_la_LDFLAGS = -version-info 0:0:0
 libcxxmph_test_la_SOURCES = test.h test.cc
 libcxxmph_test_la_LIBADD = libcxxmph.la
@@ -52,9 +47,5 @@ seeded_hash_test_LDADD   = libcxxmph.la
 mph_bits_test_SOURCES = mph_bits_test.cc
 mph_bits_test_LDADD   = libcxxmph.la
 
-string_util_test_SOURCES = string_util_test.cc
-string_util_test_LDADD   = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)
-
-map_tester_test_SOURCES = map_tester.h map_tester.cc map_tester_test.cc
-map_tester_test_LDADD = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)
-
+perfect_cuckoo_cache_line_test_SOURCES = perfect_cuckoo_cache_line_test.cc
+perfect_cuckoo_cache_line_test_LDADD   = libcxxmph.la
