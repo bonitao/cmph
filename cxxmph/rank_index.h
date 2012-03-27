@@ -4,12 +4,16 @@
 #include <cmath>
 #include <cstdlib>
 #include <memory>
+#include <vector>
 
 #include "mph_bits.h"
 #include "seeded_hash.h"
 #include "sux-0.7/rank9.h"
 
 namespace cxxmph {
+
+using std::vector;
+using std::swap;
 
 // Number of bytes for rank structure, a 32 bits seed and a 32 bits offset
 // (((numbits + 64 * 8 - 1 ) / ( 64 * 8 ) ) * 2 + 1 + 1)*8
@@ -55,7 +59,7 @@ bool RankIndex::Reset(
   m_ = size;
   std::cerr << "size " << m_ << std::endl;
   uint32_t bits_per_block = 2048;
-  uint64_t blocksize = bits_per_block/(sizeof(uint64_t)*8)
+  uint64_t blocksize = bits_per_block/(sizeof(uint64_t)*8);
   uint32_t keys_per_block = floor(sqrt(2048));
   uint64_t num_blocks = nextpoweroftwo(ceil(m_*1.0/keys_per_block));
   std::cerr << "num blocks " << num_blocks << std::endl;

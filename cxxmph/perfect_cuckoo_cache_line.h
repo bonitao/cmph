@@ -13,8 +13,8 @@ class perfect_cuckoo_cache_line {
   void set_seed(uint8_t seed) { seed_ = seed; }
   
   uint8_t size() const { return rank((sizeof(rank_)*8) - 1); }
-  uint8_t max_capacity() const { return sizeof(select_)*8; }
-  uint8_t good_capacity() const { return floor(sqrt(sizeof(rank_)*8)); }
+  static uint8_t max_capacity() { return sizeof(select_)*8; }
+  static uint8_t good_capacity() { return floor(sqrt(sizeof(rank_)*8)); }
 
   uint8_t perfect_hash(uint32_t h);
   uint8_t minimal_perfect_hash(uint32_t h);

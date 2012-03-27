@@ -18,7 +18,7 @@
 #include <utility>  // for std::pair
 
 #include "mph_bits.h"
-#include "rank_index.h"
+#include "mph_index.h"
 #include "hollow_iterator.h"
 
 namespace cxxmph {
@@ -106,7 +106,7 @@ class mph_map {
    void pack();
    std::vector<value_type> values_;
    std::vector<bool> present_;
-   SimpleRankIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
+   SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to use hash from index rather than calculate its own
    typedef unordered_map<h128, uint32_t, h128::hash32> slack_type;
    slack_type slack_;
