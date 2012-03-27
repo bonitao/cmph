@@ -2,18 +2,22 @@
 #define __CXXMPH_PERFECT_CUCKOO_H__
 
 #include <bitset>
+#include <unordered_map>  // for std::hash
 #include <vector>
+
+#include "perfect_cuckoo_cache_line.h"
+#include "seeded_hash.h"
+#include "hollow_iterator.h"
 
 namespace cxxmph {
 
 using std::pair;
 using std::make_pair;
-using std::unordered_map;
 using std::vector;
 
 // Save on repetitive typing.
 #define PC_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
-#define PC_MAP_CLASS_SPEC mph_map<Key, Data, HashFcn, EqualKey, Alloc>
+#define PC_MAP_CLASS_SPEC perfect_cuckoo_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define PC_MAP_METHOD_DECL(r, m) PC_MAP_TMPL_SPEC typename PC_MAP_CLASS_SPEC::r PC_MAP_CLASS_SPEC::m
 
 template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
@@ -70,11 +74,10 @@ class perfect_cuckoo_map {
 
   typedef vector<vector<value_type> > values_type;
   values_type values_;
-  typedef vector<pair<perfect_cuckoo_cache_line, vector<value_type>::iterator>> index_type; 
+  typedef vector<pair<perfect_cuckoo_cache_line, typename vector<value_type>::iterator>> index_type; 
   index_type index_; 
 };
 
-  
 PC_MAP_TMPL_SPEC PC_MAP_CLASS_SPEC::perfect_cuckoo_map()
     : n_(0), seed_(random()), index_(1) {
 }
@@ -91,10 +94,10 @@ PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   }
 }
 
-PC_MAP_METHOD_DECL(bool, pack)(bool minimal) {
+PC_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
   int iterations = 255;
   uint32_t index_size = nextpoweroftwo(size());
-  uint32_t index_size /= perfect_cuckoo_cache_line::good_capacity();
+  index_size /= index_size/perfect_cuckoo_cache_line::good_capacity();
   index_type index(index_size);
   vector<vector<uint32_t>> hashes(index_size);
   uint32_t seed = 0;
@@ -113,7 +116,7 @@ PC_MAP_METHOD_DECL(bool, pack)(bool minimal) {
       }
     }
     if (!success) continue;
-    vector<vector<uint32_t>>.swap(hashes);
+    vector<vector<uint32_t>>().swap(hashes);
     values_type values(index_size);
     for (int i = 0; i < index_size; ++i) values[i].resize(index_[i].first.size());
     for (auto it = begin(), i = 0; it != end(); ++it, ++i) {
@@ -127,7 +130,7 @@ PC_MAP_METHOD_DECL(bool, pack)(bool minimal) {
   }
 }
 
-PC_MAP_METHOD_DECL(bool, make_pccl)(
+PC_MAP_METHOD_DECL(bool_type, make_pccl)(
    const vector<uint32_t>& keys, perfect_cuckoo_cache_line* pccl) const {
   int iterations = 255;
   while (iterations--) {
@@ -144,7 +147,7 @@ PC_MAP_METHOD_DECL(bool, make_pccl)(
   return iterations >= 0;
 }
 
-PC_MAP_METHOD_DECL(void, make_bucket)(
+PC_MAP_METHOD_DECL(void_type, make_bucket)(
    const perfect_cuckoo_cache_line& pccl, uint32_t b) {
   vector<value_type>* bucket = &values_[b];
   vector<value_type> v(bucket->size());
@@ -159,7 +162,7 @@ PC_MAP_METHOD_DECL(void, make_bucket)(
   index_[b].second = bucket->begin();
 }
 
-PC_MAP_METHOD_DECL(bool, pack_bucket)(uint32_t b) {
+PC_MAP_METHOD_DECL(bool_type, pack_bucket)(uint32_t b) {
   perfect_cuckoo_cache_line pccl;
   vector<uint32_t> keys(values_[b].size());
   for (int i = 0; i < values_[b].size(); ++i) {
@@ -182,3 +185,6 @@ PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto mph = index_[b].minimal_perfect_hash(h);
   return index_[b].second + mph;
 }
+
+}  // namespace cxxmph
+#endif
