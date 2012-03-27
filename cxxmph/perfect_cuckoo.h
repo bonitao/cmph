@@ -127,37 +127,47 @@ PC_MAP_METHOD_DECL(bool, pack)(bool minimal) {
   }
 }
 
-PC_MAP_METHOD_DECL(bool, pack_bucket)(uint32_t b) {
-  uint32_t seed = random();
-  perfect_cuckoo_cache_line pccl;
+PC_MAP_METHOD_DECL(bool, make_pccl)(
+   const vector<uint32_t>& keys, perfect_cuckoo_cache_line* pccl) const {
   int iterations = 255;
   while (iterations--) {
-    pccl.set_seed(random());
-    pccl.clear();
+    pccl->set_seed(random());
+    pccl->clear();
     bool success = true;
-    for (auto it = values_[b].begin(), end = values_[b].end();
-         it != end; ++it) {
-      auto h = hasher_(*it, seed_);
-      if (!pccl.insert(h)) {
+    for (auto it = keys.begin(), end = keys.end(); it != end; ++it) {
+      if (!pccl.insert(*it)) {
         success = false;
         break;
       }
     }
-    if (success) {
-      vector<value_type> v(values_[b].size());
-      for (auto it = values_[b].begin(), end = values_[b].end();
-         it != end; ++it) {
-        auto h = hasher_(*it, seed_);
-        auto i = pccl.minimal_perfect_hash(h);
-        swap(v[i], *it);
-      }
-      swap(values_[b], v);
-      swap(index_[b].first, pccl);
-      index_[b].second = values_[b].begin();
-      break;
-    }
   }
   return iterations >= 0;
+}
+
+PC_MAP_METHOD_DECL(void, make_bucket)(
+   const perfect_cuckoo_cache_line& pccl, uint32_t b) {
+  vector<value_type>* bucket = &values_[b];
+  vector<value_type> v(bucket->size());
+  // FIXME: need to iterate over value_type() first to prevent overrides
+  for (auto it = bucket->begin(), end = bucket->end(); it != end; ++it) {
+    auto h = hasher_(*it, seed_);
+    auto i = pccl.minimal_perfect_hash(h);
+    swap(v[i], *it);
+  }
+  swap(*bucket, v);
+  swap(index_[b].first, pccl);
+  index_[b].second = bucket->begin();
+}
+
+PC_MAP_METHOD_DECL(bool, pack_bucket)(uint32_t b) {
+  perfect_cuckoo_cache_line pccl;
+  vector<uint32_t> keys(values_[b].size());
+  for (int i = 0; i < values_[b].size(); ++i) {
+    keys[i] = hasher_(values_[b][i], seed_);
+  }
+  if (!make_pccl(keys, &pccl)) return false;
+  make_bucket(pccl, b);
+  return true;
 }
 
 PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {

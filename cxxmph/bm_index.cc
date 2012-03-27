@@ -8,7 +8,6 @@
 #include "bm_common.h"
 #include "stringpiece.h"
 #include "mph_index.h"
-#include "rank_index.h"
 
 using namespace cxxmph;
 
@@ -25,18 +24,6 @@ class BM_MPHIndexCreate : public UrlsBenchmark {
     index.Reset(urls_.begin(), urls_.end(), urls_.size());
   }
 };
-
-class BM_RankIndexCreate : public UrlsBenchmark {
- public:
-  BM_RankIndexCreate(const std::string& urls_file)
-      : UrlsBenchmark(urls_file) { }
- protected:
-  virtual void Run() {
-    SimpleRankIndex<StringPiece> index;
-    index.Reset(urls_.begin(), urls_.end(), urls_.size());
-  }
-};
-
 
 class BM_STLIndexCreate : public UrlsBenchmark {
  public:
@@ -62,7 +49,6 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
       auto idx = index_.index(*it);
       // Collision check to be fair with STL
       if (strcmp(urls_[idx].c_str(), it->data()) != 0) idx = -1;
-      sum += idx;
     }
   }
  protected:
@@ -72,26 +58,6 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
    return true;
   }
   SimpleMPHIndex<StringPiece> index_;
-};
-
-class BM_RankIndexSearch : public SearchUrlsBenchmark {
- public:
-  BM_RankIndexSearch(const std::string& urls_file, int nsearches)
-      : SearchUrlsBenchmark(urls_file, nsearches, 0) { }
-  virtual void Run() {
-    for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto idx = index_.index(*it);
-      // Collision check to be fair with STL
-      // if (strcmp(urls_[idx].c_str(), it->data()) != 0) idx = -1;
-    }
-  }
- protected:
-  virtual bool SetUp () {
-   if (!SearchUrlsBenchmark::SetUp()) return false;
-   index_.Reset(urls_.begin(), urls_.end(), urls_.size());
-   return true;
-  }
-  SimpleRankIndex<StringPiece> index_;
 };
 
 class BM_CmphIndexSearch : public SearchUrlsBenchmark {
@@ -173,10 +139,8 @@ class BM_STLIndexSearch : public SearchUrlsBenchmark {
 
 int main(int argc, char** argv) {
   Benchmark::Register(new BM_MPHIndexCreate("URLS100k"));
-  Benchmark::Register(new BM_RankIndexCreate("URLS100k"));
   Benchmark::Register(new BM_STLIndexCreate("URLS100k"));
   Benchmark::Register(new BM_MPHIndexSearch("URLS100k", 10*1000*1000));
-  Benchmark::Register(new BM_RankIndexSearch("URLS100k", 10*1000*1000));
   Benchmark::Register(new BM_STLIndexSearch("URLS100k", 10*1000*1000));
   Benchmark::Register(new BM_CmphIndexSearch("URLS100k", 10*1000*1000));
   Benchmark::RunAll();

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "rank_index.h"
+#include "mph_index.h"
 
 using std::cerr;
 using std::endl;
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   keys.push_back("diogo");
   keys.push_back("algume");
 
-  SimpleRankIndex<string> mph_index;
+  SimpleMPHIndex<string> mph_index;
   if (!mph_index.Reset(keys.begin(), keys.end(), keys.size())) { exit(-1); }
   vector<int> ids;
   for (vector<int>::size_type i = 0; i < keys.size(); ++i) {
