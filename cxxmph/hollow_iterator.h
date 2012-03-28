@@ -26,9 +26,9 @@ struct hollow_iterator_base
 
   // TODO find syntax to make this less permissible at compile time
   template <class T>
-  bool operator==(const T& rhs) { return rhs.it_ == this->it_; }
+  bool operator==(const T& rhs) const { return rhs.it_ == this->it_; }
   template <class T>
-  bool operator!=(const T& rhs) { return rhs.it_ != this->it_; }
+  bool operator!=(const T& rhs) const { return rhs.it_ != this->it_; }
 
  public:  // TODO find syntax to make this friend of const iterator
   void find_present() {
