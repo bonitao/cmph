@@ -45,10 +45,11 @@ struct hollow_iterator_base
   self_reference operator++() { ++it_; advance(); return *this; }
   // self_type operator++() { auto tmp(*this); ++tmp; return tmp; }
 
-  template <typename const_iterator>
-  bool operator==(const hollow_iterator_base<const_iterator, is_empty>& rhs) { return rhs.it_ == it_; }
-  template <typename const_iterator>
-  bool operator!=(const hollow_iterator_base<const_iterator, is_empty>& rhs) { return rhs.it_ != it_; }
+  // TODO find syntax to make this less permissible at compile time
+  template <class T>
+  bool operator==(const T& rhs) const { return rhs.it_ == this->it_; }
+  template <class T>
+  bool operator!=(const T& rhs) const { return rhs.it_ != this->it_; }
 
   // should be friend
   iterator it_;

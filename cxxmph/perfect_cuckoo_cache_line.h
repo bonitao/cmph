@@ -16,8 +16,8 @@ class perfect_cuckoo_cache_line {
   static uint8_t max_capacity() { return sizeof(select_)*8; }
   static uint8_t good_capacity() { return floor(sqrt(sizeof(rank_)*8)); }
 
-  uint8_t perfect_hash(uint32_t h);
-  uint8_t minimal_perfect_hash(uint32_t h);
+  uint8_t perfect_hash(uint32_t h) const;
+  uint8_t minimal_perfect_hash(uint32_t h) const;
   bool insert(uint32_t h);
 
   void clear() {
@@ -32,7 +32,7 @@ class perfect_cuckoo_cache_line {
   uint32_t seed_;  // 4
 };
 
-uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) {
+uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) const {
   h ^= seed_ + 0x9e3779b9 + (h << 6) + (h >> 2);  // hash_combine
   uint16_t bitpos = h & (sizeof(rank_)*8 - 1);
   uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
@@ -41,7 +41,7 @@ uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) {
   //                 h, bitpos, wordpos, inwordpos);
   return rank(bitpos); 
 }
-uint8_t perfect_cuckoo_cache_line::perfect_hash(uint32_t h) {
+uint8_t perfect_cuckoo_cache_line::perfect_hash(uint32_t h) const {
   // fprintf(stderr, "finding msb for %d at rank %d\n", select_, minimal_perfect_hash(h));
   return most_significant_bit(select_, minimal_perfect_hash(h));
 }
