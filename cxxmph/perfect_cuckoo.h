@@ -68,6 +68,9 @@ class perfect_cuckoo_map {
   size_type bucket_count() const { return values_.size(); }
   void rehash(size_type nbuckets /*ignored*/) { pack(true); }
 
+ protected:  // mimicking STL implementation
+  EqualKey equal_;
+
  private:
   bool pack(bool minimal = false);
   bool pack_bucket(uint32_t b);
@@ -99,13 +102,16 @@ PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   values_[b].push_back(x);
   ++n_;
   if (!index_[b].first.insert(h)) {
+    // fprintf(stderr, "Insertion failed\n");
     if ((!pack_bucket(b)) || values_[b].size() > perfect_cuckoo_cache_line::good_capacity()) {
       if (!pack()) {
         fprintf(stderr, "Failed to pack\n");
         exit(-1);
       }
     }
-  } else make_bucket(index_[b].first, b);
+  } else {
+    make_bucket(index_[b].first, b);
+  }
   it = find(x.first);
   assert(it != end());
   return make_pair(it, true);
@@ -114,7 +120,7 @@ PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 PC_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
   int iterations = 16;
   uint32_t index_size = index_.size() * 2;
-  fprintf(stderr, "Growing index size to %d\n", index_size);
+  // fprintf(stderr, "Growing index size to %d\n", index_size);
   uint32_t seed = 0;
   while (iterations--) {
     index_type index(index_size);
@@ -183,10 +189,11 @@ PC_MAP_METHOD_DECL(void_type, make_bucket)(
   vector<value_type> v(bucket->size());
   assert(v.size() == pccl.size());
   // FIXME: need to iterate over value_type() first to prevent overrides
+  // fprintf(stderr, "Remaking bucket %d with %d keys\n", b, bucket->size());
   for (auto it = bucket->begin(), end = bucket->end(); it != end; ++it) {
     auto h = hasher_(it->first, seed_);
     auto mph = pccl.minimal_perfect_hash(h);
-    // fprintf(stderr, "Moving key h %llu mph %d\n", h, mph);
+    // fprintf(stderr, "Moving key %d h %llu mph %d\n", it->first, h, mph);
     assert(mph < pccl.size());
     v[mph] = *it;
   }
@@ -211,9 +218,9 @@ PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   auto h = hasher_(k, seed_);
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
-  if (mph == 255) return make_flatten_end(&values_);
-  typename vector<vector<value_type>>::iterator ot = values_.begin() + b;
-  typename vector<value_type>::iterator it = values_[b].begin() + mph;
+  auto ot = values_.begin() + b;
+  auto it = values_[b].begin() + mph;
+  if (mph == 255 || !equal_(k, it->first)) return make_flatten_end(&values_);
   assert(b < values_.size());
   assert(mph < values_[b].size());
   return make_flatten(&values_, ot, it); 
@@ -222,8 +229,11 @@ PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto h = hasher_(k, seed_);
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
-  if (mph == 255) return make_flatten_end(&values_);
-  return make_flatten(&values_, values_.begin() + b, index_[b].second + mph); 
+  auto ot = values_.begin() + b;
+  auto it = values_[b].begin() + mph;
+  if (mph == 255 || !equal_(k, it->first)) return make_flatten_end(&values_);
+  assert(b < values_.size());
+  return make_flatten(&values_, ot, it); 
 }
 
 PC_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
