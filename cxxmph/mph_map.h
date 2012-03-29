@@ -93,7 +93,6 @@ class mph_map_base {
   typedef int32_t my_int32_t;  // help macros
   inline int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
-  const data_type& operator[](const key_type &k) const;
 
   size_type bucket_count() const { return index_.size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 

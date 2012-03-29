@@ -2,8 +2,9 @@
 #include <unordered_map>
 
 #include "bm_common.h"
-#include "mph_map.h"
+#include "perfect_cuckoo.h"
 
+using cxxmph::perfect_cuckoo_map;
 using std::string;
 
 // Another reference benchmark:
@@ -97,24 +98,13 @@ using namespace cxxmph;
 
 int main(int argc, char** argv) {
   srandom(4);
-  Benchmark::Register(new BM_CreateUrls<dense_hash_map<StringPiece, StringPiece>>("URLS100k"));
-  Benchmark::Register(new BM_CreateUrls<std::unordered_map<StringPiece, StringPiece>>("URLS100k"));
-  Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
-  Benchmark::Register(new BM_CreateUrls<sparse_hash_map<StringPiece, StringPiece>>("URLS100k"));
-
-  Benchmark::Register(new BM_SearchUrls<dense_hash_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-  Benchmark::Register(new BM_SearchUrls<std::unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-  Benchmark::Register(new BM_SearchUrls<sparse_hash_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-
-  Benchmark::Register(new BM_SearchUrls<dense_hash_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-  Benchmark::Register(new BM_SearchUrls<std::unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-  Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-  Benchmark::Register(new BM_SearchUrls<sparse_hash_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-
-  Benchmark::Register(new BM_SearchUint64<dense_hash_map<uint64_t, uint64_t>>);
-  Benchmark::Register(new BM_SearchUint64<std::unordered_map<uint64_t, uint64_t>>);
-  Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
-  Benchmark::Register(new BM_SearchUint64<sparse_hash_map<uint64_t, uint64_t>>);
+  Benchmark::Register(new BM_CreateUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
+  Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
+  Benchmark::Register(new BM_SearchUint64<perfect_cuckoo_map<uint64_t, uint64_t>>);
+  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::RunAll();
 }

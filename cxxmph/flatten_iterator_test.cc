@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cstdio>
+#include <string>
 #include <vector>
 
 #include "flatten_iterator.h"
@@ -85,4 +86,9 @@ int main(int argc, char** argv) {
 
   flatten_iterator<vector<vector<int>>> default_constructed;
   default_constructed = flatten_iterator<vector<vector<int>>>(&v, v.begin());
+
+  vector<vector<pair<string, string>>> vs;
+  vector<vector<pair<string, string>>>::iterator myot;
+  vector<pair<string, string>>::iterator myit;
+  auto fit = make_flatten(&vs, myot, myit);
 }

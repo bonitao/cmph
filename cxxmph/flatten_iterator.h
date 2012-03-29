@@ -59,6 +59,10 @@ struct flatten_iterator : public flatten_iterator_base<
   flatten_iterator(typename parent_class::container* c,
                   typename parent_class::outer_iterator ot)
      : parent_class(c, ot) { }
+  flatten_iterator(typename parent_class::container* c,
+                   typename parent_class::outer_iterator ot,
+                   typename parent_class::iterator it)
+     : parent_class(c, ot, it) { }
 };
 
 template <typename container_type>
@@ -73,13 +77,18 @@ struct flatten_const_iterator : public flatten_iterator_base<
   flatten_const_iterator(typename parent_class::container* c,
                          typename parent_class::outer_iterator ot)
      : parent_class(c, ot) { }
+  flatten_const_iterator(typename parent_class::container* c,
+                         typename parent_class::outer_iterator ot,
+                         typename parent_class::iterator it)
+     : parent_class(c, ot, it) { }
+
 };
 template <typename container_type> flatten_iterator<container_type> make_flatten_begin(container_type* c) {
   return flatten_iterator<container_type>(c, c->begin());
 }
 
 template <typename container_type> flatten_const_iterator<container_type> make_flatten_begin(const container_type* c) {
-  return flatten_iterator<const container_type>(c, c->begin());
+  return flatten_const_iterator<container_type>(c, c->begin());
 }
 
 template <typename container_type> flatten_iterator<container_type> make_flatten_end(container_type* c) {
@@ -87,7 +96,19 @@ template <typename container_type> flatten_iterator<container_type> make_flatten
 }
 
 template <typename container_type> flatten_const_iterator<container_type> make_flatten_end(const container_type* c) {
-  return flatten_iterator<container_type>(c, c->end());
+  return flatten_const_iterator<container_type>(c, c->end());
+}
+
+template <typename container_type, typename outer_iterator_type, typename iterator_type>
+flatten_iterator<container_type>
+make_flatten(container_type* c, outer_iterator_type ot, iterator_type it) {
+  return flatten_iterator<container_type>(c, ot, it);
+}
+
+template <typename container_type, typename outer_iterator_type, typename iterator_type>
+flatten_const_iterator<container_type>
+make_flatten(const container_type* c, outer_iterator_type ot, iterator_type it) {
+  return flatten_const_iterator<container_type>(c, ot, it);
 }
  
 

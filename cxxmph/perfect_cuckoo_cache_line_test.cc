@@ -48,4 +48,10 @@ int main(int argc, char** argv) {
     fprintf(stderr, "key index %u mph %u ph %u\n", i, mph, ph);
     found[mph] = true;
   }
+  for (int i = 0; i < values.size(); ++i) {
+    if (!found[i]) {
+      fprintf(stderr, "Completeness broken.\n");
+      exit(-1);
+    }
+  }
 }
