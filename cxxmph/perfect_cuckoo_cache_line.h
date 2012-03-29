@@ -3,6 +3,7 @@
 
 #include <cmath>
 
+#include "rank9.h"
 #include "mph_bits.h"
 
 namespace cxxmph {
@@ -14,7 +15,7 @@ class perfect_cuckoo_cache_line {
   const uint32_t seed() const { return seed_; }
   
   uint8_t size() const { return rank((sizeof(rank_)*8) - 1); }
-  static uint8_t max_capacity() { return sizeof(select_)*8; }
+  static uint8_t max_capacity() { return sizeof(uint64_t)*8; }
   static uint8_t good_capacity() { return floor(sqrt(sizeof(rank_)*8)); }
 
   uint8_t perfect_hash(uint32_t h) const;
@@ -23,13 +24,13 @@ class perfect_cuckoo_cache_line {
 
   void clear() {
     memset(rank_, 0, sizeof(rank_));
-    select_ = 0;
+    memset(count_, 0, sizeof(count_));
   }
  private:
   uint16_t rank(uint16_t pos) const;
   uint8_t next_empty() const;
-  uint64_t rank_[4];  // 44
-  uint64_t select_;  // 12
+  uint64_t rank_[4];  // 52
+  uint64_t count_[2];  // 20
   uint32_t seed_;  // 4
 };
 
@@ -40,12 +41,14 @@ uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) const {
   // uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
   // fprintf(stderr, "Searching %llu at bitpos %d wordpos %d inwordpos %d\n",
   //                 h, bitpos, wordpos, inwordpos);
+  return rank9::static_rank(bitpos+1, rank_, count_) - 1;
   return rank(bitpos) - 1; 
 }
 
 uint8_t perfect_cuckoo_cache_line::perfect_hash(uint32_t h) const {
   // fprintf(stderr, "finding msb for %d at rank %d\n", select_, minimal_perfect_hash(h));
-  return most_significant_bit(select_, minimal_perfect_hash(h));
+  // return most_significant_bit(select_, minimal_perfect_hash(h));
+  return 0;
 }
 uint16_t perfect_cuckoo_cache_line::rank(uint16_t bitpos) const {
   uint16_t r = 0;
@@ -72,9 +75,12 @@ bool perfect_cuckoo_cache_line::insert(uint32_t h) {
   uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
   uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
   // fprintf(stderr, "Inserting %llu at bitpos %d wordpos %d inwordpos %d seed %d\n",
-  //                 h, bitpos, wordpos, inwordpos, seed_);
-  if (rank_[wordpos] & (1UL << inwordpos)) return false;
-  rank_[wordpos] |= (1UL << inwordpos);
+  //                h, bitpos, wordpos, inwordpos, seed_);
+  if (rank_[wordpos] & (1ULL << inwordpos)) return false;
+  rank_[wordpos] |= (1ULL << inwordpos);
+  rank9 r(rank_, sizeof(rank_)*8) ;
+  assert(sizeof(count_) == r.bit_count()/8);
+  memcpy(count_, r.scounts(), sizeof(count_));
   // fprintf(stderr, "new rank for word %d value %llu: %d\n", wordpos, rank_[wordpos], rank64(rank_[wordpos]));
   // select_ |= 1UL << next_empty();
   return true;
@@ -93,7 +99,7 @@ static uint8_t const A(int n, int i) {
 }
 
 uint8_t perfect_cuckoo_cache_line::next_empty() const {
-  return A(sizeof(select_)*8, size());
+  return 0; //A(sizeof(select_)*8, size());
 }
   
 

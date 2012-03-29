@@ -41,8 +41,9 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
   BM_SearchUrls(const std::string& urls_file, int nsearches, float miss_ratio) 
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
   virtual void Run() {
+    const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(mymap_, *it);
+      auto v = myfind(const_mymap, *it);
       assert(it->ends_with(".force_miss") ^ v != NULL);
       assert(!v || *v == *it);
     }
@@ -77,8 +78,9 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     return true;
   }
   virtual void Run() {
+    const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(mymap_, *it);
+      auto v = myfind(const_mymap, *it);
       if (*v != *it) {
         fprintf(stderr, "Looked for %lu got %lu\n", *it, *v);
 	exit(-1);

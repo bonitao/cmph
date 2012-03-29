@@ -89,6 +89,7 @@ class perfect_cuckoo_map {
 PC_MAP_TMPL_SPEC PC_MAP_CLASS_SPEC::perfect_cuckoo_map()
     : n_(0), seed_(random()), index_(1), values_(1) {
   index_[0].second = values_[0].begin();
+  fprintf(stderr, "size of cache: %d\n", sizeof(pair<perfect_cuckoo_cache_line, typename vector<value_type>::iterator>));
 }
 
 PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
@@ -130,7 +131,8 @@ PC_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
     for (auto it = begin(), i = 0; it != end(); ++it, ++i) {
       auto h = hasher_(it->first, seed);
       auto b = h & (index.size() - 1);
-      // fprintf(stderr, "Adding key %d h %llu at bucket %d\n", it->first, h, b);
+      // std::cerr <<  "Adding key " << it->first;
+      // fprintf(stderr, " h %llu at bucket %d\n", h, b);
       hashes[b].push_back(h);
     }
     for (uint32_t i = 0; i < index_size; ++i) {
@@ -166,8 +168,8 @@ PC_MAP_METHOD_DECL(bool_type, make_pccl)(
   assert(keys.size() < perfect_cuckoo_cache_line::max_capacity());
   int iterations = 16;
   while (iterations--) {
-    pccl->set_seed(random());
     pccl->clear();
+    pccl->set_seed(random());
     bool success = true;
     // fprintf(stderr, "Trying to make pccl with seed %d for %d keys\n", pccl->seed(), keys.size());
     for (auto it = keys.begin(), end = keys.end(); it != end; ++it) {
@@ -188,7 +190,6 @@ PC_MAP_METHOD_DECL(void_type, make_bucket)(
   vector<value_type>* bucket = &values_[b];
   vector<value_type> v(bucket->size());
   assert(v.size() == pccl.size());
-  // FIXME: need to iterate over value_type() first to prevent overrides
   // fprintf(stderr, "Remaking bucket %d with %d keys\n", b, bucket->size());
   for (auto it = bucket->begin(), end = bucket->end(); it != end; ++it) {
     auto h = hasher_(it->first, seed_);
