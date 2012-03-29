@@ -1,5 +1,5 @@
-#ifndef __CXXMPH_HOLLOW_ITERATOR_H__
-#define __CXXMPH_HOLLOW_ITERATOR_H__
+#ifndef __CXXMPH_FLATTEN_ITERATOR_H__
+#define __CXXMPH_FLATTEN_ITERATOR_H__
 
 #include <cassert>
 #include <vector>
@@ -114,4 +114,4 @@ make_flatten(const container_type* c, outer_iterator_type ot, iterator_type it) 
 
 }  // namespace cxxmph
 
-#endif  // __CXXMPH_HOLLOW_ITERATOR_H__
+#endif  // __CXXMPH_FLATTEN_ITERATOR_H__
