@@ -41,10 +41,11 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
   virtual ~BM_SearchUrls() {}
   virtual void Run() {
-    uint32_t total = 1;
+    const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(mymap_, *it);
-      if (v) total += v->length();
+      auto v = myfind(const_mymap, *it);
+      assert(it->ends_with(".force_miss") ^ v != NULL);
+      assert(!v || *v == *it);
     }
     fprintf(stderr, "Total: %u\n", total);
   }
@@ -83,8 +84,9 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     return true;
   }
   virtual void Run() {
+    const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(mymap_, *it);
+      auto v = myfind(const_mymap, *it);
       if (*v != *it) {
 	cerr << "Looked for " << *it << " got " << *v << endl;
 	exit(-1);

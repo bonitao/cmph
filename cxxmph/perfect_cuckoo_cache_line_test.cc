@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < values.size(); ++i) {
     auto mph = pccl.minimal_perfect_hash(values[i]);
     if (!(mph < pccl.size())) {
-      fprintf(stderr, "Search returned too big\n");
+      fprintf(stderr, "Search returned too big: %d size %d\n", mph, pccl.size());
       exit(-1);
     }
 

@@ -8,7 +8,7 @@ cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph
 
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
-libcxxmph_la_SOURCES = MurmurHash3.h MurmurHash3.cpp trigragh.h trigraph.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc mph_bits.h mph_bits.cc
+libcxxmph_la_SOURCES = MurmurHash3.h MurmurHash3.cpp trigragh.h trigraph.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc mph_bits.h mph_bits.cc rank9.h rank9.cpp
 libcxxmph_la_LDFLAGS = -version-info 0:0:0
 libcxxmph_test_la_SOURCES = test.h test.cc
 libcxxmph_test_la_LIBADD = libcxxmph.la
