@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
       exit(-1);
     }
   }
-  /*
+
   mph_map<string, int> h;
   h.insert(std::make_pair("-1",-1));
   mph_map<string, int>::const_iterator it;
@@ -57,5 +57,4 @@ int main(int argc, char** argv) {
        if (key < num_valid && it->second != key) exit(-1);
     }
   }
-  */
 }

@@ -5,6 +5,7 @@
 
 using cxxmph::dynamic_2bitset;
 using cxxmph::rank64;
+using cxxmph::ones;
 
 int main(int argc, char** argv) {
   dynamic_2bitset small(256, true);
@@ -59,6 +60,7 @@ int main(int argc, char** argv) {
   if (rank64(1) != 1) exit(-1);
   if (rank64(2) != 1) exit(-1);
   if (rank64(255) != 8) exit(-1);
+  if (rank64(ones()) != 64) exit(-1);
 }
   
   

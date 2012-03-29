@@ -10,7 +10,8 @@ namespace cxxmph {
 class perfect_cuckoo_cache_line {
  public:
   perfect_cuckoo_cache_line() : seed_(0) { clear(); }
-  void set_seed(uint8_t seed) { seed_ = seed; }
+  void set_seed(uint32_t seed) { seed_ = seed; }
+  const uint32_t seed() const { return seed_; }
   
   uint8_t size() const { return rank((sizeof(rank_)*8) - 1); }
   static uint8_t max_capacity() { return sizeof(select_)*8; }
@@ -33,13 +34,13 @@ class perfect_cuckoo_cache_line {
 };
 
 uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) const {
-  h ^= seed_ + 0x9e3779b9 + (h << 6) + (h >> 2);  // hash_combine
+  h = reseed32(h, seed_);
   uint16_t bitpos = h & (sizeof(rank_)*8 - 1);
   uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
   uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
   //fprintf(stderr, "Searching %llu at bitpos %d wordpos %d inwordpos %d\n",
   //                 h, bitpos, wordpos, inwordpos);
-  return rank(bitpos); 
+  return rank(bitpos) - 1; 
 }
 uint8_t perfect_cuckoo_cache_line::perfect_hash(uint32_t h) const {
   // fprintf(stderr, "finding msb for %d at rank %d\n", select_, minimal_perfect_hash(h));
@@ -61,20 +62,20 @@ uint16_t perfect_cuckoo_cache_line::rank(uint16_t bitpos) const {
       r += rank64(rank_[0]);
   }
   uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
-  // fprintf(stderr, "wordpos: %d r so far: %d\n", wordpos, r);
-  return r + rank64(rank_[wordpos] & ((1ULL << (inwordpos & 63)) - 1)); 
+  // fprintf(stderr, "rank for bitpos %d wordpos: %d r inwordpos %d so far: %d\n", bitpos, wordpos, inwordpos, r);
+  return r + rank64(rank_[wordpos] & (ones() >> (63-(inwordpos & 63)))); 
 }
 bool perfect_cuckoo_cache_line::insert(uint32_t h) {
-  h ^= seed_ + 0x9e3779b9 + (h << 6) + (h >> 2);  // hash_combine
+  h = reseed32(h, seed_);
   uint16_t bitpos = h & (sizeof(rank_)*8 - 1);
   uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
   uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
-  // fprintf(stderr, "Inserting %llu at bitpos %d wordpos %d inwordpos %d\n",
-  //                 h, bitpos, wordpos, inwordpos);
+  // fprintf(stderr, "Inserting %llu at bitpos %d wordpos %d inwordpos %d seed %d\n",
+  //                 h, bitpos, wordpos, inwordpos, seed_);
   if (rank_[wordpos] & (1UL << inwordpos)) return false;
   rank_[wordpos] |= (1UL << inwordpos);
   // fprintf(stderr, "new rank for word %d value %llu: %d\n", wordpos, rank_[wordpos], rank64(rank_[wordpos]));
-  select_ |= 1UL << next_empty();
+  // select_ |= 1UL << next_empty();
   return true;
 }
 
