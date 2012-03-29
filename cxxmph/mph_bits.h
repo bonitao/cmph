@@ -82,6 +82,24 @@ static uint8_t rank64(uint64_t x) {
   return byte_sums * ONES_STEP_8 >> 56;
 };
 
+static uint8_t rank64th(uint64_t x, uint32_t i) {
+  uint64_t v;       // Compute the rank (bits set) in v from the MSB to pos.
+  unsigned int pos; // Bit position to count bits upto.
+  uint64_t r;       // Resulting rank of bit at pos goes here.
+
+  // Shift out bits after given position.
+  r = v >> (sizeof(v) * CHAR_BIT - pos);
+  // Count set bits in parallel.
+  // r = (r & 0x5555...) + ((r >> 1) & 0x5555...);
+  r = r - ((r >> 1) & ~0UL/3);
+  // r = (r & 0x3333...) + ((r >> 2) & 0x3333...);
+  r = (r & ~0UL/5) + ((r >> 2) & ~0UL/5);
+  // r = (r & 0x0f0f...) + ((r >> 4) & 0x0f0f...);
+  r = (r + (r >> 4)) & ~0UL/17;
+  // r = r % 255;
+  r = (r * (~0UL/255)) >> ((sizeof(v) - 1) * CHAR_BIT);
+}
+
 static const uint64_t ones() { return std::numeric_limits<uint64_t>::max(); }
 
 static const uint8_t most_significant_bit(uint64_t v, uint8_t r) {

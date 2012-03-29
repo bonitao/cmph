@@ -211,14 +211,18 @@ PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   auto h = hasher_(k, seed_);
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
+  if (mph == 255) return make_flatten_end(&values_);
   typename vector<vector<value_type>>::iterator ot = values_.begin() + b;
   typename vector<value_type>::iterator it = values_[b].begin() + mph;
+  assert(b < values_.size());
+  assert(mph < values_[b].size());
   return make_flatten(&values_, ot, it); 
 }
 PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto h = hasher_(k, seed_);
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
+  if (mph == 255) return make_flatten_end(&values_);
   return make_flatten(&values_, values_.begin() + b, index_[b].second + mph); 
 }
 
