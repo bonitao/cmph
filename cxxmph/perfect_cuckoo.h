@@ -88,6 +88,7 @@ class perfect_cuckoo_map {
 
 PC_MAP_TMPL_SPEC PC_MAP_CLASS_SPEC::perfect_cuckoo_map()
     : n_(0), seed_(random()), index_(1), values_(1) {
+  index_[0].second = values_[0].begin();
 }
 
 PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
@@ -97,7 +98,6 @@ PC_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 
   auto h = hasher_(x.first, seed_);
   auto b = h & (index_.size() - 1);
-  // cerr << "Inserting key " << x.first << " on bucket " << b << endl;
   assert(values_.size() > b);
   values_[b].push_back(x);
   ++n_;
@@ -143,19 +143,19 @@ PC_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
     }
     if (!success) continue;
     vector<vector<uint32_t>>().swap(hashes);
+    index.swap(index_);
     values_type values(index_size);
-    for (int i = 0; i < index_size; ++i) values[i].resize(index[i].first.size());
     for (auto it = begin(), i = 0; it != end(); ++it, ++i) {
       auto h = hasher_(it->first, seed);
-      auto b = h & (index.size() - 1);
-      auto mph = index[b].first.minimal_perfect_hash(h);
-      assert(mph < index[b].first.size());
-      assert(mph < values[b].size());
-      values[b][mph] = *it; 
+      auto b = h & (index_.size() - 1);
+      values[b].push_back(*it);
     }
     values.swap(values_);
-    index.swap(index_);
     seed_ = seed;
+    for (uint32_t i = 0; i < index_size; ++i) {
+      make_bucket(index_[i].first, i);
+      assert(index_[i].second == values_[i].begin());
+    }
     break;
   }
   return iterations >= 0;
@@ -199,6 +199,7 @@ PC_MAP_METHOD_DECL(void_type, make_bucket)(
   }
   swap(*bucket, v);
   index_[b].second = bucket->begin();
+  assert(values_[b].begin() == index_[b].second);
 }
 
 PC_MAP_METHOD_DECL(bool_type, pack_bucket)(uint32_t b) {
@@ -219,8 +220,9 @@ PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
   auto ot = values_.begin() + b;
-  auto it = values_[b].begin() + mph;
+  auto it = index_[b].second + mph;
   if (mph == 255 || !equal_(k, it->first)) return make_flatten_end(&values_);
+  assert(it == values_[b].begin() + mph);
   assert(b < values_.size());
   assert(mph < values_[b].size());
   return make_flatten(&values_, ot, it); 
@@ -230,9 +232,11 @@ PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto b = h & (index_.size() - 1);
   auto mph = index_[b].first.minimal_perfect_hash(h);
   auto ot = values_.begin() + b;
-  auto it = values_[b].begin() + mph;
+  auto it = index_[b].second + mph;
   if (mph == 255 || !equal_(k, it->first)) return make_flatten_end(&values_);
+  assert(it == values_[b].begin() + mph);
   assert(b < values_.size());
+  assert(mph < values_[b].size());
   return make_flatten(&values_, ot, it); 
 }
 

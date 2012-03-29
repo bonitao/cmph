@@ -36,8 +36,8 @@ class perfect_cuckoo_cache_line {
 uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) const {
   h = reseed32(h, seed_);
   uint16_t bitpos = h & (sizeof(rank_)*8 - 1);
-  uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
-  uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
+  // uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
+  // uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
   // fprintf(stderr, "Searching %llu at bitpos %d wordpos %d inwordpos %d\n",
   //                 h, bitpos, wordpos, inwordpos);
   return rank(bitpos) - 1; 
