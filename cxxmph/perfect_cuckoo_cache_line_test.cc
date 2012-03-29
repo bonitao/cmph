@@ -8,7 +8,7 @@ using cxxmph::perfect_cuckoo_cache_line;
 using std::vector;
 
 int main(int argc, char** argv) {
-  srandom(7);
+  srandom(2);
 
   perfect_cuckoo_cache_line pccl;
   fprintf(stderr, "struct size: %d\n", sizeof(perfect_cuckoo_cache_line));
@@ -16,9 +16,15 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Too big for a cache line.\n");
     exit(-1);
   }
+  if (pccl.size() != 0) {
+    fprintf(stderr, "Empty size broken\n");
+    exit(-1);
+  }
+
+  pccl.clear();
   vector<int> values;
   for (int i = 0; i < 16; ++i) values.push_back(random());
-  int iterations = 255;
+  int iterations = 16;
   while (iterations--) {
     bool success = true;
     pccl.set_seed(random());
@@ -40,6 +46,11 @@ int main(int argc, char** argv) {
   vector<bool> found(values.size());
   for (int i = 0; i < values.size(); ++i) {
     auto mph = pccl.minimal_perfect_hash(values[i]);
+    if (!(mph < pccl.size())) {
+      fprintf(stderr, "Search returned too big\n");
+      exit(-1);
+    }
+
     if (found[mph]) {
       fprintf(stderr, "Search broken\n");
       exit(-1);
@@ -51,6 +62,14 @@ int main(int argc, char** argv) {
   for (int i = 0; i < values.size(); ++i) {
     if (!found[i]) {
       fprintf(stderr, "Completeness broken.\n");
+      exit(-1);
+    }
+  }
+  for (int i = 0; i < values.size(); ++i) {
+    auto size = pccl.size();
+    auto mph = pccl.minimal_perfect_hash(random());
+    if (mph != 255 && !(mph < size)) {
+      fprintf(stderr, "Size limit failed for unknown keys: found %d at size %d.\n", mph, size);
       exit(-1);
     }
   }
