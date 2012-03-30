@@ -8,6 +8,22 @@
 
 namespace cxxmph {
 
+__inline static int count( const uint64_t x ) {
+		register uint64_t byte_sums = x - ( ( x & 0xa * ONES_STEP_4 ) >> 1 );
+		byte_sums = ( byte_sums & 3 * ONES_STEP_4 ) + ( ( byte_sums >> 2 ) & 3 * ONES_STEP_4 );
+		byte_sums = ( byte_sums + ( byte_sums >> 4 ) ) & 0x0f * ONES_STEP_8;
+		return byte_sums * ONES_STEP_8 >> 56;
+	}
+
+__inline uint32_t static_rank( const uint64_t k, const uint64_t* sbits, const uint64_t* scounts ) {
+	const uint64_t word = k >> 6;
+	const uint64_t block = (word >> 2) & ~1;
+	const int offset = (word & 7) - 1;
+	return scounts[ block ] + ( scounts[ block + 1 ] >> ( offset + ( offset >> sizeof offset * 8 - 4 & 0x8 ) ) * 9 & 0x1FF ) + count( sbits[ word ] & ( ( 1ULL << k % 64 ) - 1 ) );
+}
+
+
+
 class perfect_cuckoo_cache_line {
  public:
   perfect_cuckoo_cache_line() : seed_(0) { clear(); }
@@ -20,6 +36,7 @@ class perfect_cuckoo_cache_line {
 
   uint8_t perfect_hash(uint32_t h) const;
   uint8_t minimal_perfect_hash(uint32_t h) const;
+  uint8_t minimal_perfect_hash2(uint32_t h) const;
   bool insert(uint32_t h);
 
   void clear() {
@@ -41,9 +58,22 @@ uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash(uint32_t h) const {
   // uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
   // fprintf(stderr, "Searching %llu at bitpos %d wordpos %d inwordpos %d\n",
   //                 h, bitpos, wordpos, inwordpos);
+  return static_rank(bitpos+1, rank_, count_) - 1;
+  return rank(bitpos) - 1; 
+}
+uint8_t perfect_cuckoo_cache_line::minimal_perfect_hash2(uint32_t h) const {
+  h = reseed32(h, seed_);
+  uint16_t bitpos = h & (sizeof(rank_)*8 - 1);
+  // uint8_t wordpos = bitpos >> 6; // 6 == log(sizeof(uint64_t)*8) == log(64)
+  // uint8_t inwordpos = bitpos & (sizeof(uint64_t)*8 - 1);
+  // fprintf(stderr, "Searching %llu at bitpos %d wordpos %d inwordpos %d\n",
+  //                 h, bitpos, wordpos, inwordpos);
+  return static_rank(bitpos+1, rank_, count_) - 1;
   return rank9::static_rank(bitpos+1, rank_, count_) - 1;
   return rank(bitpos) - 1; 
 }
+
+
 
 uint8_t perfect_cuckoo_cache_line::perfect_hash(uint32_t h) const {
   // fprintf(stderr, "finding msb for %d at rank %d\n", select_, minimal_perfect_hash(h));

@@ -55,6 +55,11 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       mymap_[*it] = *it;
     }
     mymap_.rehash(mymap_.bucket_count());
+    // Double check if everything is all right
+    const MapType& const_mymap = mymap_;
+    for (int i = 0; i < urls_.size(); ++i) {
+      if (const_mymap.find(urls_[i])->second != urls_[i]) return false;
+    }
     fprintf(stderr, "Occupation: %f\n", static_cast<float>(mymap_.size())/mymap_.bucket_count());
     return true;
   }
