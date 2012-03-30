@@ -111,12 +111,12 @@ int main(int argc, char** argv) {
   Benchmark::Register(new BM_CreateUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
-
   */
+
   Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-  /*
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  /*
 
   Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
