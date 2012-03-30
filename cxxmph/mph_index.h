@@ -132,7 +132,7 @@ bool MPHIndex::Reset(
   n_ = 3*r_;
   k_ = 1U << b_;
 
-  // cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
+  cerr << "m " << m_ << " n " << n_ << " r " << r_ << endl;
 
   int iterations = 1000;
   std::vector<TriGraph::Edge> edges;
