@@ -222,11 +222,11 @@ PC_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   auto mph = index_[b].first.minimal_perfect_hash(h);
   auto ot = values_.begin() + b;
   auto it = index_[b].second + mph;
-  if (mph == 255 || !equal_(k, it->first)) return make_flatten_end(&values_);
   assert(it == values_[b].begin() + mph);
   assert(b < values_.size());
   assert(mph < values_[b].size());
-  return make_flatten(&values_, ot, it); 
+  if (mph != 255 && equal_(it->first, k)) return make_flatten(&values_, ot, it);
+  return make_flatten_end(&values_); 
 }
 PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto h = hasher_(k, seed_);
@@ -234,10 +234,12 @@ PC_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto mph = index_[b].first.minimal_perfect_hash2(h);
   auto ot = values_.begin() + b;
   auto it = index_[b].second + mph;
-  if (mph != 255 && equal_(it->first, k)) return make_flatten(&values_, ot, it);
+   
+  return make_flatten(&values_, ot, it);
   assert(it == values_[b].begin() + mph);
   assert(b < values_.size());
   assert(mph < values_[b].size());
+  if (mph != 255 && equal_(it->first, k)) return make_flatten(&values_, ot, it);
   return make_flatten_end(&values_); 
 }
 
