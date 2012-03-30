@@ -213,9 +213,7 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
     auto index = index_.perfect_hash(k);
     if (__builtin_expect(present_[index], true)) { 
       auto vit = values_.begin() + index;
-      auto k2 = vit->first;
-      if (equal_(k2, k))
-        return make_iterator(vit);
+      if (equal_(k, vit->first)) return make_iterator(vit);
     }
   }
   if (__builtin_expect(!slack_.empty(), 0)) {
