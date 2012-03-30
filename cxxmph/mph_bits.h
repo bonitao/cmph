@@ -69,6 +69,8 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 // http://www.azillionmonkeys.com/qed/adiv.html
 // rank and select:
 // http://vigna.dsi.unimi.it/ftp/papers/Broadword.pdf
+// Nice explanation:
+// http://www.gamedev.net/topic/547102-bit-counting-trick---new-to-me/
 
 struct Ranktable { static uint8_t get(uint8_t); };
 
