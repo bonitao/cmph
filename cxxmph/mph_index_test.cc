@@ -36,4 +36,9 @@ int main(int argc, char** argv) {
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
+
+  vector<int> k2;
+  for (int i = 0; i < 512;  ++i) { k2.push_back(i); }
+  SimpleMPHIndex<int> k2_index;
+  if (!k2_index.Reset(k2.begin(), k2.end(), k2.size())) { exit(-1); }
 }
