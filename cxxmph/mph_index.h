@@ -10,10 +10,11 @@
 // This is a pretty uncommon data structure, and if you application has a real
 // use case for it, chances are that it is a real win. If all you are doing is
 // a straightforward implementation of an in-memory associative mapping data
-// structure (e.g., mph_map.h), then it will probably be slower, since that the
+// structure, then it will probably be slower, since that the
 // evaluation of index() is typically slower than the total cost of running a
 // traditional hash function over a key and doing 2-3 conflict resolutions on
-// 100byte-ish strings.
+// 100byte-ish strings. If you still want to do, take a look at mph_map.h
+// instead.
 //
 // Thesis presenting this and similar algorithms:
 // http://homepages.dcc.ufmg.br/~fbotelho/en/talks/thesis2008/thesis.pdf

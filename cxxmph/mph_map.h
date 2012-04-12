@@ -3,11 +3,15 @@
 // Implementation of the unordered associative mapping interface using a
 // minimal perfect hash function.
 //
-// This class is about 20% to 100% slower than unordered_map (or ext/hash_map)
-// and should not be used if performance is a concern. In fact, you should only
-// use it for educational purposes.
+// This class not necessarily faster than unordered_map (or ext/hash_map).
+// Benchmark your code before using it. If you do not call rehash() before
+// starting your reads, it will be definitively slower than unordered_map.
 //
-// See http://www.strchr.com/crc32_popcnt and new Murmur3 function to try to beat stl
+// For large sets of urls, which are a somewhat expensive to compare, I found
+// this class to be about 10% faster than unordered_map.
+//
+// The space overhead of this map is 1.93 bits per bucket and it achieves 100%
+// occupation with a rehash call.
 
 #include <algorithm>
 #include <iostream>
