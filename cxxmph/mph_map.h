@@ -75,7 +75,7 @@ class mph_map {
   int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
 
-  size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
+  size_type bucket_count() const { return index_.minimal_perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
@@ -153,13 +153,13 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
   assert(success);
-  std::vector<value_type> new_values(index_.perfect_hash_size());
+  std::vector<value_type> new_values(index_.minimal_perfect_hash_size());
   new_values.reserve(new_values.size() * 2);
-  std::vector<bool> new_present(index_.perfect_hash_size(), false);
+  std::vector<bool> new_present(index_.minimal_perfect_hash_size(), false);
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
-    size_type id = index_.perfect_hash(it->first);
-    assert(id < index_.perfect_hash_size());
+    size_type id = index_.minimal_perfect_hash(it->first);
+    assert(id < index_.minimal_perfect_hash_size());
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;
@@ -186,7 +186,10 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-  present_[pos - begin] = false;
+  int i = 0;
+  auto it = begin();
+  while (it != pos) ++it, ++i;
+  present_[i] = false;
   *pos = value_type();
   --size_;
 }
@@ -197,8 +200,8 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto index = index_.perfect_hash(k);
+  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto index = index_.minimal_perfect_hash(k);
     if (__builtin_expect(present_[index], true)) { 
       auto vit = values_.begin() + index;
       if (equal_(k, vit->first)) return make_iterator(vit);
@@ -212,8 +215,8 @@ MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 }
 
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto index = index_.perfect_hash(k);
+  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto index = index_.minimal_perfect_hash(k);
     if (__builtin_expect(present_[index], true)) { 
       auto vit = values_.begin() + index;
       if (equal_(k, vit->first)) return make_iterator(vit);
@@ -227,8 +230,8 @@ MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  if (index_.perfect_hash_size() == 0) return -1;
-  return index_.perfect_hash(k);
+  if (index_.minimal_perfect_hash_size() == 0) return -1;
+  return index_.minimal_perfect_hash(k);
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {

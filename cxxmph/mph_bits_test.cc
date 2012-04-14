@@ -3,11 +3,16 @@
 
 #include "mph_bits.h"
 
-using cxxmph::dynamic_2bitset;
-using cxxmph::rank64;
-using cxxmph::ones;
+using namespace cxxmph;
 
 int main(int argc, char** argv) {
+  if ((branch_free_end(15, ones())) != -1) exit(-1);
+  if ((branch_free_end(15, 0)) != 15) exit(-1);
+  if ((branch_free_end2(15, 16, ones())) != 16) {
+    fprintf(stderr, "bfe2: %d\n", branch_free_end2(15, 16, ones()));
+    exit(-1);
+  }
+  if ((branch_free_end2(15, 16, 0)) != 15) exit(-1);
   dynamic_2bitset small(256, true);
   for (int i = 0; i < small.size(); ++i) small.set(i, i % 4);
   for (int i = 0; i < small.size(); ++i) {
@@ -61,6 +66,24 @@ int main(int argc, char** argv) {
   if (rank64(2) != 1) exit(-1);
   if (rank64(255) != 8) exit(-1);
   if (rank64(ones()) != 64) exit(-1);
+
+  uint32_t de_bruijn32 = 0x4653adf;
+  for (int i = 0; i < 32; ++i) {
+    uint32_t b = 1 << i;
+    // b &= -b;
+    b *= de_bruijn32;
+    b >>= 27;  // 32 - log(32)
+    fprintf(stderr, "b32: %u\n", b);
+  }
+  uint64_t de_bruijn64 = 0x218a392cd3d5dbfULL;
+  for (int i = 0; i < 64; ++i) {
+    uint64_t b = 1ULL << i;
+    // b &= -b;
+    b *= de_bruijn64;
+    b >>= 64-6;  // 64 - log(64)
+    fprintf(stderr, "b64: %u\n", b);
+  }
+
 }
   
   
