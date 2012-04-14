@@ -25,6 +25,7 @@ namespace cxxmph {
 class UrlsBenchmark : public Benchmark {
  public:
   UrlsBenchmark(const std::string& urls_file) : urls_file_(urls_file) { }
+  virtual  ~UrlsBenchmark() {}
  protected:
   virtual bool SetUp();
   const std::string urls_file_;
@@ -35,6 +36,7 @@ class SearchUrlsBenchmark : public UrlsBenchmark {
  public:
   SearchUrlsBenchmark(const std::string& urls_file, uint32_t nsearches, float miss_ratio)
       : UrlsBenchmark(urls_file), nsearches_(nsearches), miss_ratio_(miss_ratio) {}
+ virtual ~SearchUrlsBenchmark() {}
  protected:
   virtual bool SetUp();
   const uint32_t nsearches_; 

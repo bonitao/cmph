@@ -23,7 +23,6 @@
 
 #include "mph_bits.h"
 #include "mph_index.h"
-#include "hollow_iterator.h"
 
 namespace cxxmph {
 
@@ -52,8 +51,8 @@ class mph_map {
   typedef typename std::vector<value_type>::size_type size_type;
   typedef typename std::vector<value_type>::difference_type difference_type;
 
-  typedef hollow_iterator<std::vector<value_type>> iterator;
-  typedef hollow_const_iterator<std::vector<value_type>> const_iterator;
+  typedef typename std::vector<value_type>::iterator iterator;
+  typedef typename std::vector<value_type>::const_iterator const_iterator;
 
   // For making macros simpler.
   typedef void void_type;
@@ -98,13 +97,6 @@ class mph_map {
    template <typename iterator>
      iterator_first<iterator> make_iterator_first(iterator it) {
      return iterator_first<iterator>(it);
-   }
-
-   iterator make_iterator(typename std::vector<value_type>::iterator it) {
-     return hollow_iterator<std::vector<value_type>>(&values_, &present_, it);
-   }
-   const_iterator make_iterator(typename std::vector<value_type>::const_iterator it) const {
-     return hollow_const_iterator<std::vector<value_type>>(&values_, &present_, it);
    }
 
    void pack();
@@ -175,10 +167,10 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   slack_type().swap(slack_);
 }
 
-MPH_MAP_METHOD_DECL(iterator, begin)() { return make_iterator(values_.begin()); }
-MPH_MAP_METHOD_DECL(iterator, end)() { return make_iterator(values_.end()); }
-MPH_MAP_METHOD_DECL(const_iterator, begin)() const { return make_iterator(values_.begin()); }
-MPH_MAP_METHOD_DECL(const_iterator, end)() const { return make_iterator(values_.end()); }
+MPH_MAP_METHOD_DECL(iterator, begin)() { return values_.begin(); }
+MPH_MAP_METHOD_DECL(iterator, end)() { return values_.end(); }
+MPH_MAP_METHOD_DECL(const_iterator, begin)() const { return values_.begin(); }
+MPH_MAP_METHOD_DECL(const_iterator, end)() const { return values_.end(); }
 MPH_MAP_METHOD_DECL(bool_type, empty)() const { return size_ == 0; }
 MPH_MAP_METHOD_DECL(size_type, size)() const { return size_; }
 
@@ -202,38 +194,31 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
-    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
-    if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
-      auto vit = values_.begin() + minimal_perfect_hash;
-      if (equal_(k, vit->first)) return make_iterator(vit);
-    }
-  }
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
-  }
-  return end();
+  auto idx = index(k);
+  auto it = begin() + idx;
+  if (idx == -1 || it->first != k) return end();
+  return it;
 }
 
 MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
-    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
-    if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
-      auto vit = values_.begin() + minimal_perfect_hash;
-      if (equal_(k, vit->first)) return make_iterator(vit);
-    }
-  }
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
-  }
-  return end();
+  auto idx = index(k);
+  auto it = begin() + idx;
+  if (idx == -1 || it->first != k) return end();
+  return it;
 }
 
 MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  if (index_.size() == 0) return -1;
-  return index_.minimal_perfect_hash(k);
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
+     if (sit != slack_.end()) return sit->second;
+  }
+  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
+    if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
+      return minimal_perfect_hash;
+    }
+  }
+  return -1;
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {

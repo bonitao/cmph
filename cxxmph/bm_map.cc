@@ -13,7 +13,8 @@ using std::unordered_map;
 
 namespace cxxmph {
 
-template<class MapType, class T>
+
+template <class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
   auto end = mymap.end();
@@ -38,6 +39,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
  public:
   BM_SearchUrls(const std::string& urls_file, int nsearches, float miss_ratio) 
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
+  virtual ~BM_SearchUrls() {}
   virtual void Run() {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
