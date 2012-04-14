@@ -14,7 +14,7 @@ class rank_select_index {
  public:
   rank_select_index() : n_(16) { clear(); }
   rank_select_index(uint8_t n) : n_(n) { clear(); }
-  uint8_t index(uint32_t k) const {
+  inline uint8_t index(uint32_t k) const {
     uint32_t h = reseed32(k, seed_);
     uint8_t b = h & 63;
     uint8_t r = rank64(rank_ & ((1ULL << b)-1));
