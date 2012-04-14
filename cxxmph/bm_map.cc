@@ -44,6 +44,10 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
     const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(const_mymap, *it);
+      if (*v != *it) {
+        fprintf(stderr, "Looked for %lu got %lu\n", *it, *v);
+	exit(-1);
+      }
       assert(it->ends_with(".force_miss") ^ v != NULL);
       assert(!v || *v == *it);
     }
