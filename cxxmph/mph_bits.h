@@ -14,6 +14,8 @@
 #include <vector>
 #include <utility>
 
+#include "macros.h"
+
 namespace cxxmph {
 
 class dynamic_2bitset {
@@ -70,18 +72,58 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 // http://vigna.dsi.unimi.it/ftp/papers/Broadword.pdf
 // Nice explanation:
 // http://www.gamedev.net/topic/547102-bit-counting-trick---new-to-me/
+// Generalized theory to achieve something like debruijn multipliers
+// http://arxiv.org/pdf/1003.3196v2.pdf
 
 struct Ranktable { static uint8_t get(uint8_t); };
 
 // From sux-0.7
-#define ONES_STEP_4 ( 0x1111111111111111ULL )
-#define ONES_STEP_8 ( 0x0101010101010101ULL )
 static uint8_t rank64(uint64_t x) {
   register uint64_t byte_sums = x - ( ( x & 0xa * ONES_STEP_4 ) >> 1 );
   byte_sums = ( byte_sums & 3 * ONES_STEP_4 ) + ( ( byte_sums >> 2 ) & 3 * ONES_STEP_4 );
   byte_sums = ( byte_sums + ( byte_sums >> 4 ) ) & 0x0f * ONES_STEP_8;
   return byte_sums * ONES_STEP_8 >> 56;
 };
+
+static uint8_t rank32(uint32_t v) {
+  v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
+  v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
+  return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+}
+
+static uint8_t select64(uint64_t x, uint8_t k) { 
+  #ifdef SELPOPCOUNT
+  for( int i = 0, c = k; i < 64; i+=8 )
+    if ( ( c -= popcount[ x >> i & 0xFF ] ) < 0 ) {
+      c += popcount[ x >> i & 0xFF ];
+      for( int j = 0; j < 8; j++ ) if ( ( x & 1ULL << ( i + j ) ) && c-- == 0 ) return i + j;
+    }
+  return -1;
+  #endif
+
+  // Phase 1: sums by byte
+  register uint64_t byte_sums = x - ( ( x & 0xa * ONES_STEP_4 ) >> 1 );
+  byte_sums = ( byte_sums & 3 * ONES_STEP_4 ) + ( ( byte_sums >> 2 ) & 3 * ONES_STEP_4 );
+  byte_sums = ( byte_sums + ( byte_sums >> 4 ) ) & 0x0f * ONES_STEP_8;
+  byte_sums *= ONES_STEP_8;
+
+  // Phase 2: compare each byte sum with k
+  const uint64_t k_step_8 = k * ONES_STEP_8;
+  const uint64_t place = ( LEQ_STEP_8( byte_sums, k_step_8 ) * ONES_STEP_8 >> 53 ) & ~0x7;
+
+  // Phase 3: Locate the relevant byte and make 8 copies with incrental masks
+  const int byte_rank = k - ( ( ( byte_sums << 8 ) >> place ) & 0xFF );
+
+  const uint64_t spread_bits = ( x >> place & 0xFF ) * ONES_STEP_8 & INCR_STEP_8;
+  const uint64_t bit_sums = ZCOMPARE_STEP_8( spread_bits ) * ONES_STEP_8;
+
+  // Compute the inside-byte location and return the sum
+  const uint64_t byte_rank_step_8 = byte_rank * ONES_STEP_8;
+
+  return place + ( LEQ_STEP_8( bit_sums, byte_rank_step_8 ) * ONES_STEP_8 >> 56 );
+}
+  
+
 
 static uint8_t rank64th(uint64_t x, uint32_t i) {
   uint64_t v;       // Compute the rank (bits set) in v from the MSB to pos.
@@ -175,7 +217,23 @@ inline uint32_t reseed32(uint32_t h, uint32_t seed) {
   h1 = fmix(h1);
   return h1;
 }
-  
+
+// http://bits.stephan-brumme.com/minmax.html
+// if (zero_or_ones == ones()) return ones() else return self;
+inline uint32_t branch_free_end(uint32_t self, uint32_t zero_or_ones) {
+  return (zero_or_ones & (ones() ^ self)) ^ self;
+}
+inline int select(int x, int y, int ifXisSmaller, int ifYisSmaller) {
+  int diff  = x - y;
+  // sets bit31 to 0xFFFFFFFF if x<y, else 0x00000000
+  int bit31 = diff >> 31;
+
+  // return ifXisSmaller if x is smaller than y, else y
+  return (bit31 & (ifXisSmaller ^ ifYisSmaller)) ^ ifYisSmaller;
+}
+inline int minimum(int x, int y) { return select(x,y,x,y); }
+inline int maximum(int x, int y) { return select(x,y,y,x); }
+ 
 }  // namespace cxxmph
 
 #endif

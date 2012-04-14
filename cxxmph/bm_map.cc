@@ -3,7 +3,7 @@
 
 #include "bm_common.h"
 #include "mph_map.h"
-#include "perfect_cuckoo.h"
+#include "perfect_cuckoo_map.h"
 
 using cxxmph::perfect_cuckoo_map;
 using cxxmph::mph_map;

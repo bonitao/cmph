@@ -51,7 +51,14 @@ struct hollow_iterator_base
   template <class T>
   bool operator!=(const T& rhs) const { return rhs.it_ != this->it_; }
 
-  // should be friend
+  iterator_type fill_iterator() const { return it_; }
+
+ public:  // TODO find syntax to make this friend of const iterator
+  void find_present() {
+    while (it_ != c_->end() && !((*p_)[it_-c_->begin()])) ++it_;
+  }
+  container* c_;
+  presence* p_;
   iterator it_;
   is_empty empty_;
 
@@ -75,6 +82,16 @@ inline auto make_hollow(
        hollow_iterator_base<iterator, is_empty<const container_type>> {
   return hollow_iterator_base<iterator, is_empty<const container_type>>(
       it, is_empty<const container_type>(v, p), false);
+}
+
+template<typename container_type, typename presence_type>
+hollow_iterator<container_type> make_hollow(container_type* c, presence_type* p, typename container_type::iterator it) {
+  return hollow_iterator<container_type>(c, p, it);
+}
+
+template<typename container_type, typename presence_type>
+hollow_const_iterator<container_type> make_hollow(const container_type* c, presence_type* p, typename container_type::const_iterator it) {
+  return hollow_const_iterator<container_type>(c, p, it);
 }
 
 }  // namespace cxxmph
