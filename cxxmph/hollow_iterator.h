@@ -59,10 +59,10 @@ struct hollow_iterator_base
 };
 
 template <typename container_type, typename iterator> auto make_hollow(
-   container_type* v, vector<bool>* p, iterator it) ->
-       hollow_iterator_base<iterator, is_empty<container_type>> {
-  return hollow_iterator_base<iterator, is_empty<container_type>>(
-      it, is_empty<container_type>(v, p));
+   container_type* v, const vector<bool>* p, iterator it) ->
+       hollow_iterator_base<iterator, is_empty<const container_type>> {
+  return hollow_iterator_base<iterator, is_empty<const container_type>>(
+      it, is_empty<const container_type>(v, p));
 }
 
 }  // namespace cxxmph

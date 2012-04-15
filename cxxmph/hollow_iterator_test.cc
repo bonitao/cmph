@@ -30,6 +30,10 @@ int main(int argc, char** argv) {
   for (auto it = cbegin; it != cend; ++it) {
     if (((*it) % 2) != 0) exit(-1);
   }
+  const vector<bool>* cp(&p);
+  cbegin = make_hollow(cv, cp, v.begin());
+  cend = make_hollow(cv, cp, cv->end());
+
   vector<int>::iterator vit1 = v.begin();
   vector<int>::const_iterator vit2 = v.begin();
   if (vit1 != vit2) exit(-1);
@@ -37,7 +41,7 @@ int main(int argc, char** argv) {
   auto it2 = make_hollow(&v, &p, vit2);
   if (it1 != it2) exit(-1);
 
-  typedef is_empty<vector<int>> iev;
+  typedef is_empty<const vector<int>> iev;
   hollow_iterator_base<vector<int>::iterator, iev> default_constructed;
   default_constructed = make_hollow(&v, &p, v.begin());
   return 0;
