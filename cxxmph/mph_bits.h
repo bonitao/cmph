@@ -88,7 +88,7 @@ static uint8_t rank64(uint64_t x) {
 static uint8_t rank32(uint32_t v) {
   v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
   v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
-  return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+  return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 }
 
 static uint8_t select64(uint64_t x, uint8_t k) { 
@@ -141,6 +141,7 @@ static uint8_t rank64th(uint64_t x, uint32_t i) {
   r = (r + (r >> 4)) & ~0UL/17;
   // r = r % 255;
   r = (r * (~0UL/255)) >> ((sizeof(v) - 1) * CHAR_BIT);
+  return r;
 }
 
 static const uint64_t ones() { return std::numeric_limits<uint64_t>::max(); }

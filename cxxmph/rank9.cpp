@@ -59,7 +59,7 @@ uint64_t rank9::static_rank( const uint64_t k, const uint64_t* sbits, const uint
 	const uint64_t word = k / 64;
 	const uint64_t block = word / 4 & ~1;
 	const int offset = word % 8 - 1;
-	return scounts[ block ] + ( scounts[ block + 1 ] >> ( offset + ( offset >> sizeof offset * 8 - 4 & 0x8 ) ) * 9 & 0x1FF ) + count( sbits[ word ] & ( ( 1ULL << k % 64 ) - 1 ) );
+	return scounts[ block ] + ( scounts[ block + 1 ] >> ( offset + ( offset >> (sizeof offset * 8 - 4) & 0x8 ) ) * 9 & 0x1FF ) + count( sbits[ word ] & ( ( 1ULL << k % 64 ) - 1 ) );
 }
 
 uint64_t rank9::bit_count() {
