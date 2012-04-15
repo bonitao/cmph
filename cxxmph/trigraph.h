@@ -26,6 +26,7 @@ class TriGraph {
     uint32_t vertices[3];
   };
   TriGraph(uint32_t nedges, uint32_t nvertices);
+  ~TriGraph();
   void AddEdge(const Edge& edge);
   void RemoveEdge(uint32_t edge_id);
   void ExtractEdgesAndClear(std::vector<Edge>* edges);

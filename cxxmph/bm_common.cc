@@ -14,6 +14,7 @@ using std::vector;
 
 namespace cxxmph {
   
+UrlsBenchmark::~UrlsBenchmark() {}
 bool UrlsBenchmark::SetUp() {
   vector<string> urls;
   std::ifstream f(urls_file_.c_str());
@@ -32,12 +33,13 @@ bool UrlsBenchmark::SetUp() {
   return true;
 }
 
+SearchUrlsBenchmark::~SearchUrlsBenchmark() {}
 bool SearchUrlsBenchmark::SetUp() {
   if (!UrlsBenchmark::SetUp()) return false;
   int32_t miss_ratio_int32 = std::numeric_limits<int32_t>::max() * miss_ratio_;
   forced_miss_urls_.resize(nsearches_);
   random_.resize(nsearches_);
-  for (int i = 0; i < nsearches_; ++i) {
+  for (uint32_t i = 0; i < nsearches_; ++i) {
     random_[i] = urls_[random() % urls_.size()];
     if (random() < miss_ratio_int32) {
       forced_miss_urls_[i] = random_[i].as_string() + ".force_miss";
@@ -47,9 +49,10 @@ bool SearchUrlsBenchmark::SetUp() {
   return true;
 }
 
+Uint64Benchmark::~Uint64Benchmark() {}
 bool Uint64Benchmark::SetUp() {
   set<uint64_t> unique;
-  for (int i = 0; i < count_; ++i) {
+  for (uint32_t i = 0; i < count_; ++i) {
     uint64_t v;
     do { v = random(); } while (unique.find(v) != unique.end());
     values_.push_back(v);
@@ -58,10 +61,11 @@ bool Uint64Benchmark::SetUp() {
   return true;
 }
 
+SearchUint64Benchmark::~SearchUint64Benchmark() {}
 bool SearchUint64Benchmark::SetUp() {
   if (!Uint64Benchmark::SetUp()) return false;
   random_.resize(nsearches_);
-  for (int i = 0; i < nsearches_; ++i) {
+  for (uint32_t i = 0; i < nsearches_; ++i) {
     uint32_t pos = random() % values_.size();
     random_[i] = values_[pos];
   }

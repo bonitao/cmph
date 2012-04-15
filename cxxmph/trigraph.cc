@@ -20,6 +20,7 @@ TriGraph::TriGraph(uint32_t nvertices, uint32_t nedges)
         next_edge_(nedges),
         first_edge_(nvertices, kInvalidEdge),
         vertex_degree_(nvertices, 0) { }
+TriGraph::~TriGraph() {}
 
 void TriGraph::ExtractEdgesAndClear(vector<Edge>* edges) {
   vector<Edge>().swap(next_edge_);
@@ -67,7 +68,7 @@ void TriGraph::RemoveEdge(uint32_t current_edge) {
 }
 
 void TriGraph::DebugGraph() const {
-  int i;
+  uint32_t i;
   for(i = 0; i < edges_.size(); i++){
     cerr << i << "  " << edges_[i][0] << " " << edges_[i][1] << " " << edges_[i][2]
          << " nexts " << next_edge_[i][0] << " " << next_edge_[i][1] << " " << next_edge_[i][2] << endl;

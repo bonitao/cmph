@@ -21,8 +21,8 @@ fi
 if test "x$ac_cv_sys_largefile_LIBS" = "xno" ; then
 	ac_cv_sys_largefile_LIBS=""
 fi
-CFLAGS="$CFLAGS $ac_cv_sys_largefile_CFLAGS"
-LDFLAGS="$LDFLAGS $ac_cv_sys_largefile_LDFLAGS"
+CFLAGS="$$ac_cv_sys_largefile_CFLAGS $CFLAGS"
+LDFLAGS="$ac_cv_sys_largefile_LDFLAGS $LDFLAGS"
 LIBS="$LIBS $ac_cv_sys_largefile_LIBS"
 
 dnl Checks for headers
@@ -34,6 +34,7 @@ LDFLAGS="$LIBM $LDFLAGS"
 CFLAGS="-Wall -Werror"
 
 AC_PROG_CXX
+CXXFLAGS="-Wall -Winline -Wno-unused-function -Werror -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X

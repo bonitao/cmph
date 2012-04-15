@@ -15,7 +15,8 @@ using std::unordered_map;
 
 namespace cxxmph {
 
-template<class MapType, class T>
+
+template <class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
   auto end = mymap.end();
@@ -40,6 +41,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
  public:
   BM_SearchUrls(const std::string& urls_file, int nsearches, float miss_ratio) 
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
+  virtual ~BM_SearchUrls() {}
   virtual void Run() {
     const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
@@ -76,12 +78,12 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
   BM_SearchUint64() : SearchUint64Benchmark(100000, 10*1000*1000) { }
   virtual bool SetUp() {
     if (!SearchUint64Benchmark::SetUp()) return false;
-    for (int i = 0; i < values_.size(); ++i) {
+    for (uint32_t i = 0; i < values_.size(); ++i) {
       mymap_[values_[i]] = values_[i];
     }
     mymap_.rehash(mymap_.bucket_count());
     // Double check if everything is all right
-    for (int i = 0; i < values_.size(); ++i) {
+    for (uint32_t i = 0; i < values_.size(); ++i) {
       if (mymap_[values_[i]] != values_[i]) return false;
     }
     return true;
@@ -91,7 +93,7 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(const_mymap, *it);
       if (*v != *it) {
-        fprintf(stderr, "Looked for %lu got %lu\n", *it, *v);
+        fprintf(stderr, "Looked for %llu got %llu\n", *it, *v);
 	exit(-1);
       }
     }

@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < 1000; ++i) if (g[i] != i) exit(-1);
 
   auto inthasher = seeded_hash_function<std::hash<uint64_t>>();
-  unordered_map<h128, int, h128::hash32> g2;
+  unordered_map<h128, uint64_t, h128::hash32> g2;
   for (uint64_t i = 0; i < 1000; ++i) {
     auto h = inthasher.hash128(i, 0);
     if (g2.find(h) != g2.end()) {
