@@ -185,49 +185,17 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-<<<<<<< HEAD
-  int i = 0;
-  auto it = begin();
-  while (it != pos) ++it, ++i;
-  present_[i] = false;
-=======
   present_[pos.it_ - begin().it_] = false;
->>>>>>> master
   *pos = value_type();
   --size_;
 }
+
 MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   iterator it = find(k);
   if (it == end()) return;
   erase(it);
 }
 
-<<<<<<< HEAD
-MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto index = index_.perfect_hash(k);
-    if (__builtin_expect(present_[index], true)) { 
-      auto vit = values_.begin() + index;
-      return make_iterator(vit);
-      if (equal_(k, vit->first)) return make_iterator(vit);
-    }
-  }
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return make_iterator(values_.begin() + sit->second);
-  }
-  return end();
-}
-
-MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto index = index_.perfect_hash(k);
-    if (__builtin_expect(present_[index], true)) { 
-      auto vit = values_.begin() + index;
-      if (equal_(k, vit->first)) return make_iterator(vit);
-    }
-  }
-=======
 MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto idx = index(k);
   typename vector<value_type>::const_iterator vit = values_.begin() + idx;
@@ -243,19 +211,10 @@ MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
->>>>>>> master
   if (__builtin_expect(!slack_.empty(), 0)) {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;
   }
-<<<<<<< HEAD
-  return end();
-}
-
-MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  if (index_.perfect_hash_size() == 0) return -1;
-  return index_.perfect_hash(k);
-=======
   if (__builtin_expect(index_.perfect_hash_size(), 1)) {
     auto perfect_hash = index_.perfect_hash(k);
     if (__builtin_expect(present_[perfect_hash], true)) { 
@@ -263,7 +222,6 @@ MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
     }
   }
   return -1;
->>>>>>> master
 }
 
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {

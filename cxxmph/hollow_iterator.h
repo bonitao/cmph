@@ -76,16 +76,6 @@ inline auto make_hollow(
       it, is_empty<const container_type>(v, p), false);
 }
 
-template<typename container_type, typename presence_type>
-hollow_iterator<container_type> make_hollow(container_type* c, presence_type* p, typename container_type::iterator it) {
-  return hollow_iterator<container_type>(c, p, it);
-}
-
-template<typename container_type, typename presence_type>
-hollow_const_iterator<container_type> make_hollow(const container_type* c, presence_type* p, typename container_type::const_iterator it) {
-  return hollow_const_iterator<container_type>(c, p, it);
-}
-
 }  // namespace cxxmph
 
 #endif  // __CXXMPH_HOLLOW_ITERATOR_H__
