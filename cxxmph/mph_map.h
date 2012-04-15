@@ -23,6 +23,7 @@
 
 #include "mph_bits.h"
 #include "mph_index.h"
+#include "hollow_iterator.h"
 
 namespace cxxmph {
 
@@ -46,14 +47,15 @@ class mph_map {
   typedef HashFcn hasher;
   typedef EqualKey key_equal;
 
-  typedef typename std::vector<value_type>::pointer pointer;
-  typedef typename std::vector<value_type>::reference reference;
-  typedef typename std::vector<value_type>::const_reference const_reference;
-  typedef typename std::vector<value_type>::size_type size_type;
-  typedef typename std::vector<value_type>::difference_type difference_type;
+  typedef typename vector<value_type>::pointer pointer;
+  typedef typename vector<value_type>::reference reference;
+  typedef typename vector<value_type>::const_reference const_reference;
+  typedef typename vector<value_type>::size_type size_type;
+  typedef typename vector<value_type>::difference_type difference_type;
 
-  typedef typename std::vector<value_type>::iterator iterator;
-  typedef typename std::vector<value_type>::const_iterator const_iterator;
+  typedef is_empty<const vector<value_type>> is_empty_type;
+  typedef hollow_iterator_base<typename vector<value_type>::iterator, is_empty_type> iterator;
+  typedef hollow_iterator_base<typename vector<value_type>::const_iterator, is_empty_type> const_iterator;
 
   // For making macros simpler.
   typedef void void_type;
@@ -80,7 +82,7 @@ class mph_map {
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
-  size_type bucket_count() const { return index_.minimal_perfect_hash_size() + slack_.bucket_count(); }
+  size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
@@ -101,8 +103,8 @@ class mph_map {
    }
 
    void pack();
-   std::vector<value_type> values_;
-   std::vector<bool> present_;
+   vector<value_type> values_;
+   vector<bool> present_;
    SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to use hash from index rather than calculate its own
    typedef unordered_map<h128, uint32_t, h128::hash32> slack_type;
@@ -151,13 +153,13 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
   if (!success) { exit(-1); }
-  std::vector<value_type> new_values(index_.minimal_perfect_hash_size());
+  vector<value_type> new_values(index_.perfect_hash_size());
   new_values.reserve(new_values.size() * 2);
-  std::vector<bool> new_present(index_.minimal_perfect_hash_size(), false);
+  vector<bool> new_present(index_.perfect_hash_size(), false);
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
-    size_type id = index_.minimal_perfect_hash(it->first);
-    assert(id < index_.minimal_perfect_hash_size());
+    size_type id = index_.perfect_hash(it->first);
+    assert(id < index_.perfect_hash_size());
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;
@@ -168,10 +170,10 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   slack_type().swap(slack_);
 }
 
-MPH_MAP_METHOD_DECL(iterator, begin)() { return values_.begin(); }
-MPH_MAP_METHOD_DECL(iterator, end)() { return values_.end(); }
-MPH_MAP_METHOD_DECL(const_iterator, begin)() const { return values_.begin(); }
-MPH_MAP_METHOD_DECL(const_iterator, end)() const { return values_.end(); }
+MPH_MAP_METHOD_DECL(iterator, begin)() { return make_hollow(&values_, &present_, values_.begin()); }
+MPH_MAP_METHOD_DECL(iterator, end)() { return make_solid(&values_, &present_, values_.end()); }
+MPH_MAP_METHOD_DECL(const_iterator, begin)() const { return make_hollow(&values_, &present_, values_.begin()); }
+MPH_MAP_METHOD_DECL(const_iterator, end)() const { return make_solid(&values_, &present_, values_.end()); }
 MPH_MAP_METHOD_DECL(bool_type, empty)() const { return size_ == 0; }
 MPH_MAP_METHOD_DECL(size_type, size)() const { return size_; }
 
@@ -184,7 +186,7 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-  present_[pos - begin] = false;
+  present_[pos.it_ - begin().it_] = false;
   *pos = value_type();
   --size_;
 }
@@ -196,16 +198,16 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 
 MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto idx = index(k);
-  auto it = begin() + idx;
-  if (idx == -1 || it->first != k) return end();
-  return it;
+  typename vector<value_type>::const_iterator vit = values_.begin() + idx;
+  if (idx == -1 || vit->first != k) return end();
+  return make_solid(&values_, &present_, vit);;
 }
 
 MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   auto idx = index(k);
-  auto it = begin() + idx;
-  if (idx == -1 || it->first != k) return end();
-  return it;
+  typename vector<value_type>::iterator vit = values_.begin() + idx;
+  if (idx == -1 || vit->first != k) return end();
+  return make_solid(&values_, &present_, vit);;
 }
 
 MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
@@ -213,10 +215,10 @@ MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;
   }
-  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
-    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
-    if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
-      return minimal_perfect_hash;
+  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
+    auto perfect_hash = index_.perfect_hash(k);
+    if (__builtin_expect(present_[perfect_hash], true)) { 
+      return perfect_hash;
     }
   }
   return -1;

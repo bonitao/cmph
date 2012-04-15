@@ -30,11 +30,13 @@ struct hollow_iterator_base
   typedef self_type& self_reference;
   typedef typename iterator::reference reference;
   typedef typename iterator::pointer pointer;
-  hollow_iterator_base() : it_(), empty_() { }
-  hollow_iterator_base(iterator it, is_empty empty) : it_(it), empty_(empty) {
-    advance();
-  } 
-  hollow_iterator_base(const self_type& rhs) { it_ = rhs.it_; empty_ = rhs.empty_; }
+  inline hollow_iterator_base() : it_(), empty_() { }
+  inline hollow_iterator_base(iterator it, is_empty empty, bool solid) : it_(it), empty_(empty) {
+    if (!solid) advance();
+  }
+  // Same as above, assumes solid==true.
+  inline hollow_iterator_base(iterator it, is_empty empty) : it_(it), empty_(empty) {}
+  inline hollow_iterator_base(const self_type& rhs) { it_ = rhs.it_; empty_ = rhs.empty_; }
   template <typename const_iterator>
   hollow_iterator_base(const hollow_iterator_base<const_iterator, is_empty>& rhs) { it_ = rhs.it_; empty_ = rhs.empty_; }
 
@@ -58,11 +60,20 @@ struct hollow_iterator_base
   }
 };
 
-template <typename container_type, typename iterator> auto make_hollow(
+template <typename container_type, typename iterator>
+inline auto make_solid(
    container_type* v, const vector<bool>* p, iterator it) ->
        hollow_iterator_base<iterator, is_empty<const container_type>> {
   return hollow_iterator_base<iterator, is_empty<const container_type>>(
       it, is_empty<const container_type>(v, p));
+}
+
+template <typename container_type, typename iterator>
+inline auto make_hollow(
+   container_type* v, const vector<bool>* p, iterator it) ->
+       hollow_iterator_base<iterator, is_empty<const container_type>> {
+  return hollow_iterator_base<iterator, is_empty<const container_type>>(
+      it, is_empty<const container_type>(v, p), false);
 }
 
 }  // namespace cxxmph
