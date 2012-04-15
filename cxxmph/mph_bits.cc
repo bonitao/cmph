@@ -3,6 +3,10 @@
 namespace cxxmph {
 
 const uint8_t dynamic_2bitset::vmask[] = { 0xfc, 0xf3, 0xcf, 0x3f};
+dynamic_2bitset::dynamic_2bitset() : size_(0), fill_(false) {}
+dynamic_2bitset::dynamic_2bitset(uint32_t size, bool fill)
+    : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {}
+dynamic_2bitset::~dynamic_2bitset() {}
 
 template <int n, int mask = (1 << 7)> struct bitcount {
 enum { value = (n & mask ? 1:0) + bitcount<n, (mask >> 1)>::value };
@@ -23,6 +27,9 @@ static CompileTimeRankTable<256> kRanktable;
 
 uint8_t Ranktable::get(uint8_t i) { return kRanktable[i]; }
 
-
+void stop_unused_warning() {
+  rank64(4);
+  nextpoweroftwo(4);
+}
 
 }

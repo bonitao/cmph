@@ -47,7 +47,7 @@ class BM_MPHIndexSearch : public SearchUrlsBenchmark {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto idx = index_.index(*it);
       // Collision check to be fair with STL
-      // if (strcmp(urls_[idx].c_str(), it->data()) != 0) idx = -1;
+      if (strcmp(urls_[idx].c_str(), it->data()) != 0) idx = -1;
     }
   }
  protected:

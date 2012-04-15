@@ -5,66 +5,65 @@
 
 namespace cxxmph {
 
-template <typename container_type, typename presence_type, typename iterator_type>
+using std::vector;
+
+template <typename container_type>
+struct is_empty {
+ public:
+  is_empty() : c_(NULL), p_(NULL) {};
+  is_empty(const container_type* c, const vector<bool>* p) : c_(c), p_(p) {};
+  bool operator()(typename container_type::const_iterator it) const {
+    if (it == c_->end()) return false;
+    return !(*p_)[it - c_->begin()];
+  }
+ private:
+  const container_type* c_;
+  const vector<bool>* p_;
+};
+
+template <typename iterator, typename is_empty>
 struct hollow_iterator_base
     : public std::iterator<std::forward_iterator_tag,
-                           typename container_type::value_type> {
-  typedef presence_type presence;
-  typedef container_type container;
-  typedef iterator_type iterator;
-  typedef hollow_iterator_base<container, presence, iterator>& self_reference;
+                           typename iterator::value_type> {
+ public:
+  typedef hollow_iterator_base<iterator, is_empty>& self_type;
+  typedef self_type& self_reference;
   typedef typename iterator::reference reference;
   typedef typename iterator::pointer pointer;
+  hollow_iterator_base() : it_(), empty_() { }
+  hollow_iterator_base(iterator it, is_empty empty) : it_(it), empty_(empty) {
+    advance();
+  } 
+  hollow_iterator_base(const self_type& rhs) { it_ = rhs.it_; empty_ = rhs.empty_; }
+  template <typename const_iterator>
+  hollow_iterator_base(const hollow_iterator_base<const_iterator, is_empty>& rhs) { it_ = rhs.it_; empty_ = rhs.empty_; }
 
-  hollow_iterator_base(container* c, presence* p, iterator it)
-      : c_(c), p_(p), it_(it) { if (c_) find_present(); }
-  self_reference operator++() {
-    ++it_; find_present();
-  }
   reference operator*() { return *it_;  }
   pointer operator->() { return &(*it_); }
+  self_reference operator++() { ++it_; advance(); return *this; }
+  // self_type operator++() { auto tmp(*this); ++tmp; return tmp; }
 
-  // TODO find syntax to make this less permissible at compile time
-  template <class T>
-  bool operator==(const T& rhs) { return rhs.it_ == this->it_; }
-  template <class T>
-  bool operator!=(const T& rhs) { return rhs.it_ != this->it_; }
+  template <typename const_iterator>
+  bool operator==(const hollow_iterator_base<const_iterator, is_empty>& rhs) { return rhs.it_ == it_; }
+  template <typename const_iterator>
+  bool operator!=(const hollow_iterator_base<const_iterator, is_empty>& rhs) { return rhs.it_ != it_; }
 
- public:  // TODO find syntax to make this friend of const iterator
-  void find_present() {
-    while (it_ != c_->end() && !((*p_)[it_-c_->begin()])) ++it_;
-  }
-  container* c_;
-  presence* p_;
+  // should be friend
   iterator it_;
+  is_empty empty_;
+
+ private:
+  void advance() {
+    while (empty_(it_)) ++it_;
+  }
 };
 
-template <typename container_type>
-struct hollow_iterator : public hollow_iterator_base<
-    container_type, std::vector<bool>, typename container_type::iterator> {
-  typedef hollow_iterator_base<
-      container_type, std::vector<bool>, typename container_type::iterator> parent_class;
-  hollow_iterator() : parent_class(NULL, NULL, typename container_type::iterator())  { }
-  hollow_iterator(typename parent_class::container* c,
-                  typename parent_class::presence* p,
-                  typename parent_class::iterator it)
-     : parent_class(c, p, it) { }
-};
-
-template <typename container_type>
-struct hollow_const_iterator : public hollow_iterator_base<
-    const container_type, const std::vector<bool>, typename container_type::const_iterator> {
-  typedef hollow_iterator_base<
-      const container_type, const std::vector<bool>, typename container_type::const_iterator> parent_class;
-  typedef hollow_const_iterator<container_type> self_type;
-  typedef hollow_iterator<container_type> non_const_type;
-  hollow_const_iterator(non_const_type rhs) : parent_class(rhs.c_, rhs.p_, typename container_type::const_iterator(rhs.it_)) { }
-  hollow_const_iterator() : parent_class(NULL, NULL, typename container_type::iterator())  { }
-  hollow_const_iterator(const typename parent_class::container* c,
-                        const typename parent_class::presence* p,
-                        typename parent_class::iterator it)
-     : parent_class(c, p, it) { }
-};
+template <typename container_type, typename iterator> auto make_hollow(
+   container_type* v, vector<bool>* p, iterator it) ->
+       hollow_iterator_base<iterator, is_empty<container_type>> {
+  return hollow_iterator_base<iterator, is_empty<container_type>>(
+      it, is_empty<container_type>(v, p));
+}
 
 }  // namespace cxxmph
 

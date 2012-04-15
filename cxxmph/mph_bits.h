@@ -17,10 +17,9 @@ namespace cxxmph {
 
 class dynamic_2bitset {
  public:
-  dynamic_2bitset() : size_(0), fill_(false)  {}
-  dynamic_2bitset(uint32_t size, bool fill = false)
-      : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {
-  }
+  dynamic_2bitset();
+  ~dynamic_2bitset();
+  dynamic_2bitset(uint32_t size, bool fill = false);
 
   const uint8_t operator[](uint32_t i) const { return get(i); }
   const uint8_t get(uint32_t i) const { 
@@ -28,7 +27,7 @@ class dynamic_2bitset {
     assert((i >> 2) < data_.size());
     return (data_[(i >> 2)] >> (((i & 3) << 1)) & 3);
   }
-  uint8_t set(uint32_t i, uint8_t v) { 
+  void set(uint32_t i, uint8_t v) { 
     assert((i >> 2) < data_.size());
     data_[(i >> 2)] |= ones() ^ dynamic_2bitset::vmask[i & 3];
     data_[(i >> 2)] &= ((v << ((i & 3) << 1)) | dynamic_2bitset::vmask[i & 3]);
@@ -59,7 +58,7 @@ class dynamic_2bitset {
 static uint32_t nextpoweroftwo(uint32_t k) {
   if (k == 0) return 1;
   k--;
-  for (int i=1; i<sizeof(uint32_t)*CHAR_BIT; i<<=1) k = k | k >> i;
+  for (uint32_t i=1; i<sizeof(uint32_t)*CHAR_BIT; i<<=1) k = k | k >> i;
   return k+1;
 }
 // Interesting bit tricks that might end up here:

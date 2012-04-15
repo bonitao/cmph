@@ -35,6 +35,7 @@ using std::vector;
 #define MPH_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
 #define MPH_MAP_CLASS_SPEC mph_map<Key, Data, HashFcn, EqualKey, Alloc>
 #define MPH_MAP_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
+#define MPH_MAP_INLINE_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC inline typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
 
 template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class mph_map {
@@ -72,10 +73,10 @@ class mph_map {
   void erase(iterator pos);
   void erase(const key_type& k);
   pair<iterator, bool> insert(const value_type& x);
-  iterator find(const key_type& k);
-  const_iterator find(const key_type& k) const;
+  inline iterator find(const key_type& k);
+  inline const_iterator find(const key_type& k) const;
   typedef int32_t my_int32_t;  // help macros
-  int32_t index(const key_type& k) const;
+  inline int32_t index(const key_type& k) const;
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
@@ -149,7 +150,7 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
   bool success = index_.Reset(
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
-  assert(success);
+  if (!success) { exit(-1); }
   std::vector<value_type> new_values(index_.minimal_perfect_hash_size());
   new_values.reserve(new_values.size() * 2);
   std::vector<bool> new_present(index_.minimal_perfect_hash_size(), false);
@@ -193,21 +194,21 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   erase(it);
 }
 
-MPH_MAP_METHOD_DECL(const_iterator, find)(const key_type& k) const {
+MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto idx = index(k);
   auto it = begin() + idx;
   if (idx == -1 || it->first != k) return end();
   return it;
 }
 
-MPH_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
+MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   auto idx = index(k);
   auto it = begin() + idx;
   if (idx == -1 || it->first != k) return end();
   return it;
 }
 
-MPH_MAP_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
   if (__builtin_expect(!slack_.empty(), 0)) {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;

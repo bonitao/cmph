@@ -88,6 +88,7 @@ struct Murmur3Fmix64bitsType {
     h128 h;
     h.set64(fmix(k), 0);
     h.set64(fmix(h.get64(0)), 1);
+    return h;
   }
 };
 

@@ -106,7 +106,7 @@ namespace cxxmph {
 }
 
 /* static */ void Benchmark::RunAll() {
-  for (int i = 0; i < g_benchmarks.size(); ++i) {
+  for (uint32_t i = 0; i < g_benchmarks.size(); ++i) {
     std::auto_ptr<Benchmark> bm(g_benchmarks[i]);
     if (!bm->SetUp()) {
       cerr << "Set up phase for benchmark "
