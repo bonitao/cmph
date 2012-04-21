@@ -76,6 +76,22 @@ inline auto make_hollow(
       it, is_empty<const container_type>(v, p), false);
 }
 
+template <typename iterator>
+struct iterator_second : public iterator {
+  iterator_second() : iterator() { }
+  iterator_second(iterator it) : iterator(it) { }
+  const typename iterator::value_type::second_type& operator*() {
+    return this->iterator::operator*().second;
+  }
+  typename iterator::value_type::second_type* operator->() { return &(this->iterator::operator->()->second); }
+  typename iterator::value_type::second_type* operator->() const { return &(this->iterator::operator->()->second); }
+};
+
+template <typename iterator>
+iterator_second<iterator> make_iterator_second(iterator it) {
+  return iterator_second<iterator>(it);
+}
+
 }  // namespace cxxmph
 
 #endif  // __CXXMPH_HOLLOW_ITERATOR_H__

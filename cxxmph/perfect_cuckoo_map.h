@@ -44,8 +44,9 @@ class perfect_cuckoo_map {
   typedef typename vector<value_type>::size_type size_type;
   typedef typename vector<value_type>::difference_type difference_type;
 
-  typedef hollow_iterator<vector<value_type>> iterator;
-  typedef hollow_const_iterator<vector<value_type>> const_iterator;
+  typedef is_empty<const vector<value_type>> is_empty_type;
+  typedef hollow_iterator_base<typename vector<value_type>::iterator, is_empty_type> iterator;
+  typedef hollow_iterator_base<typename vector<value_type>::const_iterator, is_empty_type> const_iterator;
 
   // For making macros simpler.
   typedef void void_type;
@@ -54,10 +55,10 @@ class perfect_cuckoo_map {
 
   perfect_cuckoo_map();
 
-  iterator begin() { return make_hollow(&values_, &present_, values_.begin()); }
-  iterator end() { return make_hollow(&values_, &present_, values_.end()); }
-  const_iterator begin() const { return make_hollow(&values_, &present_, values_.begin()); }
-  const_iterator end() const { return make_hollow(&values_, &present_, values_.end()); }
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;  
   size_type size() const { return n_; }
   bool empty() const;
   void clear();
@@ -98,6 +99,12 @@ class perfect_cuckoo_map {
   index_type index_; 
   vector<value_type> values_;
 };
+
+
+PC_MAP_INLINE_METHOD_DECL(iterator, begin)() { return make_hollow(&values_, &present_, values_.begin()); }
+PC_MAP_INLINE_METHOD_DECL(iterator, end)() { return make_solid(&values_, &present_, values_.end()); }
+PC_MAP_INLINE_METHOD_DECL(const_iterator, begin)() const { return make_hollow(&values_, &present_, values_.begin()); }
+PC_MAP_INLINE_METHOD_DECL(const_iterator, end)() const { return make_solid(&values_, &present_, values_.end()); }
 
 PC_MAP_TMPL_SPEC PC_MAP_CLASS_SPEC::perfect_cuckoo_map()
     : n_(0), seed_(random()), index_(2), values_(2*8), present_(2*8) {
