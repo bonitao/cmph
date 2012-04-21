@@ -41,11 +41,12 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
   virtual ~BM_SearchUrls() {}
   virtual void Run() {
+    uint32_t total = 1;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      myfind(mymap_, *it);
-      assert(it->ends_with(".force_miss") ^ v != NULL);
-      assert(!v || *v == *it);
+      auto v = myfind(mymap_, *it);
+      if (v) total += v->length();
     }
+    fprintf(stderr, "Total: %u\n", total);
   }
  protected:
   virtual bool SetUp() {

@@ -79,6 +79,7 @@ class mph_map {
   inline const_iterator find(const key_type& k) const;
   typedef int32_t my_int32_t;  // help macros
   inline int32_t index(const key_type& k) const;
+  inline int32_t index2(const key_type& k) const;
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
@@ -197,7 +198,7 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 }
 
 MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  auto idx = index(k);
+  auto idx = index2(k);
   typename vector<value_type>::const_iterator vit = values_.begin() + idx;
   if (idx == -1 || vit->first != k) return end();
   return make_solid(&values_, &present_, vit);;
@@ -210,16 +211,26 @@ MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   return make_solid(&values_, &present_, vit);;
 }
 
-MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return sit->second;
+MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index2)(const key_type& k) const {
+  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
+    auto perfect_hash = index_.perfect_hash(k);
+    return perfect_hash;
   }
+  return -1;
+}
+
+
+
+MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
   if (__builtin_expect(index_.perfect_hash_size(), 1)) {
     auto perfect_hash = index_.perfect_hash(k);
     if (__builtin_expect(present_[perfect_hash], true)) { 
       return perfect_hash;
     }
+  }
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
+     if (sit != slack_.end()) return sit->second;
   }
   return -1;
 }
