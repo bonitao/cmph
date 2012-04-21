@@ -115,7 +115,10 @@ class bfcr_map {
     return it->first >> 14;
   }
   void setcount(typename vector<indexed_value_type>::iterator it, uint8_t count) const {
+    assert(count < 3);
+    it->first &= static_cast<uint16_t>(ones()) >> 2;
     it->first |= static_cast<uint16_t>(count) << 14;
+    assert(this->count(it) == count);
   }
   uint16_t seed(typename vector<indexed_value_type>::const_iterator it) const {
     return it->first & (static_cast<uint16_t>(ones()) >> 2);
@@ -124,6 +127,7 @@ class bfcr_map {
     auto mask = static_cast<uint16_t>(ones()) >> 2;
     it->first &= ~mask;
     it->first |= seed & mask;
+    assert(this->seed(it) == seed);
   }
 
   my_int32_t create_mph(uint32_t index) const;
@@ -146,30 +150,40 @@ BFCR_MAP_METHOD_DECL(my_int32_t, find_insert_index)(
   auto insert_index = -1;
   auto h = hasher_(x.first, seed_) % (values.size() - 8);
   auto it = values.begin() + h;
-  if (count(it) > 3) return insert_index;
+  if (count(it) > 2) return insert_index;
   for (int i = 0; i < 8; ++it, ++i) {
-    uint8_t c = count(it);
-    if (c != 0) continue;
-    insert_index = it - values_.begin() + h;
+    if (count(it) != 0) continue;
+    insert_index = it - values.begin();
     break;
   }
+  cerr << "Found index " << h << "+" << (insert_index - h) << " (";
+  cerr << static_cast<uint32_t>(count(values.begin()+insert_index));
+  cerr << " count) for key " << x.first << endl;
   return insert_index;
 }
 
 BFCR_MAP_METHOD_DECL(my_int32_t, create_mph)(uint32_t index) const {
-  uint16_t iterations = 1ULL << 14, mph_seed = 0;
+  auto pos = values_.begin() + index;
+  vector<pair<uint32_t, uint32_t>> index_offset;
+  for (auto it = pos; it < pos + 8; ++it) {
+    if (count(it) == 0) continue;
+    auto h = hasher_(it->second.first, seed_);
+    auto hx = h % (values_.size() - 8);;
+    if (hx != index) continue;
+    index_offset.push_back(make_pair(h, it - pos));
+  }
+  cerr << "Finding injection for " << index_offset.size() << " keys " << endl;
+
+  uint16_t iterations = 1ULL << 14;
   while (iterations--) {
     bool success = true;
-    uint8_t i = 0;
-    for (auto it = values_.begin() + index; it < values_.begin() + index + 8; ++it, ++i) {
-      if (count(it) == 0) continue;
-      auto hx = hasher_(it->second.first, seed_) % (values_.size() - 8);;
-      if (hx != index) continue;
-      auto hp = reseed32(hasher_(it->second.first, seed_), mph_seed) % 8;
-      if (hp != i) { success = false; break; }
+    uint16_t mph_seed = random() & (static_cast<uint16_t>(ones()) >> 2);
+    for (auto it = index_offset.begin(); it != index_offset.end(); ++it) {
+      auto hp = reseed32(it->first, mph_seed) % 8;
+      if (hp != it->second) { success = false; break; }
+      else { cerr << "Succeded at offset "<< it->second << endl; }
     }
     if (success) { return mph_seed; }
-    ++mph_seed;
   }
   return -1;
 }
@@ -177,40 +191,51 @@ BFCR_MAP_METHOD_DECL(my_int32_t, create_mph)(uint32_t index) const {
 BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   auto it = find(x.first);
   auto it_end = end();
-  if (it != it_end) return make_pair(it, false);
+  if (it != it_end) {
+    cerr << "Key " << x.first << " already present. " << endl;
+    return make_pair(it, false);
+  }
 
   auto insert_index = -1;
   while (insert_index == -1) {
-    find_insert_index(x, values_);
-    if (insert_index == -1) pack();
+    insert_index = find_insert_index(x, values_);
+    if (insert_index == -1) { 
+      if (!pack()) exit(-1);
+    }
   }
 
   auto insert_position = values_.begin() + insert_index;
   insert_position->second = x;
-  auto h = hasher_(x.first, seed_) % n_;
+  auto h = hasher_(x.first, seed_) % (values_.size() - 8);
   setcount(values_.begin() + h, count(values_.begin() + h) + 1);
   setcount(insert_position, count(insert_position) + 1);
   
   uint16_t mph_seed = create_mph(h);
-  if (mph_seed == -1) {
+  cerr << "Found mph seed " << mph_seed << endl;
+  if (mph_seed == static_cast<uint16_t>(-1)) {
     // already inserted, pack will take care of fixing mph
-    pack();
+    assert(false);
+    if (!pack()) exit(-1);
   } else {
-    h = hasher_(x.first, seed_) % n_;
+    auto hn = hasher_(x.first, seed_);
+    h = hn % (values_.size() - 8);
     setseed(values_.begin() + h, mph_seed);
+    assert(h + (reseed32(hn, seed(values_.begin()+h)) % 8)== static_cast<uint32_t>(insert_index));
   }
   it = find(x.first);
   assert(it != end());
+  ++n_;
   return make_pair(it, true);
 }
 
 BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
-  // cerr << "Running pack with " << n_ << " keys " << endl;
-  int iterations = 16;
+  cerr << "Running pack with " << n_ << " keys growing to size " << ((values_.size()-8)*2-8) << endl;
+  int iterations = 2;
   vector<indexed_value_type> new_values;
   while (iterations--) {
+    cerr << "Trying pack iteration " << iterations << endl;
     vector<indexed_value_type>((values_.size() - 8)*2 + 8).swap(new_values);
-    bool success = false;
+    bool success = true; 
     seed_ = random();
     for (auto it = values_.begin(); it != values_.end(); ++it) {
       if (count(it) == 0) continue;
@@ -220,6 +245,10 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
       auto mph_seed = create_mph(insert_index);
       if (mph_seed == -1) success = false;
       new_values[insert_index].first = mph_seed;
+      auto h = hasher_(it->second.first, seed_) % (new_values.size() - 8);
+      auto insert_position = new_values.begin() + insert_index;
+      setcount(new_values.begin() + h, count(new_values.begin() + h) + 1);
+      setcount(insert_position, count(insert_position) + 1);
     }
     if (success) break;
   }
@@ -245,9 +274,11 @@ BFCR_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 }
 
 BFCR_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
-  auto h = hasher_(k, seed_);
-  auto hp = h + (reseed32(h, (values_.begin() + h)->first) & 7);
-  return hp;
+  auto hn = hasher_(k, seed_);
+  auto h = hn % (values_.size() - 8);
+  auto offset = reseed32(hn, seed(values_.begin() + h)) & 7;
+  cerr << "Index for key " << k << " is " << h << "+" << offset << endl;
+  return h + offset;
 }
 
 BFCR_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
@@ -255,7 +286,7 @@ BFCR_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
 }
 
 BFCR_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-  auto h = hasher_(pos->first, seed_);
+  auto h = hasher_(pos->first, seed_) % (values_.size() - 8);
   auto it = values_.begin() + h;
   setcount(it, count(it) - 1);
 

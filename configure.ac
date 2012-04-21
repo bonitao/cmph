@@ -34,7 +34,7 @@ LDFLAGS="$LIBM $LDFLAGS"
 CFLAGS="-Wall -Werror"
 
 AC_PROG_CXX
-CXXFLAGS="-Wall -Winline -Wno-unused-function -Werror -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
+CXXFLAGS="-Wall -Winline -Wno-unused-function -Werror -DNDEBUG -O3 $CXXFLAGS"
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
