@@ -12,8 +12,11 @@ namespace cxxmph {
 // number of keys.
 class rank_select_index {
  public:
-  rank_select_index() : n_(16) { clear(); }
-  rank_select_index(uint8_t n) : n_(n) { clear(); }
+  static uint8_t begin() { return 0; }
+  static uint8_t end() { return 32; }
+  static uint8_t capacity() { return 16; }
+
+  rank_select_index() { clear(); }
   inline uint8_t index(uint32_t k) const {
     uint32_t h = reseed32(k, seed_);
     uint8_t b = h & 63;
@@ -22,6 +25,7 @@ class rank_select_index {
     // fprintf(stderr, "Found key %d at rank %d slot %d\n", k, r, s);
     return s;
   }
+  uint8_t size() const { return rank64(rank_); }
   bool insert(uint32_t k, uint8_t m) {
     if (m < m_) return false;
     // fprintf(stderr, "insert m %d\n", m);
@@ -40,8 +44,8 @@ class rank_select_index {
     }
     return true;
   }
-  uint8_t size() const { return rank64(rank_); }
-  bool reset(const std::vector<uint32_t>& hashes, uint8_t m) {
+  bool reset(const std::vector<uint32_t>& keys, std::vector<uint32_t>& slots,
+             std::vector<pair<uint32_t, uint32_t>>* out) {
     // fprintf(stderr, "Resetting for %d keys and m %d\n", hashes.size(), m_);
     uint8_t iterations = 255;
     while (iterations--) {
@@ -61,9 +65,7 @@ class rank_select_index {
   uint64_t rank_;
   uint32_t select_; 
   uint8_t seed_;
-  uint8_t m_;
-  uint8_t n_;
-  uint8_t padding_;
+  uint8_t padding_[3];
 };
  
 }  // namespace cxxmph

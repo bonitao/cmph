@@ -90,9 +90,9 @@ class mph_map_base {
   pair<iterator, bool> insert(const value_type& x);
   inline iterator find(const key_type& k);
   inline const_iterator find(const key_type& k) const;
+  data_type& operator[](const key_type &k);
   typedef int32_t my_int32_t;  // help macros
   inline int32_t index(const key_type& k) const;
-  data_type& operator[](const key_type &k);
 
   size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
