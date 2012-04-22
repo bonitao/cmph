@@ -1,5 +1,6 @@
 #include <string>
 #include <tr1/unordered_map>
+#include <sparsehash/dense_hash_map>
 
 #include "bm_common.h"
 #include "mph_map.h"
@@ -15,6 +16,12 @@ using std::unordered_map;
 
 namespace cxxmph {
 
+typedef google::dense_hash_map<StringPiece, StringPiece, Murmur3StringPiece> dense_map_type;
+template <class MapType> void set_empty_key(MapType* map) {}
+void set_empty_key(dense_map_type * map) {
+  cerr << "Empty key set" << endl;
+  map->set_empty_key(StringPiece("davi"));
+}
 
 template <class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
@@ -30,6 +37,7 @@ class BM_CreateUrls : public UrlsBenchmark {
   BM_CreateUrls(const string& urls_file) : UrlsBenchmark(urls_file) { }
   virtual void Run() {
     MapType mymap;
+    set_empty_key(&mymap);
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
       mymap[*it] = *it;
     }
@@ -53,6 +61,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
  protected:
   virtual bool SetUp() {
     if (!SearchUrlsBenchmark::SetUp()) return false;
+    set_empty_key(&mymap_);
     for (auto it = urls_.begin(); it != urls_.end(); ++it) {
       mymap_[*it] = *it;
     }
@@ -69,6 +78,7 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
   BM_SearchUint64() : SearchUint64Benchmark(100000, 10*1000*1000) { }
   virtual bool SetUp() {
     if (!SearchUint64Benchmark::SetUp()) return false;
+    set_empty_key(&mymap_);
     for (uint32_t i = 0; i < values_.size(); ++i) {
       mymap_[values_[i]] = values_[i];
     }
@@ -102,12 +112,15 @@ using namespace cxxmph;
 
 int main(int argc, char** argv) {
   srandom(4);
+  Benchmark::Register(new BM_CreateUrls<dense_map_type>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_SearchUrls<dense_map_type>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<dense_map_type>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));

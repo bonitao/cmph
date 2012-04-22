@@ -251,7 +251,7 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
       if (count(it) == 0) continue;
       auto insert_index = find_insert_index(it->second, new_values);
       if (insert_index == -1) {
-        cerr << "Find index pack failure" << endl;
+        // cerr << "Find index pack failure" << endl;
         success = false;
       }
       auto insert_position = new_values.begin() + insert_index;
@@ -263,7 +263,7 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
 
       auto mph_seed = create_mph(h[0] % m_, new_values);
       if (mph_seed == -1) {
-        cerr << "Create mph pack failure" << endl;
+        // cerr << "Create mph pack failure" << endl;
         success = false;
       }
       (new_values.begin() + (h[0] % m_))->first = mph_seed;
