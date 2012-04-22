@@ -44,7 +44,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
     uint32_t total = 1;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
-      if (v) total += v->length();
+      if (*v != *it) exit(-1);
     }
     fprintf(stderr, "Total: %u\n", total);
   }
