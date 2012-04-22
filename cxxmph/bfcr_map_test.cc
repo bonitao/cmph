@@ -37,7 +37,10 @@ int main(int argc, char** argv) {
   h.insert(std::make_pair("-1",-1));
   bfcr_map<string, int>::const_iterator it;
   for (auto it = h.begin(); it != h.end(); ++it) {
-    if (it->second != -1) exit(-1);
+    if (it->second != -1) {
+      fprintf(stderr, "Failed to find single key -1. Got %s instead.\n", it->first.data());
+      exit(-1);
+    }
   }
   int32_t num_valid = 100;
   for (int i = 0; i < num_valid; ++i) {
