@@ -77,8 +77,8 @@ class bfcr_map {
   typedef int32_t my_int32_t;  // help macros
   inline int32_t index(const key_type& k) const;
 
-  size_type bucket_count() const { return values_.size(); }
-  void rehash(size_type nbuckets /*ignored*/) { pack(true); }
+  size_type bucket_count() const { return values_.size() - 8; }
+  void rehash(size_type nbuckets /*ignored*/) { if (!pack(true)) exit(-1); }
 
  protected:  // mimicking STL implementation
   EqualKey equal_;
@@ -207,6 +207,7 @@ BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   while (insert_index == -1) {
     insert_index = find_insert_index(x, values_);
     if (insert_index == -1) { 
+      // cerr << "Packing at size " << size() << " occupation " << size()*1.0/bucket_count() << " because there is no index" << endl;
       if (!pack()) exit(-1);
     }
   }
@@ -221,6 +222,7 @@ BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   // cerr << "Found mph seed " << mph_seed << endl;
   if (mph_seed == static_cast<uint16_t>(-1)) {
     // already inserted, pack will take care of fixing mph
+    //  cerr << "Packing at size " << size() << " occupation " << size()*1.0/bucket_count() << " because there is no mph" << endl;
     if (!pack()) exit(-1);
   } else {
     (values_.begin() + (h[0] % m_))->first= mph_seed;
@@ -232,9 +234,13 @@ BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 }
 
 BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
-  m_ *= 2;  // growth
+  m_ *= 2;
+  if (minimal) {
+    m_ = nextpoweroftwo(size()*2);  // growth
+    cerr<< "Minimal pack for " << size() << " keys will use " << m_ << " buckets." << endl;
+   }
   // cerr << "Running pack with " << n_ << " keys growing to size " << (m_+8) << endl;
-  int iterations = 16;
+  int iterations = 64;
   vector<indexed_value_type> new_values;
   while (iterations--) {
     // cerr << "Trying pack iteration " << iterations << endl;
@@ -244,7 +250,10 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
     for (auto it = values_.begin(); it != values_.end(); ++it) {
       if (count(it) == 0) continue;
       auto insert_index = find_insert_index(it->second, new_values);
-      if (insert_index == -1) success = false;
+      if (insert_index == -1) {
+        cerr << "Find index pack failure" << endl;
+        success = false;
+      }
       auto insert_position = new_values.begin() + insert_index;
 
       auto h = hasher_.hash128(it->second.first, seed_);
@@ -253,7 +262,10 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
       insert_position->second = it->second;
 
       auto mph_seed = create_mph(h[0] % m_, new_values);
-      if (mph_seed == -1) success = false;
+      if (mph_seed == -1) {
+        cerr << "Create mph pack failure" << endl;
+        success = false;
+      }
       (new_values.begin() + (h[0] % m_))->first = mph_seed;
     }
     if (success) break;
