@@ -200,6 +200,9 @@ inline uint32_t fmix(uint32_t h) {
 
   return h;
 }
+inline uint32_t reseed2(uint32_t h, uint32_t seed) {
+  return fmix(h ^ seed);
+}
 inline uint32_t reseed32(uint32_t h, uint32_t seed) {
   uint32_t c1 = 0xcc9e2d51;
   uint32_t c2 = 0x1b873593;
