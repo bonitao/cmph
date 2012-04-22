@@ -77,9 +77,10 @@ class mph_map {
   pair<iterator, bool> insert(const value_type& x);
   inline iterator find(const key_type& k);
   inline const_iterator find(const key_type& k) const;
-  data_type& operator[](const key_type &k);
   typedef int32_t my_int32_t;  // help macros
   inline int32_t index(const key_type& k) const;
+  data_type& operator[](const key_type &k);
+  const data_type& operator[](const key_type &k) const;
 
   size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
@@ -189,7 +190,6 @@ MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
   *pos = value_type();
   --size_;
 }
-
 MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   iterator it = find(k);
   if (it == end()) return;
@@ -210,26 +210,16 @@ MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   return make_solid(&values_, &present_, vit);;
 }
 
-MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index2)(const key_type& k) const {
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto perfect_hash = index_.perfect_hash(k);
-    return perfect_hash;
-  }
-  return -1;
-}
-
-
-
 MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
+     if (sit != slack_.end()) return sit->second;
+  }
   if (__builtin_expect(index_.perfect_hash_size(), 1)) {
     auto perfect_hash = index_.perfect_hash(k);
     if (__builtin_expect(present_[perfect_hash], true)) { 
       return perfect_hash;
     }
-  }
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return sit->second;
   }
   return -1;
 }

@@ -80,11 +80,14 @@ template <typename iterator>
 struct iterator_second : public iterator {
   iterator_second() : iterator() { }
   iterator_second(iterator it) : iterator(it) { }
-  const typename iterator::value_type::second_type& operator*() {
+  typename iterator::value_type::second_type& operator*() {
     return this->iterator::operator*().second;
   }
-  typename iterator::value_type::second_type* operator->() { return &(this->iterator::operator->()->second); }
-  typename iterator::value_type::second_type* operator->() const { return &(this->iterator::operator->()->second); }
+  const typename iterator::value_type::second_type& operator*() const {
+    return this->iterator::operator*().second;
+  }
+  typename iterator::value_type::second_type* operator->() { return const_cast<typename iterator::value_type::second_type*>(&(this->iterator::operator->()->second)); }
+  const typename iterator::value_type::second_type* operator->() const { return &(this->iterator::operator->()->second); }
 };
 
 template <typename iterator>

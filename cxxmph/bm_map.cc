@@ -3,10 +3,10 @@
 
 #include "bm_common.h"
 #include "mph_map.h"
-#include "perfect_cuckoo_map.h"
+#include "bfcr_map.h"
 
-using cxxmph::perfect_cuckoo_map;
 using cxxmph::mph_map;
+using cxxmph::bfcr_map;
 using std::string;
 using std::unordered_map;
 
@@ -43,15 +43,10 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       : SearchUrlsBenchmark(urls_file, nsearches, miss_ratio) { }
   virtual ~BM_SearchUrls() {}
   virtual void Run() {
-    const MapType& const_mymap = mymap_;
+    uint32_t total = 1;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(const_mymap, *it);
-      if (*v != *it) {
-        fprintf(stderr, "Looked for %lu got %lu\n", *it, *v);
-	exit(-1);
-      }
-      assert(it->ends_with(".force_miss") ^ v != NULL);
-      assert(!v || *v == *it);
+      auto v = myfind(mymap_, *it);
+      if (v) total += v->length();
     }
     fprintf(stderr, "Total: %u\n", total);
   }
@@ -62,11 +57,6 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       mymap_[*it] = *it;
     }
     mymap_.rehash(mymap_.bucket_count());
-    // Double check if everything is all right
-    const MapType& const_mymap = mymap_;
-    for (int i = 0; i < urls_.size(); ++i) {
-      if (const_mymap.find(urls_[i])->second != urls_[i]) return false;
-    }
     fprintf(stderr, "Occupation: %f\n", static_cast<float>(mymap_.size())/mymap_.bucket_count());
     return true;
   }
@@ -84,15 +74,19 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     }
     mymap_.rehash(mymap_.bucket_count());
     // Double check if everything is all right
+    cerr << "Doing double check" << endl;
     for (uint32_t i = 0; i < values_.size(); ++i) {
-      if (mymap_[values_[i]] != values_[i]) return false;
+      if (mymap_[values_[i]] != values_[i]) {
+        fprintf(stderr, "Looking for %u th key value %llu yielded %llu\n",
+                i ,values_[i], mymap_[values_[i]]);
+        return false;
+      }
     }
     return true;
   }
   virtual void Run() {
-    const MapType& const_mymap = mymap_;
     for (auto it = random_.begin(); it != random_.end(); ++it) {
-      auto v = myfind(const_mymap, *it);
+      auto v = myfind(mymap_, *it);
       if (*v != *it) {
         fprintf(stderr, "Looked for %llu got %llu\n", *it, *v);
 	exit(-1);
@@ -108,19 +102,16 @@ using namespace cxxmph;
 
 int main(int argc, char** argv) {
   srandom(4);
-  Benchmark::Register(new BM_CreateUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k"));
+  Benchmark::Register(new BM_CreateUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<mph_map<StringPiece, StringPiece>>("URLS100k"));
   Benchmark::Register(new BM_CreateUrls<unordered_map<StringPiece, StringPiece>>("URLS100k"));
-
-  Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
+  Benchmark::Register(new BM_SearchUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0));
-
-  Benchmark::Register(new BM_SearchUrls<perfect_cuckoo_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
+  Benchmark::Register(new BM_SearchUrls<bfcr_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<mph_map<StringPiece, StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
-
-  Benchmark::Register(new BM_SearchUint64<perfect_cuckoo_map<uint64_t, uint64_t>>);
+  Benchmark::Register(new BM_SearchUint64<bfcr_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
   Benchmark::RunAll();
