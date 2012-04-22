@@ -125,9 +125,7 @@ static uint8_t select64(uint64_t x, uint8_t k) {
   
 
 
-static uint8_t rank64th(uint64_t x, uint32_t i) {
-  uint64_t v;       // Compute the rank (bits set) in v from the MSB to pos.
-  unsigned int pos; // Bit position to count bits upto.
+static uint8_t rank64th(uint64_t v, uint32_t pos) {
   uint64_t r;       // Resulting rank of bit at pos goes here.
 
   // Shift out bits after given position.
