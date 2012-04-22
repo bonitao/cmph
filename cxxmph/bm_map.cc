@@ -53,6 +53,7 @@ class BM_SearchUrls : public SearchUrlsBenchmark {
       assert(it->ends_with(".force_miss") ^ v != NULL);
       assert(!v || *v == *it);
     }
+    fprintf(stderr, "Total: %u\n", total);
   }
  protected:
   virtual bool SetUp() {
