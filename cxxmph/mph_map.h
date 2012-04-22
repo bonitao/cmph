@@ -211,15 +211,15 @@ MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+  if (__builtin_expect(!slack_.empty(), 0)) {
+     auto sit = slack_.find(hasher128_.hash128(k, 0));
+     if (sit != slack_.end()) return sit->second;
+  }
   if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
     auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
     if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
       return minimal_perfect_hash;
     }
-  }
-  if (__builtin_expect(!slack_.empty(), 0)) {
-     auto sit = slack_.find(hasher128_.hash128(k, 0));
-     if (sit != slack_.end()) return sit->second;
   }
   return -1;
 }
