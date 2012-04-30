@@ -142,13 +142,13 @@ class bfcr_map {
     *mph &= ones() ^ ((ones() & 255) << (index << 3));
     *mph |= static_cast<uint64_t>(pos) << (index << 3);
   }
-  uint64_t reseed(uint64_t mph, uint64_t h1) const {
-    return seed(mph) ^ h1;
+  uint64_t reseed(const h128& h, uint32_t seed) const {
+    return (h[1] >> seed) ^ (h[2] >> seed) ^ (h[3] >> seed);
   }
 
   my_uint64_t create_mph(uint32_t index, const vector<indexed_value_type>& values) const;
   uint64_t eval_mph(const h128& h, uint64_t mph) const {
-    return pos(mph, reseed2(h[1], seed(mph)) & 7);
+    return pos(mph, reseed(h, seed(mph)) & 7);
   }
   my_int32_t find_insert_index(const value_type& x, const vector<indexed_value_type>& values) const;
 };
@@ -202,11 +202,11 @@ BFCR_MAP_METHOD_DECL(my_uint64_t, create_mph)(
   while (iterations--) {
     bool success = true;
     mph = 0;
-    setseed(&mph, random());
+    setseed(&mph, random() & 63);
     setpresent(&mph, present(pos->first));
     vector<bool> used_rank(8);
     for (uint32_t i = 0; i < hash.size(); ++i) {
-      int64_t rank = reseed2(hash[i][1], seed(mph)) & 7; 
+      int64_t rank = reseed(hash[i], seed(mph)) & 7; 
       if (rank >= 6) { success = false; break; }
       if (used_rank[rank]) { success = false; break; }
       used_rank[rank] = true;
