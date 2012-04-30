@@ -75,8 +75,8 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     cerr << "Doing double check" << endl;
     for (uint32_t i = 0; i < values_.size(); ++i) {
       if (mymap_[values_[i]] != values_[i]) {
-        fprintf(stderr, "Looking for %u th key value %llu yielded %llu\n",
-                i ,values_[i], mymap_[values_[i]]);
+	cerr << "Looking for " << i << " th key value " << values_[i];
+	cerr << " yielded " << mymap_[values_[i]] << endl;
         return false;
       }
     }
@@ -86,7 +86,7 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
       if (*v != *it) {
-        fprintf(stderr, "Looked for %llu got %llu\n", *it, *v);
+	cerr << "Looked for " << *it << " got " << *v << endl;
 	exit(-1);
       }
     }
