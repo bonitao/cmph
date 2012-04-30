@@ -100,7 +100,7 @@ class bfcr_map {
     bool operator()(
         typename vector<indexed_value_type>::const_iterator it) const {
       if (it == c_->end()) return false;
-      fprintf(stderr, "Checking %x for empty at pos %u.\n", it->first, uint32_t(it-c_->begin()));
+      fprintf(stderr, "Checking %llx for empty at pos %u.\n", it->first, uint32_t(it-c_->begin()));
       return (it->first & 1) == 0;
     }
    private:
@@ -116,26 +116,26 @@ class bfcr_map {
     return make_iterator_second(hollow_iterator_base<ittype, bfcr_is_empty>(it, is_empty_));
   }
 
-  bool present(typename vector<indexed_value_type>::const_iterator it) const {
-    return it->first & 1;
+  bool present(uint64_t mph) const {
+    return mph & 1ULL << 63;
   }
-  void setpresent(typename vector<indexed_value_type>::iterator it, bool present) const {
-    it->first &= ones() << 1;
-    it->first |= present;
-    assert(this->present(it) == present);
+  void setpresent(uint64_t* mph, bool present) const {
+    *mph &= ones() >> 1;
+    *mph |= static_cast<uint64_t>(present) << 63;
+    assert(this->present(*mph) == present);
   }
-  uint16_t seed(typename vector<indexed_value_type>::const_iterator it) const {
-    return static_cast<uint16_t>(it->first);
+  uint16_t seed(uint64_t mph) const {
+    return mph >> 48;
   }
-  void setseed(typename vector<indexed_value_type>::iterator it, uint16_t seed) const {
-    assert(present(it) == (seed & 1));
-    it->first &= ones() << 16;
-    it->first |= seed;
+  void setseed(uint64_t* mph, uint16_t seed) const {
+    assert(present(*mph) == (seed & (1ULL << 63)));
+    *mph &= ones() >> 16;
+    *mph |= static_cast<uint64_t>(seed) << 48;
   }
 
   my_uint64_t create_mph(uint32_t index, const vector<indexed_value_type>& values) const;
-  uint8_t eval_mph(const h128& h, uint64_t mph) const {
-    return select64(mph, reseed2(h[1], static_cast<uint16_t>(mph)) & 7);
+  uint64_t eval_mph(const h128& h, uint64_t mph) const {
+    return select64(mph, reseed2(h[1], mph >> 48) & 7);
   }
   my_int32_t find_insert_index(const value_type& x, const vector<indexed_value_type>& values) const;
 };
@@ -158,15 +158,12 @@ BFCR_MAP_METHOD_DECL(my_int32_t, find_insert_index)(
   auto h = hasher_.hash128(x.first, seed_);
   auto it = values.begin() + (h[0] % m);
   for (int i = 0; i < 48; ++it, ++i) {
-    if (present(it)) continue;
+    if (present(it->first)) continue;
     insert_index = it - values.begin();
     break;
   }
-  // cerr << "Insertion index " << (h[0] % m) << "+" << (insert_index - (h[0] % m)) << " (";
-  // if (insert_index != -1) {
-  // cerr << static_cast<uint32_t>(count(values.begin()+insert_index));
-  // cerr << " count) for key " << x.first << endl;
-  // }
+  // cerr << "Insertion index " << (h[0] % m) << "+" << (insert_index - (h[0] % m));
+  // cerr << " for key " << x.first << endl;
   return insert_index;
 }
 
@@ -174,45 +171,49 @@ BFCR_MAP_METHOD_DECL(my_uint64_t, create_mph)(
     uint32_t index,
     const vector<indexed_value_type>& values) const {
   auto pos = values.begin() + index;
-  vector<pair<uint32_t, uint32_t>> index_offset;
+  vector<h128> hash;
+  vector<uint32_t> offset;
   for (auto it = pos; it < pos + 48; ++it) {
-    if (present(it) == 0) continue;
+    if (present(it->first) == 0) continue;
     auto h = hasher_.hash128(it->second.first, seed_);
     if ((h[0] % m_) != index) continue;
-    index_offset.push_back(make_pair(h[1], it - pos));
+    hash.push_back(h);
+    offset.push_back(it - pos);
   }
-  assert(index_offset.size());
-  // cerr << "Finding injection for " << index_offset.size() << " keys " << endl;
+  assert(hash.size());
+  // cerr << "Finding injection for " << hash.size() << " keys " << endl;
 
   // Just need to guarantee order
   uint64_t mph = 0;
-  uint16_t iterations = 1ULL << 14;
+  int16_t iterations = 1ULL << 14;
   while (iterations--) {
     bool success = true;
-    mph = static_cast<uint16_t>(random() | present(pos));
-    vector<uint32_t> pos;
-    pos.push_back(0);
-    for (auto it = index_offset.begin(); it != index_offset.end(); ++it) {
-      auto rank = reseed2(it->first, static_cast<uint16_t>(mph)) & 7; 
-      pos.push_back(rank);
-    }
-    if (adjacent_find(pos.begin() + 1, pos.end(),
-                      greater<int32_t>()) != pos.end()) {
-       continue;
-    }
-    for (uint32_t i = 0; i < pos.size(); ++i) {
-      if (pos[i] < index_offset[i].second) { success = false; break; }
-      for (uint32_t j = 0; j < (pos[i+1] - pos[i]) + 1; ++j) {
-        mph |= (1ULL << 63) >> (pos[i] - j);
+    mph = 0;
+    setseed(&mph, random());
+    setpresent(&mph, present(pos->first));
+    int64_t last_rank = -1;
+    for (uint32_t i = 0; i < hash.size(); ++i) {
+      int64_t rank = reseed2(hash[i][1], mph >> 48) & 7; 
+      if (rank <= last_rank) { success = false; break; }
+      if (rank > offset[i]) { success = false; break; }
+      // cerr << "Mapping rank " << rank << " to position  " << offset[i] << endl;
+      for (int64_t j = offset[i]; select64(mph, rank) > offset[i]; --j) {
+        if (mph & (1ULL << j)) { success = false; break; }
+        mph |= 1ULL << j;
+        // cerr << "Set bit " << j << endl;
       }
+      if (!success) break;
+      assert(select64(mph, rank) == offset[i]);
+      last_rank = rank;
     }
+    // cerr << "Success now: " << uint32_t(success) << endl;
     if (!success) continue;
     break;
   }
   if (iterations < 0) return -1;
   #ifndef NDEBUG
   for (auto it = pos; it < pos + 48; ++it) {
-    if (!present(it)) continue;
+    if (!present(it->first)) continue;
     auto h = hasher_.hash128(it->second.first, seed_);
     if ((h[0] % m_) != index) continue;
     uint32_t offset = eval_mph(h, mph);
@@ -242,7 +243,7 @@ BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   auto insert_position = values_.begin() + insert_index;
   insert_position->second = x;
   auto h = hasher_.hash128(x.first, seed_);
-  setpresent(insert_position, 1);
+  setpresent(&insert_position->first, true);
   
   uint64_t mph_seed = create_mph(h[0] % m_, values_);
   // cerr << "Found mph seed " << mph_seed << endl;
@@ -251,7 +252,9 @@ BFCR_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
     //  cerr << "Packing at size " << size() << " occupation " << size()*1.0/bucket_count() << " because there is no mph" << endl;
     if (!pack()) exit(-1);
   } else {
-    (values_.begin() + (h[0] % m_))->first= mph_seed;
+    (values_.begin() + (h[0] % m_))->first = mph_seed;
+    // cerr << "Set seed for pos " << (h[0] % m_) << endl;
+    assert(present((values_.begin() + (h[0] % m_))->first));
   }
   it = find(x.first);
   assert(it != end());
@@ -263,7 +266,7 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
   m_ *= 2;
   if (minimal) {
     m_ = nextpoweroftwo(size()*2);  // growth
-    cerr<< "Minimal pack for " << size() << " keys will use " << m_ << " buckets." << endl;
+    // cerr<< "Minimal pack for " << size() << " keys will use " << m_ << " buckets." << endl;
    }
   // cerr << "Running pack with " << n_ << " keys growing to size " << (m_+48) << endl;
   int iterations = 64;
@@ -274,7 +277,7 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
     bool success = true; 
     seed_ = random();
     for (auto it = values_.begin(); it != values_.end(); ++it) {
-      if (!present(it)) continue;
+      if (!present(it->first)) continue;
       auto insert_index = find_insert_index(it->second, new_values);
       if (insert_index == -1) {
         // cerr << "Find index pack failure" << endl;
@@ -283,7 +286,7 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
       auto insert_position = new_values.begin() + insert_index;
 
       auto h = hasher_.hash128(it->second.first, seed_);
-      setpresent(insert_position, 1);
+      setpresent(&insert_position->first, true);
       insert_position->second = it->second;
 
       auto mph_seed = create_mph(h[0] % m_, new_values);
@@ -302,29 +305,32 @@ BFCR_MAP_METHOD_DECL(bool_type, pack)(bool minimal) {
 
 BFCR_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
   auto vit = values_.begin() + index(k);
-  if (__builtin_expect(present(vit), true)) { 
+  // cerr << "index: " << vit - values_.begin() << endl;
+  if (__builtin_expect(present(vit->first), true)) { 
+    // cerr << "value is present " << endl;
     if (__builtin_expect(equal_(k, vit->second.first), true)) {
+    // cerr << "value is equal " << endl;
       return this->make_solid((vit));
     }
+  } else {
+   // cerr << "value is not present" << endl;
   }
   return end();
 }
 
 BFCR_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto vit = values_.begin() + index(k);
-  if (__builtin_expect(present(vit), true)) { 
-    if (__builtin_expect(equal_(k, vit->second.first), true)) {
-      return this->make_solid((vit));
-    }
-  }
-  return end();
+  if (vit->first < 0 || vit->second.first !=k) return end();
+  return make_solid(vit);;
 }
 
 BFCR_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
   auto h = hasher_.hash128(k, seed_);
   auto pos = h[0] & (m_-1);
-  auto vit = values_.begin() + pos;
-  auto offset = select64(vit->first, reseed2(h[1], vit->first) & 7);
+  auto it = values_.begin() + pos;
+  __builtin_prefetch(&(it->second.first));
+  auto offset = eval_mph(h, it->first);
+  // cerr << "Key " << k << " is at pos " << pos << " offset " << offset << endl;
   // cerr << "Search index for key " << k << " is " << (h[0] % m_) << "+" << offset << endl;
   return pos + offset;
 }
@@ -334,7 +340,7 @@ BFCR_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
 }
 
 BFCR_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-  setpresent(pos.it_, 0);
+  setpresent(&(pos.it_->first), false);
   pos.it_->second = value_type();
   --n_;
 }

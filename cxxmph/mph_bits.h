@@ -91,7 +91,7 @@ static uint8_t rank32(uint32_t v) {
   return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 }
 
-static uint8_t select64(uint64_t x, uint8_t k) { 
+static uint64_t select64(uint64_t x, uint8_t k) { 
   #ifdef SELPOPCOUNT
   for( int i = 0, c = k; i < 64; i+=8 )
     if ( ( c -= popcount[ x >> i & 0xFF ] ) < 0 ) {
