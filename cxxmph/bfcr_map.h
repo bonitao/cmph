@@ -115,7 +115,7 @@ class bfcr_map {
       iterator_second<hollow_iterator_base<ittype, bfcr_is_empty>> {
     return make_iterator_second(hollow_iterator_base<ittype, bfcr_is_empty>(it, is_empty_));
   }
-
+  
   bool present(uint64_t mph) const {
     return mph & 1ULL << 63;
   }
@@ -124,7 +124,7 @@ class bfcr_map {
     *mph |= static_cast<uint64_t>(present) << 63;
     assert(this->present(*mph) == present);
   }
-  uint16_t seed(uint64_t mph) const {
+  uint64_t seed(uint64_t mph) const {
     return mph >> 48;
   }
   void setseed(uint64_t* mph, uint16_t seed) const {
@@ -132,10 +132,23 @@ class bfcr_map {
     *mph &= ones() >> 16;
     *mph |= static_cast<uint64_t>(seed) << 48;
   }
+  uint64_t pos(uint64_t mph, uint16_t index) const {
+    assert(index < 6);
+    return (mph >> (index << 3)) & 255;
+  }
+  void setpos(uint64_t* mph, uint8_t index, uint8_t pos) const {
+    assert(pos < 255);
+    assert(index < 6);
+    *mph &= ones() ^ ((ones() & 255) << (index << 3));
+    *mph |= static_cast<uint64_t>(pos) << (index << 3);
+  }
+  uint64_t reseed(uint64_t mph, uint64_t h1) const {
+    return seed(mph) ^ h1;
+  }
 
   my_uint64_t create_mph(uint32_t index, const vector<indexed_value_type>& values) const;
   uint64_t eval_mph(const h128& h, uint64_t mph) const {
-    return select64(mph, reseed2(h[1], mph >> 48) & 7);
+    return pos(mph, reseed2(h[1], seed(mph)) & 7);
   }
   my_int32_t find_insert_index(const value_type& x, const vector<indexed_value_type>& values) const;
 };
@@ -191,20 +204,13 @@ BFCR_MAP_METHOD_DECL(my_uint64_t, create_mph)(
     mph = 0;
     setseed(&mph, random());
     setpresent(&mph, present(pos->first));
-    int64_t last_rank = -1;
+    vector<bool> used_rank(8);
     for (uint32_t i = 0; i < hash.size(); ++i) {
-      int64_t rank = reseed2(hash[i][1], mph >> 48) & 7; 
-      if (rank <= last_rank) { success = false; break; }
-      if (rank > offset[i]) { success = false; break; }
-      // cerr << "Mapping rank " << rank << " to position  " << offset[i] << endl;
-      for (int64_t j = offset[i]; select64(mph, rank) > offset[i]; --j) {
-        if (mph & (1ULL << j)) { success = false; break; }
-        mph |= 1ULL << j;
-        // cerr << "Set bit " << j << endl;
-      }
-      if (!success) break;
-      assert(select64(mph, rank) == offset[i]);
-      last_rank = rank;
+      int64_t rank = reseed2(hash[i][1], seed(mph)) & 7; 
+      if (rank >= 6) { success = false; break; }
+      if (used_rank[rank]) { success = false; break; }
+      used_rank[rank] = true;
+      setpos(&mph, rank, offset[i]);
     }
     // cerr << "Success now: " << uint32_t(success) << endl;
     if (!success) continue;
