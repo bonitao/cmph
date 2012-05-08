@@ -21,9 +21,10 @@
 #include <vector>
 #include <utility>  // for std::pair
 
+#include "hollow_iterator.h"
 #include "mph_bits.h"
 #include "mph_index.h"
-#include "hollow_iterator.h"
+#include "seeded_hash.h"
 
 namespace cxxmph {
 

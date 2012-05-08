@@ -68,13 +68,6 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 // rank and select:
 // http://vigna.dsi.unimi.it/ftp/papers/Broadword.pdf
 
-struct Ranktable { static uint8_t get(uint8_t); };
-static uint8_t rank64(uint64_t bits) {
-  auto bytes = reinterpret_cast<const uint8_t*>(&bits);
-  return Ranktable::get(bytes[0]) + Ranktable::get(bytes[1]) +
-         Ranktable::get(bytes[2]) + Ranktable::get(bytes[3]);
-};
-  
 }  // namespace cxxmph
 
 #endif

@@ -8,28 +8,4 @@ dynamic_2bitset::dynamic_2bitset(uint32_t size, bool fill)
     : size_(size), fill_(fill), data_(ceil(size / 4.0), ones()*fill) {}
 dynamic_2bitset::~dynamic_2bitset() {}
 
-template <int n, int mask = (1 << 7)> struct bitcount {
-enum { value = (n & mask ? 1:0) + bitcount<n, (mask >> 1)>::value };
-};
-template <int n> struct bitcount<n, 0> { enum { value = 0 }; };
-
-template <int size, int index = size>
-class CompileTimeRankTable {
-public:
-CompileTimeRankTable() : current(bitcount<index - 1>::value) { }
-uint8_t operator[] (uint8_t i) { return *(&current + size - i - 1); }
-private:
-unsigned char current;
-CompileTimeRankTable<index -1> next;
-};
-template <int size> class CompileTimeRankTable<size, 0> { };
-static CompileTimeRankTable<256> kRanktable;
-
-uint8_t Ranktable::get(uint8_t i) { return kRanktable[i]; }
-
-void stop_unused_warning() {
-  rank64(4);
-  nextpoweroftwo(4);
-}
-
 }
