@@ -1,5 +1,5 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_map_test mph_index_test trigraph_test
+check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_map_test mph_index_test trigraph_test map_tester_test
 noinst_PROGRAMS = bm_index bm_map
 bin_PROGRAMS = cxxmph
 lib_LTLIBRARIES = libcxxmph.la
@@ -33,4 +33,6 @@ seeded_hash_test_LDADD   = libcxxmph.la
 
 mph_bits_test_SOURCES = mph_bits_test.cc
 mph_bits_test_LDADD   = libcxxmph.la
+
+map_tester_test_SOURCES = map_tester.cc map_tester_test.cc
 
