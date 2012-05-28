@@ -143,7 +143,9 @@ class bfcr_map {
     *mph |= static_cast<uint64_t>(pos) << (index << 3);
   }
   uint64_t reseed(const h128& h, uint32_t seed) const {
-    return (h[1] >> seed) ^ (h[2] >> seed) ^ (h[3] >> seed);
+    return (h[1] >> (seed & 63)) ^ 
+           (h[2] >> ((seed >> 5) & 63)) ^
+	   (h[3] >> ((seed >> 10) & 63));
   }
 
   my_uint64_t create_mph(uint32_t index, const vector<indexed_value_type>& values) const;
@@ -326,8 +328,8 @@ BFCR_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 
 BFCR_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto vit = values_.begin() + index(k);
-  if (vit->first < 0 || vit->second.first !=k) return end();
-  return make_solid(vit);;
+  if (__builtin_expect((vit->first >= 0 && vit->second.first ==k), true)) return make_solid(vit);
+  return end();
 }
 
 BFCR_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
@@ -335,7 +337,8 @@ BFCR_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
   auto pos = h[0] & (m_-1);
   auto it = values_.begin() + pos;
   __builtin_prefetch(&(it->second.first));
-  auto offset = eval_mph(h, it->first);
+  auto index = reseed(h, seed(it->first)) & 7;
+  auto offset = (it->first >> (index << 3)) & 255;
   // cerr << "Key " << k << " is at pos " << pos << " offset " << offset << endl;
   // cerr << "Search index for key " << k << " is " << (h[0] % m_) << "+" << offset << endl;
   return pos + offset;

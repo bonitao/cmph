@@ -29,7 +29,10 @@
 
 #else	// defined(_MSC_VER)
 
-#define	FORCE_INLINE __attribute__((always_inline))
+// Newer gcc do not work with -Winline if attribute is used.
+// http://plash.beasts.org/wiki/GlibcBuildIssues#head-b9149fbab065967691cf1bade23d84325c05e9b0
+// #define	FORCE_INLINE __attribute__((always_inline))
+#define	FORCE_INLINE inline
 
 inline uint32_t rotl32 ( uint32_t x, int8_t r )
 {
