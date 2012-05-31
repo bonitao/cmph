@@ -1,0 +1,49 @@
+#!/bin/bash
+
+upload_opt=
+
+while getopts "u:" opt; do
+    case $opt in
+        u)
+            upload_opt="$OPTARG"
+        ;;
+    esac
+done
+
+function usage {
+    echo "Usage: $0 -u <upload_opt>"
+    echo "-u <upload_opt> What to upload. It can be either of the following options:"
+    echo " * html"
+    echo " * examples"
+    echo " * papers"
+    echo " * all"
+    exit 1
+}
+
+if [ "$upload_opt" = "" ] 
+then
+    usage
+fi
+
+if [ "$upload_opt" != "html" ] && 
+   [ "$upload_opt" != "examples" ] && 
+   [ "$upload_opt" != "papers" ] && 
+   [ "$upload_opt" != "all" ]
+then
+    usage
+fi
+ 
+if [ "$upload_opt" = "html" ] || [ "$upload_opt" = "all" ]
+then
+    scp -r *.html  fc_botelho@web.sourceforge.net:/home/project-web/cmph/htdocs/
+fi
+
+if [ "$upload_opt" = "examples" ] || [ "$upload_opt" = "all" ]
+then
+    scp -r examples/*.c examples/keys.txt fc_botelho@web.sourceforge.net:/home/project-web/cmph/htdocs/examples/
+fi
+
+if [ "$upload_opt" = "papers" ] || [ "$upload_opt" = "all" ]
+then
+    scp -r papers/*.pdf fc_botelho@web.sourceforge.net:/home/project-web/cmph/htdocs/papers/
+fi

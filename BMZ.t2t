@@ -1,0 +1,405 @@
+BMZ Algorithm
+
+
+%!includeconf: CONFIG.t2t
+
+----------------------------------------
+==History==
+
+At the end of 2003, professor [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] was
+finishing the second edition of his [book http://www.dcc.ufmg.br/algoritmos/].
+During the [book http://www.dcc.ufmg.br/algoritmos/] writing, 
+professor [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] studied the problem of generating 
+[minimal perfect hash functions concepts.html]
+(if you are not familiarized with this problem, see [[1 #papers]][[2 #papers]]). 
+Professor [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] coded a modified version of 
+the [CHM algorithm chm.html], which was proposed by
+Czech, Havas and Majewski, and put it in his [book http://www.dcc.ufmg.br/algoritmos/].
+The [CHM algorithm chm.html] is based on acyclic random graphs to generate 
+[order preserving minimal perfect hash functions concepts.html] in linear time. 
+Professor [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] 
+argued himself, why must the random graph 
+be acyclic? In the modified version availalbe in his [book http://www.dcc.ufmg.br/algoritmos/] he got rid of this restriction.
+
+The modification presented a problem, it was impossible to generate minimal perfect hash functions
+for sets with more than 1000 keys.
+At the same time, [Fabiano C. Botelho http://www.dcc.ufmg.br/~fbotelho],
+a master degree student at [Departament of Computer Science http://www.dcc.ufmg.br] in 
+[Federal University of Minas Gerais http://www.ufmg.br],
+started to be advised by [Nivio Ziviani http://www.dcc.ufmg.br/~nivio] who presented the problem 
+to [Fabiano http://www.dcc.ufmg.br/~fbotelho].
+
+During the master, [Fabiano http://www.dcc.ufmg.br/~fbotelho] and 
+[Nivio Ziviani http://www.dcc.ufmg.br/~nivio] faced lots of problems.
+In april of 2004, [Fabiano http://www.dcc.ufmg.br/~fbotelho] was talking with a 
+friend of him (David Menoti) about the problems
+and many ideas appeared.
+The ideas were implemented and a very fast algorithm to generate
+minimal perfect hash functions had been designed.
+We refer the algorithm to as **BMZ**, because it was conceived by Fabiano C. **B**otelho,
+David **M**enoti and Nivio **Z**iviani. The algorithm is described in [[1 #papers]].
+To analyse BMZ algorithm we needed some results from the random graph theory, so 
+we invited professor [Yoshiharu Kohayakawa http://www.ime.usp.br/~yoshi] to help us.
+The final description and analysis of BMZ algorithm is presented in [[2 #papers]].
+
+----------------------------------------
+ 
+==The Algorithm==
+
+The BMZ algorithm shares several features with the [CHM algorithm chm.html].   
+In particular, BMZ algorithm is also
+based on the generation of random graphs [figs/img27.png], where [figs/img28.png] is in 
+one-to-one correspondence with the key set [figs/img20.png] for which we wish to 
+generate a [minimal perfect hash function concepts.html].
+The two main differences between BMZ algorithm and CHM algorithm
+are as follows: (//i//)  BMZ algorithm generates random 
+graphs [figs/img27.png] with [figs/img29.png] and [figs/img30.png], where [figs/img31.png], 
+and hence [figs/img32.png] necessarily contains cycles, 
+while CHM algorithm generates //acyclic// random 
+graphs [figs/img27.png] with [figs/img29.png] and [figs/img30.png],
+with a greater number of vertices: [figs/img33.png];
+(//ii//) CHM algorithm generates [order preserving minimal perfect hash functions concepts.html]
+while BMZ algorithm does not preserve order.  Thus, BMZ algorithm improves
+the space requirement at the expense of generating functions that are not
+order preserving. 
+
+Suppose [figs/img14.png] is a universe of //keys//.
+Let [figs/img17.png] be a set of [figs/img8.png] keys from [figs/img14.png].
+Let us show how the BMZ algorithm constructs a minimal perfect hash function [figs/img7.png].
+We make use of two auxiliary random functions [figs/img41.png] and [figs/img55.png], 
+where [figs/img56.png] for some suitably chosen integer [figs/img57.png], 
+where [figs/img58.png].We build a random graph [figs/img59.png] on [figs/img60.png],
+whose edge set is [figs/img61.png]. There is an edge in [figs/img32.png] for each 
+key in the set of keys [figs/img20.png].
+
+In what follows, we shall be interested in the //2-core// of
+the random graph [figs/img32.png], that is, the maximal subgraph 
+of [figs/img32.png] with minimal degree at 
+least 2 (see [[2 #papers]] for details).
+Because of its importance in our context, we call the 2-core the
+//critical// subgraph of [figs/img32.png] and denote it by [figs/img63.png].
+The vertices and edges in [figs/img63.png] are said to be //critical//.
+We let [figs/img64.png] and [figs/img65.png].
+Moreover, we let [figs/img66.png] be the set of //non-critical//
+vertices in [figs/img32.png].
+We also let [figs/img67.png] be the set of all critical
+vertices that have at least one non-critical vertex as a neighbour.
+Let [figs/img68.png] be the set of //non-critical// edges in [figs/img32.png].
+Finally, we let [figs/img69.png] be the //non-critical// subgraph 
+of [figs/img32.png].
+The non-critical subgraph [figs/img70.png] corresponds to the //acyclic part//
+of [figs/img32.png].
+We have [figs/img71.png].
+
+We then construct a suitable labelling [figs/img72.png] of the vertices
+of [figs/img32.png]: we choose [figs/img73.png] for each [figs/img74.png] in such
+a way that [figs/img75.png] ([figs/img18.png]) is a
+minimal perfect hash function for [figs/img20.png].
+This labelling [figs/img37.png] can be found in linear time
+if the number of edges in [figs/img63.png] is at most [figs/img76.png] (see [[2 #papers]] 
+for details).
+
+Figure 1 presents a pseudo code for the BMZ algorithm.
+The procedure BMZ ([figs/img20.png], [figs/img37.png]) receives as input the set of
+keys [figs/img20.png] and produces the labelling [figs/img37.png].
+The method uses a mapping, ordering and searching approach.
+We now describe each step.
+ | procedure BMZ ([figs/img20.png], [figs/img37.png])                              
+ | &nbsp;&nbsp;&nbsp;&nbsp;Mapping ([figs/img20.png], [figs/img32.png]);                
+ | &nbsp;&nbsp;&nbsp;&nbsp;Ordering ([figs/img32.png], [figs/img63.png], [figs/img70.png]); 
+ | &nbsp;&nbsp;&nbsp;&nbsp;Searching ([figs/img32.png], [figs/img63.png], [figs/img70.png], [figs/img37.png]);
+ | **Figure 1**: Main steps of BMZ algorithm for constructing a minimal perfect hash function 
+
+----------------------------------------
+
+===Mapping Step===
+
+The procedure Mapping ([figs/img20.png], [figs/img32.png]) receives as input the set 
+of keys [figs/img20.png] and generates the random graph [figs/img59.png], by generating 
+two auxiliary functions [figs/img41.png], [figs/img78.png].
+
+The functions [figs/img41.png] and [figs/img42.png] are constructed as follows.
+We impose some upper bound [figs/img79.png] on the lengths of the keys in [figs/img20.png].
+To define [figs/img80.png] ([figs/img81.png], [figs/img62.png]), we generate 
+an [figs/img82.png] table of random integers [figs/img83.png].
+For a key [figs/img18.png] of length [figs/img84.png] and [figs/img85.png], we let 
+
+ | [figs/img86.png]
+ 
+The random graph [figs/img59.png] has vertex set [figs/img56.png] and 
+edge set [figs/img61.png].  We need [figs/img32.png] to be 
+simple, i.e., [figs/img32.png] should have neither loops nor multiple edges.
+A loop occurs when [figs/img87.png] for some [figs/img18.png].
+We solve this in an ad hoc manner: we simply let [figs/img88.png] in this case. 
+If we still find a loop after this, we generate another pair [figs/img89.png].
+When a multiple edge occurs we abort and generate a new pair [figs/img89.png]. 
+Although the function above causes [collisions concepts.html] with probability //1/t//,
+in [cmph library index.html] we use faster hash 
+functions ([DJB2 hash http://www.cs.yorku.ca/~oz/hash.html], [FNV hash http://www.isthe.com/chongo/tech/comp/fnv/],
+ [Jenkins hash http://burtleburtle.net/bob/hash/doobs.html] and [SDBM hash http://www.cs.yorku.ca/~oz/hash.html]) 
+ in which we do not need to impose any upper bound [figs/img79.png] on the lengths of the keys in [figs/img20.png].
+
+As mentioned before, for us to find  the labelling [figs/img72.png] of the 
+vertices of [figs/img59.png] in linear time,
+we require that [figs/img108.png]. 
+The crucial step now is to determine the value 
+of [figs/img1.png] (in [figs/img57.png]) to obtain a random 
+graph [figs/img71.png] with [figs/img109.png].
+Botelho, Menoti an Ziviani determinded emprically in [[1 #papers]] that 
+the value of [figs/img1.png] is //1.15//. This value is remarkably
+close to the theoretical value determined in [[2 #papers]], 
+which is around [figs/img112.png].
+
+----------------------------------------
+
+===Ordering Step===
+
+The procedure Ordering ([figs/img32.png], [figs/img63.png], [figs/img70.png]) receives 
+as input the graph [figs/img32.png] and partitions [figs/img32.png] into the two 
+subgraphs [figs/img63.png] and [figs/img70.png], so that [figs/img71.png].
+
+Figure 2 presents a sample graph with 9 vertices
+and 8 edges, where the degree of a vertex is shown besides each vertex.
+Initially, all vertices with degree 1 are added to a queue [figs/img136.png].
+For the example shown in Figure 2(a), [figs/img137.png] after the initialization step.
+
+ | [figs/img138.png]
+ | **Figure 2:** Ordering step for a graph with 9 vertices and 8 edges.
+
+Next, we remove one vertex [figs/img139.png] from the queue, decrement its degree and
+the degree of the vertices with degree greater than 0 in the adjacent
+list of [figs/img139.png], as depicted in Figure 2(b) for [figs/img140.png].
+At this point, the adjacencies of [figs/img139.png] with degree 1 are
+inserted into the queue, such as vertex 1.
+This process is repeated until the queue becomes empty.
+All vertices with degree 0 are non-critical vertices and the others are
+critical vertices, as depicted in Figure 2(c).
+Finally, to determine the vertices in [figs/img141.png] we collect all 
+vertices [figs/img142.png] with at least one vertex [figs/img143.png] that 
+is in Adj[figs/img144.png] and in [figs/img145.png], as the vertex 8 in Figure 2(c).
+ 
+----------------------------------------
+
+===Searching Step===
+
+In the searching step, the key part is
+the //perfect assignment problem//: find [figs/img153.png] such that
+the function [figs/img154.png] defined by
+
+ | [figs/img155.png]
+
+is a bijection from [figs/img156.png] to [figs/img157.png] (recall [figs/img158.png]).
+We are interested in a labelling [figs/img72.png] of
+the vertices of the graph [figs/img59.png] with
+the property that if [figs/img11.png] and [figs/img22.png] are keys 
+in [figs/img20.png], then [figs/img159.png]; that is, if we associate
+to each edge the sum of the labels on its endpoints, then these values
+should be all distinct.
+Moreover, we require that all the sums [figs/img160.png] ([figs/img18.png])
+fall between [figs/img115.png] and [figs/img161.png], and thus we have a bijection
+between [figs/img20.png] and [figs/img157.png].
+
+The procedure Searching ([figs/img32.png], [figs/img63.png], [figs/img70.png], [figs/img37.png])
+receives as input [figs/img32.png], [figs/img63.png], [figs/img70.png] and finds a 
+suitable [figs/img162.png] bit value for each vertex [figs/img74.png], stored in the
+array [figs/img37.png].
+This step is first performed for the vertices in the
+critical subgraph [figs/img63.png] of [figs/img32.png] (the 2-core of [figs/img32.png]) 
+and then it is performed for the vertices in [figs/img70.png] (the non-critical subgraph
+of [figs/img32.png] that contains the "acyclic part" of [figs/img32.png]).
+The reason the assignment of the [figs/img37.png] values is first
+performed on the vertices in [figs/img63.png] is to resolve reassignments
+as early as possible (such reassignments are consequences of the cycles
+in [figs/img63.png] and are depicted hereinafter).
+
+----------------------------------------
+
+====Assignment of Values to Critical Vertices====
+
+The labels [figs/img73.png] ([figs/img142.png])
+are assigned in increasing order following a greedy
+strategy where the critical vertices [figs/img139.png] are considered one at a time,
+according to a breadth-first search on [figs/img63.png].
+If a candidate value [figs/img11.png] for [figs/img73.png] is forbidden
+because setting [figs/img163.png] would create two edges with the same sum,
+we try [figs/img164.png] for [figs/img73.png]. This fact is referred to 
+as a //reassignment//.
+
+Let [figs/img165.png] be the set of addresses assigned to edges in [figs/img166.png].
+Initially [figs/img167.png].
+Let [figs/img11.png] be a candidate value for [figs/img73.png].
+Initially [figs/img168.png].
+Considering the subgraph [figs/img63.png] in Figure 2(c),
+a step by step example of the assignment of values to vertices in [figs/img63.png] is 
+presented in Figure 3.
+Initially, a vertex [figs/img139.png] is chosen, the assignment [figs/img163.png] is made
+and [figs/img11.png] is set to [figs/img164.png].
+For example, suppose that vertex [figs/img169.png] in Figure 3(a) is 
+chosen, the assignment [figs/img170.png] is made and [figs/img11.png] is set to [figs/img96.png].
+
+ | [figs/img171.png]
+ | **Figure 3:** Example of the assignment of values to critical vertices.
+
+In Figure 3(b), following the adjacent list of vertex [figs/img169.png],
+the unassigned vertex [figs/img115.png] is reached.
+At this point, we collect in the temporary variable [figs/img172.png] all adjacencies 
+of vertex [figs/img115.png] that have been assigned an [figs/img11.png] value, 
+and [figs/img173.png].
+Next, for all [figs/img174.png], we check if [figs/img175.png].
+Since [figs/img176.png], then [figs/img177.png] is set 
+to [figs/img96.png], [figs/img11.png] is incremented 
+by 1 (now [figs/img178.png]) and [figs/img179.png].
+Next, vertex [figs/img180.png] is reached, [figs/img181.png] is set 
+to [figs/img62.png], [figs/img11.png] is set to [figs/img180.png] and [figs/img182.png].
+Next, vertex [figs/img183.png] is reached and [figs/img184.png].
+Since [figs/img185.png] and [figs/img186.png], then [figs/img187.png] is 
+set to [figs/img180.png], [figs/img11.png] is set to [figs/img183.png] and [figs/img188.png].
+Finally, vertex [figs/img189.png] is reached and [figs/img190.png].
+Since [figs/img191.png], [figs/img11.png] is incremented by 1 and set to 5, as depicted in 
+Figure 3(c).
+Since [figs/img192.png], [figs/img11.png] is again incremented by 1 and set to 6, 
+as depicted in Figure 3(d).
+These two reassignments are indicated by the arrows in Figure 3.
+Since [figs/img193.png] and [figs/img194.png], then [figs/img195.png] is set 
+to [figs/img196.png] and [figs/img197.png]. This finishes the algorithm.
+
+----------------------------------------
+
+====Assignment of Values to Non-Critical Vertices====
+
+As [figs/img70.png] is acyclic, we can impose the order in which addresses are
+associated with edges in [figs/img70.png], making this step simple to solve
+by a standard depth first search algorithm.
+Therefore, in the assignment of values to vertices in [figs/img70.png] we
+benefit from the unused addresses in the gaps left by the assignment of values
+to vertices in [figs/img63.png].
+For that, we start the depth-first search from the vertices in [figs/img141.png] because 
+the [figs/img37.png] values for these critical vertices were already assigned
+and cannot be changed.
+
+Considering the subgraph [figs/img70.png] in Figure 2(c),
+a step by step example of the assignment of values to vertices in [figs/img70.png] is 
+presented in Figure 4.
+Figure 4(a) presents the initial state of the algorithm.
+The critical vertex 8 is the only one that has non-critical vertices as
+adjacent.
+In the example presented in Figure 3, the addresses [figs/img198.png] were not used.
+So, taking the first unused address [figs/img115.png] and the vertex [figs/img96.png], 
+which is reached from the vertex [figs/img169.png], [figs/img199.png] is set 
+to [figs/img200.png], as shown in Figure 4(b).
+The only vertex that is reached from vertex [figs/img96.png] is vertex [figs/img62.png], so
+taking the unused address [figs/img183.png] we set [figs/img201.png] to [figs/img202.png],
+as shown in Figure 4(c).
+This process is repeated until the UnAssignedAddresses list becomes empty.
+ 
+ | [figs/img203.png]
+ | **Figure 4:** Example of the assignment of values to non-critical vertices.
+ 
+----------------------------------------
+
+==The Heuristic==[heuristic]
+
+We now present an heuristic for BMZ algorithm that 
+reduces the value of [figs/img1.png] to any given value between //1.15// and //0.93//.
+This reduces the space requirement to store the resulting function 
+to any given value between [figs/img12.png] words and [figs/img13.png] words.
+The heuristic reuses, when possible, the set 
+of [figs/img11.png] values that caused reassignments, just before 
+trying [figs/img164.png].
+Decreasing the value of [figs/img1.png] leads to an increase in the number of 
+iterations to generate [figs/img32.png].
+For example, for [figs/img244.png] and [figs/img6.png], the analytical expected number 
+of iterations are [figs/img245.png] and [figs/img246.png], respectively (see [[2 #papers]] 
+for details),
+while for [figs/img128.png] the same value is around //2.13//.
+
+----------------------------------------
+
+==Memory Consumption==
+
+Now we detail the memory consumption to generate and to store minimal perfect hash functions
+using the BMZ algorithm. The structures responsible for memory consumption are in the 
+following:
+- Graph:
+  + **first**: is a vector that stores //cn// integer numbers, each one representing 
+    the first edge (index in the vector edges) in the list of 
+    edges of each vertex. 
+    The integer numbers are 4 bytes long. Therefore,
+    the vector first is stored in //4cn// bytes.
+    
+  + **edges**: is a vector to represent the edges of the graph. As each edge
+    is compounded by a pair of vertices, each entry stores two integer numbers 
+    of 4 bytes that represent the vertices. As there are //n// edges, the 
+    vector edges is stored in //8n// bytes. 
+    
+  + **next**: given a vertex [figs/img139.png], we can discover the edges that 
+    contain [figs/img139.png] following its list of edges, 
+    which starts on first[[figs/img139.png]] and the next
+    edges are given by next[...first[[figs/img139.png]]...]. Therefore, the vectors first and next represent 
+    the linked lists of edges of each vertex. As there are two vertices for each edge,
+    when an edge is iserted in the graph, it must be inserted in the two linked lists 
+    of the vertices in its composition. Therefore, there are //2n// entries of integer
+    numbers in the vector next, so it is stored in //4*2n = 8n// bytes.
+    
+  + **critical vertices(critical_nodes vector)**: is a vector of //cn// bits, 
+    where each bit indicates if a vertex is critical (1) or non-critical (0). 
+    Therefore, the critical and non-critical vertices are represented in //cn/8// bytes.
+    
+  + **critical edges (used_edges vector)**: is a vector of //n// bits, where each 
+    bit indicates if an edge is critical (1) or non-critical (0). Therefore, the 
+    critical and non-critical edges are represented in //n/8// bytes. 
+    
+- Other auxiliary structures 
+  + **queue**: is a queue of integer numbers used in the breadth-first search of the
+    assignment of values to critical vertices. There is an entry in the queue for 
+    each two critical vertices. Let [figs/img110.png] be the expected number of critical 
+    vertices. Therefore, the queue is stored in //4*0.5*[figs/img110.png]=2[figs/img110.png]//.
+    
+  + **visited**: is a vector of //cn// bits, where each bit indicates if the g value of 
+    a given vertex was already defined. Therefore, the vector visited is stored
+    in //cn/8// bytes.
+    
+  + **function //g//**: is represented by a vector of //cn// integer numbers.
+    As each integer number is 4 bytes long, the function //g// is stored in
+    //4cn// bytes. 
+
+    
+Thus, the total memory consumption of BMZ algorithm for generating a minimal 
+perfect hash function (MPHF) is: //(8.25c + 16.125)n +2[figs/img110.png] + O(1)// bytes.
+As the value of constant //c// may be 1.15 and 0.93 we have:
+ || //c// |  [figs/img110.png] | Memory consumption to generate a MPHF |
+  | 0.93  |  //0.497n//  |         //24.80n + O(1)//             |
+  | 1.15  |  //0.401n//  |         //26.42n + O(1)//             |
+  
+  | **Table 1:** Memory consumption to generate a MPHF using the BMZ algorithm.
+  
+The values of [figs/img110.png] were calculated using Eq.(1) presented in [[2 #papers]].
+    
+Now we present the memory consumption to store the resulting function.
+We only need to store the //g// function. Thus, we need //4cn// bytes.
+Again we have:
+ || //c// | Memory consumption to store a MPHF |
+  | 0.93  |            //3.72n//               |
+  | 1.15  |            //4.60n//               |
+  
+  | **Table 2:** Memory consumption to store a MPHF generated by the BMZ algorithm.  
+----------------------------------------
+
+==Experimental Results==
+
+[CHM x BMZ comparison.html]
+
+----------------------------------------
+
+==Papers==[papers]
+
++ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], D. Menoti, [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A New algorithm for constructing minimal perfect hash functions papers/bmz_tr004_04.ps], Technical Report TR004/04, Department of Computer Science, Federal University of Minas Gerais, 2004.
+
++ [F. C. Botelho http://www.dcc.ufmg.br/~fbotelho], Y. Kohayakawa, and [N. Ziviani http://www.dcc.ufmg.br/~nivio]. [A Practical Minimal Perfect Hashing Method papers/wea05.pdf]. //4th International Workshop on efficient and Experimental Algorithms (WEA05),// Springer-Verlag Lecture Notes in Computer Science, vol. 3505, Santorini Island, Greece, May 2005, 488-500.
+
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

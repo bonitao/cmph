@@ -1,0 +1,56 @@
+Minimal Perfect Hash Functions - Introduction
+
+
+%!includeconf: CONFIG.t2t
+
+----------------------------------------
+==Basic Concepts==
+
+Suppose [figs/img14.png] is a universe of //keys//.
+Let [figs/img15.png] be a //hash function// that maps the keys from [figs/img14.png] to a given interval of integers [figs/img16.png].
+Let [figs/img17.png] be a set of [figs/img8.png] keys from [figs/img14.png].
+Given a key [figs/img18.png], the hash function [figs/img7.png] computes an 
+integer in [figs/img19.png] for the storage or retrieval of [figs/img11.png] in 
+a //hash table//.
+Hashing methods for //non-static sets// of keys can be used to construct
+data structures storing [figs/img20.png] and supporting membership queries
+"[figs/img18.png]?" in expected time [figs/img21.png].
+However, they involve a certain amount of wasted space owing to unused
+locations in the table and waisted time to resolve collisions when
+two keys are hashed to the same table location.
+
+For //static sets// of keys it is possible to compute a function
+to find any key in a table in one probe; such hash functions are called
+//perfect//. 
+More precisely, given a set of keys [figs/img20.png], we shall say that a 
+hash function [figs/img15.png] is a //perfect hash function// 
+for [figs/img20.png] if [figs/img7.png] is an injection on [figs/img20.png],
+that is, there are no //collisions// among the keys in [figs/img20.png]: 
+if [figs/img11.png] and [figs/img22.png] are in [figs/img20.png] and [figs/img23.png], 
+then [figs/img24.png].
+Figure 1(a) illustrates a perfect hash function.
+Since no collisions occur, each key can be retrieved from the table
+with a single probe.
+If [figs/img25.png], that is, the table has the same size as [figs/img20.png],
+then we say that [figs/img7.png] is a //minimal perfect hash function// 
+for [figs/img20.png].
+Figure 1(b) illustrates a minimal perfect hash function.
+Minimal perfect hash functions totally avoid the problem of wasted
+space and time. A perfect hash function [figs/img7.png] is //order preserving// 
+if the keys in [figs/img20.png] are arranged in some given order 
+and [figs/img7.png] preserves this order in the hash table.
+
+ |                [figs/img26.png]
+ | **Figure 1:** (a) Perfect hash function. (b) Minimal perfect hash function.
+
+Minimal perfect hash functions are widely used for memory efficient
+storage and fast retrieval of items from static sets, such as words in natural
+languages, reserved words in programming languages or interactive systems,
+universal resource locations (URLs) in Web search engines, or item sets in
+data mining techniques.
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

@@ -1,0 +1,72 @@
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="CENTER">
+<TR><TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE">
+<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+  SRC="figs/brz/img5.png"
+   ALT="$n$"></SPAN> (millions)  </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 1                 </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 2                    </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 4                  </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 8                  </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 16      </SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> 32 </SMALL></TD>
+   <TD></TD>
+   </TR>
+   <TR><TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE">
+
+   Average time (s)</SMALL></TD>
+   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+    WIDTH="64" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+     SRC="figs/brz/img168.png"
+      ALT="$6.1 \pm 0.3$"></SPAN> </SMALL></TD>
+      <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+       WIDTH="72" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+        SRC="figs/brz/img169.png"
+	 ALT="$12.2 \pm 0.6$"></SPAN> </SMALL></TD>
+	 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	  WIDTH="72" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+	   SRC="figs/brz/img170.png"
+	    ALT="$25.4 \pm 1.1$"></SPAN> </SMALL></TD>
+	    <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	     WIDTH="72" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+	      SRC="figs/brz/img171.png"
+	       ALT="$51.4 \pm 2.0$"></SPAN> </SMALL></TD>
+	       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+	        WIDTH="80" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+		SRC="figs/brz/img172.png"
+		 ALT="$117.3 \pm 4.4$"></SPAN> </SMALL></TD>
+		 <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+		  WIDTH="80" HEIGHT="29" ALIGN="MIDDLE" BORDER="0"
+		   SRC="figs/brz/img173.png"
+		    ALT="$262.2 \pm 8.7$"></SPAN></SMALL></TD>
+		    <TD></TD>
+		    </TR>
+		    <TR><TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE">
+		    SD (s)          </SMALL></TD>
+		    <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+		     WIDTH="24" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+		      SRC="figs/brz/img174.png"
+		       ALT="$2.6$"></SPAN> </SMALL></TD>
+		       <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+		        WIDTH="24" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			 SRC="figs/brz/img175.png"
+			  ALT="$5.4$"></SPAN> </SMALL></TD>
+			  <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+			   WIDTH="24" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			    SRC="figs/brz/img176.png"
+			     ALT="$9.8$"></SPAN> </SMALL></TD>
+			     <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+			      WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+			       SRC="figs/brz/img177.png"
+			        ALT="$17.6$"></SPAN> </SMALL></TD>
+				<TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+				 WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+				  SRC="figs/brz/img178.png"
+				   ALT="$37.3$"></SPAN> </SMALL></TD>
+				   <TD ALIGN="CENTER"><SMALL CLASS="SCRIPTSIZE"> <SPAN CLASS="MATH"><IMG
+				    WIDTH="32" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+				     SRC="figs/brz/img179.png"
+				      ALT="$76.3$"></SPAN> </SMALL></TD>
+				      <TD></TD>
+				      </TR>
+				      </TABLE>

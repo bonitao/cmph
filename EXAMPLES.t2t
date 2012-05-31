@@ -1,0 +1,152 @@
+CMPH - Examples
+
+
+%!includeconf: CONFIG.t2t
+
+Using cmph is quite simple. Take a look in the following examples.
+
+-------------------------------------------------------------------
+
+```
+#include <cmph.h>
+#include <string.h>
+// Create minimal perfect hash function from in-memory vector
+int main(int argc, char **argv)
+{ 
+
+    // Creating a filled vector
+    unsigned int i = 0;
+    const char *vector[] = {"aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee", 
+        "ffffffffff", "gggggggggg", "hhhhhhhhhh", "iiiiiiiiii", "jjjjjjjjjj"};
+    unsigned int nkeys = 10;
+    FILE* mphf_fd = fopen("temp.mph", "w");
+    // Source of keys
+    cmph_io_adapter_t *source = cmph_io_vector_adapter((char **)vector, nkeys);
+
+    //Create minimal perfect hash function using the brz algorithm.
+    cmph_config_t *config = cmph_config_new(source);
+    cmph_config_set_algo(config, CMPH_BRZ);
+    cmph_config_set_mphf_fd(config, mphf_fd);
+    cmph_t *hash = cmph_new(config);
+    cmph_config_destroy(config);
+    cmph_dump(hash, mphf_fd); 
+    cmph_destroy(hash);	
+    fclose(mphf_fd);
+
+    //Find key
+    mphf_fd = fopen("temp.mph", "r");
+    hash = cmph_load(mphf_fd);
+    while (i < nkeys) {
+        const char *key = vector[i];
+        unsigned int id = cmph_search(hash, key, (cmph_uint32)strlen(key));
+        fprintf(stderr, "key:%s -- hash:%u\n", key, id);
+        i++;
+    }
+
+    //Destroy hash
+    cmph_destroy(hash);
+    cmph_io_vector_adapter_destroy(source);   
+    fclose(mphf_fd);
+    return 0;
+}
+```
+Download [vector_adapter_ex1.c examples/vector_adapter_ex1.c]. This example does not work in versions below 0.6.
+-------------------------------
+
+```
+#include <cmph.h>
+#include <string.h>
+// Create minimal perfect hash function from in-memory vector
+
+#pragma pack(1)
+typedef struct {
+	cmph_uint32 id;
+	char key[11];
+	cmph_uint32 year;
+} rec_t;
+#pragma pack(0)
+
+int main(int argc, char **argv)
+{   
+    // Creating a filled vector
+    unsigned int i = 0;  
+    rec_t vector[10] = {{1, "aaaaaaaaaa", 1999}, {2, "bbbbbbbbbb", 2000}, {3, "cccccccccc", 2001},
+    			{4, "dddddddddd", 2002}, {5, "eeeeeeeeee", 2003}, {6, "ffffffffff", 2004},
+    			{7, "gggggggggg", 2005}, {8, "hhhhhhhhhh", 2006}, {9, "iiiiiiiiii", 2007},
+    			{10,"jjjjjjjjjj", 2008}};
+    unsigned int nkeys = 10;
+    FILE* mphf_fd = fopen("temp_struct_vector.mph", "w");
+    // Source of keys
+    cmph_io_adapter_t *source = cmph_io_struct_vector_adapter(vector, (cmph_uint32)sizeof(rec_t), (cmph_uint32)sizeof(cmph_uint32), 11, nkeys); 
+
+    //Create minimal perfect hash function using the BDZ algorithm.
+    cmph_config_t *config = cmph_config_new(source);
+    cmph_config_set_algo(config, CMPH_BDZ);
+    cmph_config_set_mphf_fd(config, mphf_fd);
+    cmph_t *hash = cmph_new(config);
+    cmph_config_destroy(config);
+    cmph_dump(hash, mphf_fd); 
+    cmph_destroy(hash);	
+    fclose(mphf_fd);
+   
+    //Find key
+    mphf_fd = fopen("temp_struct_vector.mph", "r");
+    hash = cmph_load(mphf_fd);
+    while (i < nkeys) {
+      const char *key = vector[i].key;
+      unsigned int id = cmph_search(hash, key, 11);
+      fprintf(stderr, "key:%s -- hash:%u\n", key, id);
+      i++;
+    }
+    
+    //Destroy hash
+    cmph_destroy(hash);
+    cmph_io_vector_adapter_destroy(source);   
+    fclose(mphf_fd);
+    return 0;
+}
+```
+Download [struct_vector_adapter_ex3.c examples/struct_vector_adapter_ex3.c]. This example does not work in versions below 0.8.
+-------------------------------
+
+```
+#include <cmph.h>
+#include <stdio.h>
+#include <string.h>
+ // Create minimal perfect hash function from in-disk keys using BDZ algorithm
+int main(int argc, char **argv)
+{   
+	 //Open file with newline separated list of keys
+	FILE * keys_fd = fopen("keys.txt", "r");
+	cmph_t *hash = NULL;
+	if (keys_fd == NULL) 
+	{
+	  fprintf(stderr, "File \"keys.txt\" not found\n");
+	  exit(1);
+	}	
+	// Source of keys
+	cmph_io_adapter_t *source = cmph_io_nlfile_adapter(keys_fd);
+
+	cmph_config_t *config = cmph_config_new(source);
+	cmph_config_set_algo(config, CMPH_BDZ);
+	hash = cmph_new(config);
+	cmph_config_destroy(config);
+   
+	//Find key
+	const char *key = "jjjjjjjjjj";
+	unsigned int id = cmph_search(hash, key, (cmph_uint32)strlen(key));
+	fprintf(stderr, "Id:%u\n", id);
+	//Destroy hash
+	cmph_destroy(hash);
+	cmph_io_nlfile_adapter_destroy(source);   
+	fclose(keys_fd);
+	return 0;
+}
+```
+Download [file_adapter_ex2.c examples/file_adapter_ex2.c] and [keys.txt examples/keys.txt]. This example does not work in versions below 0.8.
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

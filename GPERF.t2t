@@ -1,0 +1,39 @@
+GPERF versus CMPH
+
+
+%!includeconf: CONFIG.t2t
+
+You might ask why cmph if [gperf http://www.gnu.org/software/gperf/gperf.html] 
+already works perfectly. Actually, gperf and cmph have different goals. 
+Basically, these are the requirements for each of them:
+
+
+- GPERF
+
+	- Create very fast hash functions for **small** sets
+
+	- Create **perfect** hash functions
+
+- CMPH
+
+	- Create very fast hash function for **very large** sets
+
+	- Create **minimal perfect** hash functions
+
+As result, cmph can be used to create hash functions where gperf would run
+forever without finding a perfect hash function, because of the running
+time of the algorithm and the large memory usage.
+On the other side, functions created by cmph are about 2x slower than those 
+created by gperf.
+
+So, if you have large sets, or memory usage is a key restriction for you, stick
+to cmph. If you have small sets, and do not care about memory usage, go with 
+gperf. The first problem is common in the information retrieval field (e.g. 
+assigning ids to millions of documents), while the former is usually found in
+the compiler programming area (detect reserved keywords).
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

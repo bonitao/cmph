@@ -1,0 +1,47 @@
+FCH Algorithm
+
+
+%!includeconf: CONFIG.t2t
+
+----------------------------------------
+
+==The Algorithm==
+The algorithm is presented in [[1 #papers]].
+----------------------------------------
+
+==Memory Consumption==
+
+Now we detail the memory consumption to generate and to store minimal perfect hash functions
+using the FCH algorithm. The structures responsible for memory consumption are in the 
+following:
+- A vector containing all the //n// keys.
+- Data structure to speed up the searching step:
+  + **random_table**: is a vector used to remember currently empty slots in the hash table. It stores //n// 4 byte long integer numbers. This vector initially contains a random permutation of the //n// hash addresses. A pointer called filled_count is used to keep the invariant that any slots to the right side of filled_count (inclusive) are empty and any ones to the left are filled.
+  + **hash_table**: Table used to check whether all the collisions were resolved. It has //n// entries of one byte.
+  + **map_table**: For any unfilled slot //x// in hash_table, the map_table vector contains //n// 4 byte long pointers pointing at random_table such that random_table[map_table[x]] = x. Thus, given an empty slot x in the hash_table, we can locate its position in the random_table vector through map_table.
+    
+- Other auxiliary structures    
+  + **sorted_indexes**: is a vector of //cn/(log(n) + 1)// 4 byte long pointers to indirectly keep the buckets sorted by decreasing order of their sizes. 
+      
+  + **function //g//**: is represented by a vector of //cn/(log(n) + 1)// 4 byte long integer numbers, one for each bucket. It is used to spread all the keys in a given bucket into the hash table without collisions.
+
+    
+Thus, the total memory consumption of FCH algorithm for generating a minimal 
+perfect hash function (MPHF) is: //O(n) + 9n + 8cn/(log(n) + 1)// bytes.
+The value of parameter //c// must be greater than or equal to 2.6.
+  
+Now we present the memory consumption to store the resulting function.
+We only need to store the //g// function and a constant number of bytes for the seed of the hash functions used in the resulting MPHF. Thus, we need //cn/(log(n) + 1) + O(1)// bytes.
+
+----------------------------------------
+  
+==Papers==[papers]
+
++ E.A. Fox, Q.F. Chen, and L.S. Heath. [A faster algorithm for constructing minimal perfect hash functions. papers/fch92.pdf] In Proc. 15th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval, pages 266-273, 1992.
+
+
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''

@@ -1,0 +1,38 @@
+CMPH FAQ
+
+
+%!includeconf: CONFIG.t2t
+
+- How do I define the ids of the keys?
+	- You don't. The ids will be assigned by the algorithm creating the minimal
+	  perfect hash function. If the algorithm creates an **ordered** minimal
+	  perfect hash function, the ids will be the indices of the keys in the 
+	  input. Otherwise, you have no guarantee of the distribution of the ids.
+
+- Why do I always get the error "Unable to create minimum perfect hashing function"?
+	- The algorithms do not guarantee that a minimal perfect hash function can
+	  be created. In practice, it will always work if your input
+	  is big enough (>100 keys). 
+	  The error is probably because you have duplicated
+	  keys in the input. You must guarantee that the keys are unique in the 
+	  input. If you are using a UN*X based OS, try doing 
+``` 	#sort input.txt | uniq > input_uniq.txt
+	  and run cmph with input_uniq.txt
+
+- Why do I change the hash function using  cmph_config_set_hashfuncs function and the default (jenkins) 
+one is executed?
+	- Probably you are you using the cmph_config_set_algo function after
+	  the cmph_config_set_hashfuncs. Therefore, the default hash function 
+	  is reset when you call the cmph_config_set_algo function. 
+
+- What do I do when the following error is got? 
+	- Error: **error while loading shared libraries: libcmph.so.0: cannot open shared object file: No such file ordirectory**
+	
+	- Solution: type **export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/** at the shell or put that shell command 
+	  in your .profile file or in the /etc/profile file.
+	  
+%!include: ALGORITHMS.t2t
+
+%!include: FOOTER.t2t
+
+%!include(html): ''GOOGLEANALYTICS.t2t''
