@@ -172,13 +172,13 @@ cmph_uint32 fch_buckets_get_nbuckets(fch_buckets_t * buckets)
 
 cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 {
-	cmph_uint32 i = 0;
+	cmph_int32 i = 0;
 	cmph_uint32 sum = 0, value;
 	cmph_uint32 *nbuckets_size = (cmph_uint32 *) calloc((size_t)buckets->max_size + 1, sizeof(cmph_uint32));
 	cmph_uint32 * sorted_indexes = (cmph_uint32 *) calloc((size_t)buckets->nbuckets, sizeof(cmph_uint32));
 
 	// collect how many buckets for each size.
-	for(i = 0; i < buckets->nbuckets; i++) nbuckets_size[fch_bucket_size(buckets->values + i)] ++;
+	for(i = 0; i < (int)buckets->nbuckets; i++) nbuckets_size[fch_bucket_size(buckets->values + i)] ++;
 
 	// calculating offset considering a decreasing order of buckets size.
 	value = nbuckets_size[buckets->max_size];
@@ -190,7 +190,7 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets)
 		nbuckets_size[i] = sum;
 
 	}
-	for(i = 0; i < buckets->nbuckets; i++)
+	for(i = 0; i < (int)buckets->nbuckets; i++)
 	{
 		sorted_indexes[nbuckets_size[fch_bucket_size(buckets->values + i)]] = (cmph_uint32)i;
 		nbuckets_size[fch_bucket_size(buckets->values + i)] ++;

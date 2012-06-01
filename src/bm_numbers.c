@@ -44,7 +44,7 @@ void bm_create(CMPH_ALGO algo, int iters) {
   cmph_config_t* config = NULL;
   cmph_t* mphf = NULL;
 
-  if (iters > g_numbers_len) {
+  if (iters > (int)g_numbers_len) {
     fprintf(stderr, "No input with proper size.");
     exit(-1);
   }

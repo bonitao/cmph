@@ -105,7 +105,7 @@ cmph_t *chd_new(cmph_config_t *mph, double c)
 	DEBUGP("packed_chd_phf_size = %u\n", packed_chd_phf_size);
 
 	/* Make sure that we have enough space to pack the mphf. */
-	packed_chd_phf = calloc((size_t)packed_chd_phf_size,(size_t)1);
+	packed_chd_phf = (cmph_uint8 *)calloc((size_t)packed_chd_phf_size,(size_t)1);
 
 	/* Pack the mphf. */
 	cmph_pack(chd_phf, packed_chd_phf);
@@ -229,14 +229,14 @@ static inline cmph_uint32 _chd_search(void * packed_chd_phf, void * packed_cr, c
 
 cmph_uint32 chd_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	register chd_data_t * chd = mphf->data;
+	register chd_data_t * chd = (chd_data_t *)mphf->data;
 	return _chd_search(chd->packed_chd_phf, chd->packed_cr, key, keylen);
 }
 
 void chd_pack(cmph_t *mphf, void *packed_mphf)
 {
 	chd_data_t *data = (chd_data_t *)mphf->data;
-	cmph_uint32 * ptr = packed_mphf;
+	cmph_uint32 * ptr = (cmph_uint32 *)packed_mphf;
 	cmph_uint8 * ptr8;
 
 	// packing packed_cr_size and packed_cr
@@ -263,7 +263,7 @@ cmph_uint32 chd_packed_size(cmph_t *mphf)
 cmph_uint32 chd_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
 
-	register cmph_uint32 * ptr = packed_mphf;
+	register cmph_uint32 * ptr = (cmph_uint32 *)packed_mphf;
 	register cmph_uint32 packed_cr_size = *ptr++;
 	register cmph_uint8 * packed_chd_phf = ((cmph_uint8 *) ptr) + packed_cr_size + sizeof(cmph_uint32);
 	return _chd_search(packed_chd_phf, ptr, key, keylen);

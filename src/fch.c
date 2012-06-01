@@ -398,7 +398,7 @@ void fch_load(FILE *f, cmph_t *mphf)
 
 cmph_uint32 fch_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	fch_data_t *fch = mphf->data;
+	fch_data_t *fch = (fch_data_t *)mphf->data;
 	cmph_uint32 h1 = hash(fch->h1, key, keylen) % fch->m;
 	cmph_uint32 h2 = hash(fch->h2, key, keylen) % fch->m;
 	h1 = mixh10h11h12 (fch->b, fch->p1, fch->p2, h1);
@@ -423,7 +423,7 @@ void fch_destroy(cmph_t *mphf)
 void fch_pack(cmph_t *mphf, void *packed_mphf)
 {
 	fch_data_t *data = (fch_data_t *)mphf->data;
-	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 
 	// packing h1 type
 	CMPH_HASH h1_type = hash_get_type(data->h1);
@@ -488,12 +488,12 @@ cmph_uint32 fch_packed_size(cmph_t *mphf)
  */
 cmph_uint32 fch_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	register cmph_uint8 *h1_ptr = packed_mphf;
-	register CMPH_HASH h1_type  = *((cmph_uint32 *)h1_ptr);
+	register cmph_uint8 *h1_ptr = (cmph_uint8 *)packed_mphf;
+	register CMPH_HASH h1_type  = (CMPH_HASH)*((cmph_uint32 *)h1_ptr);
 	h1_ptr += 4;
 
 	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
-	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
+	register CMPH_HASH h2_type  = (CMPH_HASH)*((cmph_uint32 *)h2_ptr);
 	h2_ptr += 4;
 
 	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));

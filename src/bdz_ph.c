@@ -34,7 +34,7 @@ typedef cmph_uint32 * bdz_ph_queue_t;
 
 static void bdz_ph_alloc_queue(bdz_ph_queue_t * queuep, cmph_uint32 nedges)
 {
-	(*queuep)=malloc(nedges*sizeof(cmph_uint32));
+	(*queuep)=(cmph_uint32 *)malloc(nedges*sizeof(cmph_uint32));
 };
 static void bdz_ph_free_queue(bdz_ph_queue_t * queue)
 {
@@ -52,9 +52,9 @@ typedef struct
 
 static void bdz_ph_alloc_graph3(bdz_ph_graph3_t * graph3, cmph_uint32 nedges, cmph_uint32 nvertices)
 {
-	graph3->edges=malloc(nedges*sizeof(bdz_ph_edge_t));
-	graph3->first_edge=malloc(nvertices*sizeof(cmph_uint32));
-	graph3->vert_degree=malloc((size_t)nvertices);
+	graph3->edges=(bdz_ph_edge_t *)malloc(nedges*sizeof(bdz_ph_edge_t));
+	graph3->first_edge=(cmph_uint32 *)malloc(nvertices*sizeof(cmph_uint32));
+	graph3->vert_degree=(cmph_uint8 *)malloc((size_t)nvertices);
 };
 static void bdz_ph_init_graph3(bdz_ph_graph3_t * graph3, cmph_uint32 nedges, cmph_uint32 nvertices)
 {
@@ -148,7 +148,7 @@ static int bdz_ph_generate_queue(cmph_uint32 nedges, cmph_uint32 nvertices, bdz_
 	cmph_uint32 queue_head=0,queue_tail=0;
 	cmph_uint32 curr_edge;
 	cmph_uint32 tmp_edge;
-	cmph_uint8 * marked_edge =malloc((size_t)(nedges >> 3) + 1);
+	cmph_uint8 * marked_edge =(cmph_uint8 *)malloc((size_t)(nedges >> 3) + 1);
 	memset(marked_edge, 0, (size_t)(nedges >> 3) + 1);
 
 	for(i=0;i<nedges;i++){
@@ -381,7 +381,7 @@ static void assigning(bdz_ph_config_data_t *bdz_ph, bdz_ph_graph3_t* graph3, bdz
 	cmph_uint32 nedges=graph3->nedges;
 	cmph_uint32 curr_edge;
 	cmph_uint32 v0,v1,v2;
-	cmph_uint8 * marked_vertices =malloc((size_t)(bdz_ph->n >> 3) + 1);
+	cmph_uint8 * marked_vertices = (cmph_uint8 *)malloc((size_t)(bdz_ph->n >> 3) + 1);
 	cmph_uint32 sizeg = (cmph_uint32)ceil(bdz_ph->n/4.0);
 	bdz_ph->g = (cmph_uint8 *)calloc((size_t)sizeg, sizeof(cmph_uint8));
 	memset(marked_vertices, 0, (size_t)(bdz_ph->n >> 3) + 1);
@@ -507,7 +507,7 @@ void bdz_ph_load(FILE *f, cmph_t *mphf)
 
 cmph_uint32 bdz_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	register bdz_ph_data_t *bdz_ph = mphf->data;
+	register bdz_ph_data_t *bdz_ph = (bdz_ph_data_t *)mphf->data;
 	cmph_uint32 hl[3];
 	register cmph_uint8 byte0, byte1, byte2;
 	register cmph_uint32 vertex;
@@ -547,7 +547,7 @@ void bdz_ph_destroy(cmph_t *mphf)
 void bdz_ph_pack(cmph_t *mphf, void *packed_mphf)
 {
 	bdz_ph_data_t *data = (bdz_ph_data_t *)mphf->data;
-	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 
 	// packing hl type
 	CMPH_HASH hl_type = hash_get_type(data->hl);
@@ -590,7 +590,7 @@ cmph_uint32 bdz_ph_packed_size(cmph_t *mphf)
 cmph_uint32 bdz_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
 
-	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
+	register CMPH_HASH hl_type  = (CMPH_HASH)*(cmph_uint32 *)packed_mphf;
 	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf) + 4;
 
 	register cmph_uint8 * ptr = hl_ptr + hash_state_packed_size(hl_type);
