@@ -50,8 +50,13 @@ if test x$cxxmph = xtrue; then
   AC_SUBST([CXXMPH], "cxxmph")
 fi
 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.8]) 
+if test "x$CHECK_LIBS" = "x" ; then
+  AC_MSG_WARN([Testing library not found, make check will fail.])
+fi
+AC_SUBST(CHECK_LIBS)
+AC_SUBST(CHECK_CFLAGS)
+
 AC_CHECK_SPOON
-dnl AC_CONFIG_FILES([Makefile tests/Makefile samples/Makefile])
-AC_OUTPUT
 AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc])
 AC_OUTPUT

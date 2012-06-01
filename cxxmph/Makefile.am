@@ -38,4 +38,5 @@ string_util_test_SOURCES = string_util_test.cc
 string_util_test_LDADD   = libcxxmph.la
 
 map_tester_test_SOURCES = map_tester.cc map_tester_test.cc
+map_tester_test_LDADD = $(CHECK_LIBS)
 
