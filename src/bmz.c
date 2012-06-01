@@ -526,7 +526,7 @@ void bmz_load(FILE *f, cmph_t *mphf)
 
 cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	bmz_data_t *bmz = mphf->data;
+	bmz_data_t *bmz = (bmz_data_t *)mphf->data;
 	cmph_uint32 h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 	cmph_uint32 h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
 	DEBUGP("key: %.*s h1: %u h2: %u\n", keylen, key, h1, h2);
@@ -554,7 +554,7 @@ void bmz_pack(cmph_t *mphf, void *packed_mphf)
 {
 
 	bmz_data_t *data = (bmz_data_t *)mphf->data;
-	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 
 	// packing h1 type
 	CMPH_HASH h1_type = hash_get_type(data->hashes[0]);
@@ -606,12 +606,12 @@ cmph_uint32 bmz_packed_size(cmph_t *mphf)
  */
 cmph_uint32 bmz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	register cmph_uint8 *h1_ptr = packed_mphf;
-	register CMPH_HASH h1_type  = *((cmph_uint32 *)h1_ptr);
+	register cmph_uint8 *h1_ptr = (cmph_uint8 *)packed_mphf;
+	register CMPH_HASH h1_type  = (CMPH_HASH)(*((cmph_uint32 *)h1_ptr));
 	h1_ptr += 4;
 
 	register cmph_uint8 *h2_ptr = h1_ptr + hash_state_packed_size(h1_type);
-	register CMPH_HASH h2_type  = *((cmph_uint32 *)h2_ptr);
+	register CMPH_HASH h2_type  = (CMPH_HASH)(*((cmph_uint32 *)h2_ptr));
 	h2_ptr += 4;
 
 	register cmph_uint32 *g_ptr = (cmph_uint32 *)(h2_ptr + hash_state_packed_size(h2_type));

@@ -49,7 +49,7 @@ cmph_t *__cmph_load(FILE *f)
 	{
 		if (strcmp(algo_name, cmph_names[i]) == 0)
 		{
-			algo = i;
+			algo = (CMPH_ALGO)(i);
 		}
 	}
 	if (algo == CMPH_COUNT)

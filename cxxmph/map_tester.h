@@ -7,15 +7,18 @@
 #include <vector>
 #include <unordered_map>
 
+#include "string_util.h"
+
 namespace cxxmph {
 
 using namespace std;
 
-// template <template <class K, class V> class unordered_map> >
+template <template<typename...> class map_type>
 class MapTester {
  public:
-  MapTester();
-  ~MapTester();
+  MapTester() {}
+  ~MapTester() {}
+
   bool Run(string* errors) const {
     string e;
     if (!small_insert()) e += "small insert failed\n"; 
@@ -27,26 +30,26 @@ class MapTester {
     return !e.empty();
   }
   static bool small_insert() {
-    unordered_map<int64_t, int64_t> m;
+    map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_pair(i, i));
     return m.size() == 11;
   }
   static bool large_insert() {
-    unordered_map<int64_t, int64_t> m;
+    map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12 * 256 * 256; ++i) m.insert(make_pair(i, i));
     return m.size() == 12 * 256 * 256 - 1;
   }
   static bool small_search() {
-    unordered_map<int64_t, int64_t> m;
+    map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_pair(i, i));
     for (int i = 1; i < 12; ++i) if (m.find(i) == m.end()) return false; 
     return true;
   }
   static bool default_search() {
-    unordered_map<int64_t, int64_t> m;
+    map_type<int64_t, int64_t> m;
     if (m.find(0) != m.end()) return false;
     for (int i = 1; i < 256; ++i) m.insert(make_pair(i, i));
     if (m.find(0) != m.end()) return false;
@@ -56,7 +59,7 @@ class MapTester {
   }
   static bool large_search() {
     int nkeys = 10 * 1000;
-    unordered_map<int64_t, int64_t> m;
+    map_type<int64_t, int64_t> m;
     for (int i = 0; i < nkeys; ++i) m.insert(make_pair(i, i));
     for (int i = 0; i < nkeys; ++i) if (m.find(i) == m.end()) return false; 
     return true;
@@ -66,10 +69,10 @@ class MapTester {
     vector<string> keys;
     for (int i = 0; i < nkeys; ++i) {
       char buf[128];
-      snprintf(buf, sizeof(buf), "%lu", i);
+      cxxmph::format("%v", i);
       keys.push_back(buf);
     }
-    unordered_map<string, int64_t> m;
+    map_type<string, int64_t> m;
     for (int i = 0; i < nkeys; ++i) m.insert(make_pair(keys[i], i));
     for (int i = 0; i < nkeys; ++i) {
       auto it = m.find(keys[i]);

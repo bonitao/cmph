@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "packed_size = %u\n", packed_size);
 	
 	/* Make sure that we have enough space to pack the mphf. */
-	cmph_uint8 * packed_mphf = calloc((size_t)packed_size,(size_t)1);
+	cmph_uint8 * packed_mphf = (cmph_uint8 *)calloc((size_t)packed_size,(size_t)1);
 
 	/* Pack the mphf. */
 	cmph_pack(mphf, packed_mphf);

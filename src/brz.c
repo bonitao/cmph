@@ -685,7 +685,7 @@ static cmph_uint32 brz_fch_search(brz_data_t *brz, const char *key, cmph_uint32 
 
 cmph_uint32 brz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	brz_data_t *brz = mphf->data;
+	brz_data_t *brz = (brz_data_t *)mphf->data;
 	cmph_uint32 fingerprint[3];
 	switch(brz->algo)
 	{
@@ -728,7 +728,7 @@ void brz_destroy(cmph_t *mphf)
 void brz_pack(cmph_t *mphf, void *packed_mphf)
 {
 	brz_data_t *data = (brz_data_t *)mphf->data;
-	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 	cmph_uint32 i,n;
 
 	// packing internal algo type
@@ -858,7 +858,7 @@ cmph_uint32 brz_packed_size(cmph_t *mphf)
 
 static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
-	register CMPH_HASH h0_type = *packed_mphf++;
+	register CMPH_HASH h0_type = (CMPH_HASH)*packed_mphf++;
 	register cmph_uint32 *h0_ptr = packed_mphf;
 	packed_mphf = (cmph_uint32 *)(((cmph_uint8 *)packed_mphf) + hash_state_packed_size(h0_type));
 
@@ -867,9 +867,9 @@ static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *
 	register double c = (double)(*((cmph_uint64*)packed_mphf));
 	packed_mphf += 2;
 
-	register CMPH_HASH h1_type = *packed_mphf++;
+	register CMPH_HASH h1_type = (CMPH_HASH)*packed_mphf++;
 
-	register CMPH_HASH h2_type = *packed_mphf++;
+	register CMPH_HASH h2_type = (CMPH_HASH)*packed_mphf++;
 
 	register cmph_uint8 * size = (cmph_uint8 *) packed_mphf;
 	packed_mphf = (cmph_uint32 *)(size + k);
@@ -911,7 +911,7 @@ static cmph_uint32 brz_bmz8_search_packed(cmph_uint32 *packed_mphf, const char *
 
 static cmph_uint32 brz_fch_search_packed(cmph_uint32 *packed_mphf, const char *key, cmph_uint32 keylen, cmph_uint32 * fingerprint)
 {
-	register CMPH_HASH h0_type = *packed_mphf++;
+	register CMPH_HASH h0_type = (CMPH_HASH)*packed_mphf++;
 
 	register cmph_uint32 *h0_ptr = packed_mphf;
 	packed_mphf = (cmph_uint32 *)(((cmph_uint8 *)packed_mphf) + hash_state_packed_size(h0_type));
@@ -921,9 +921,9 @@ static cmph_uint32 brz_fch_search_packed(cmph_uint32 *packed_mphf, const char *k
 	register double c = (double)(*((cmph_uint64*)packed_mphf));
 	packed_mphf += 2;
 
-	register CMPH_HASH h1_type = *packed_mphf++;
+	register CMPH_HASH h1_type = (CMPH_HASH)*packed_mphf++;
 
-	register CMPH_HASH h2_type = *packed_mphf++;
+	register CMPH_HASH h2_type = (CMPH_HASH)*packed_mphf++;
 
 	register cmph_uint8 * size = (cmph_uint8 *) packed_mphf;
 	packed_mphf = (cmph_uint32 *)(size + k);
@@ -972,7 +972,7 @@ static cmph_uint32 brz_fch_search_packed(cmph_uint32 *packed_mphf, const char *k
 cmph_uint32 brz_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
 	register cmph_uint32 *ptr = (cmph_uint32 *)packed_mphf;
-	register CMPH_ALGO algo = *ptr++;
+	register CMPH_ALGO algo = (CMPH_ALGO)*ptr++;
 	cmph_uint32 fingerprint[3];
 	switch(algo)
 	{

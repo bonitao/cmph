@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 				{
 					if (strcmp(cmph_names[i], optarg) == 0)
 					{
-						mph_algo = i;
+						mph_algo = (CMPH_ALGO)i;
 						valid = 1;
 						break;
 					}
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
 					if (strcmp(cmph_hash_names[i], optarg) == 0)
 					{
 						hashes = (CMPH_HASH *)realloc(hashes, sizeof(CMPH_HASH) * ( nhashes + 2 ));
-						hashes[nhashes] = i;
+						hashes[nhashes] = (CMPH_HASH)i;
 						hashes[nhashes + 1] = CMPH_HASH_COUNT;
 						++nhashes;
 						valid = 1;
