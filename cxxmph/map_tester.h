@@ -14,21 +14,7 @@ namespace cxxmph {
 using namespace std;
 
 template <template<typename...> class map_type>
-class MapTester {
- public:
-  MapTester() {}
-  ~MapTester() {}
-
-  bool Run(string* errors) const {
-    string e;
-    if (!small_insert()) e += "small insert failed\n"; 
-    if (!large_insert()) e += "large insert failed\n"; 
-    if (!small_search()) e += "small search failed\n"; 
-    if (!default_search()) e += "default search failed\n"; 
-    if (!large_search()) e += "large search failed\n"; 
-    if (errors) *errors = e;
-    return !e.empty();
-  }
+struct MapTester {
   static bool small_insert() {
     map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
@@ -68,9 +54,7 @@ class MapTester {
     int nkeys = 10 * 1000;
     vector<string> keys;
     for (int i = 0; i < nkeys; ++i) {
-      char buf[128];
-      cxxmph::format("%v", i);
-      keys.push_back(buf);
+      keys.push_back(cxxmph::format("%v", i));
     }
     map_type<string, int64_t> m;
     for (int i = 0; i < nkeys; ++i) m.insert(make_pair(keys[i], i));

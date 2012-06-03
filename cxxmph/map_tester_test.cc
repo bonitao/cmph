@@ -1,28 +1,13 @@
 #include "map_tester.h"
-#include <check.h>
+#include "test.h"
 
 using namespace cxxmph;
 
-START_TEST(search) {
-  MapTester<std::unordered_map> tester;
+typedef MapTester<std::unordered_map> Tester;
 
-} END_TEST
-
-Suite *MapTesterSuite() {
-  Suite *s = suite_create ("MapTester");
-  /* Core test case */
-  TCase *tc_core = tcase_create ("Core");
-  tcase_add_test (tc_core, search);
-  suite_add_tcase (s, tc_core);
-  return s;
-}
-
-int main (void) {
-  int number_failed;
-  Suite *s = MapTesterSuite();
-  SRunner *sr = srunner_create (s);
-  srunner_run_all (sr, CK_NORMAL);
-  number_failed = srunner_ntests_failed (sr);
-  srunner_free (sr);
-  return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-}
+CXXMPH_CXX_TEST_CASE(small_insert, Tester::small_insert);
+CXXMPH_CXX_TEST_CASE(large_insert, Tester::large_insert);
+CXXMPH_CXX_TEST_CASE(small_search, Tester::small_search);
+CXXMPH_CXX_TEST_CASE(default_search, Tester::default_search);
+CXXMPH_CXX_TEST_CASE(large_search, Tester::large_search);
+CXXMPH_CXX_TEST_CASE(string_search, Tester::string_search);
