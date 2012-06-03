@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE(cmph, 1.0)
+AM_INIT_AUTOMAKE(cmph, 2.0)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -34,7 +34,7 @@ LDFLAGS="$LIBM $LDFLAGS"
 CFLAGS="-Wall"
 
 AC_PROG_CXX
-CXXFLAGS="-Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
+CXXFLAGS="-Werror -Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
