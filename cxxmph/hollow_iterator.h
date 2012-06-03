@@ -26,7 +26,7 @@ struct hollow_iterator_base
     : public std::iterator<std::forward_iterator_tag,
                            typename iterator::value_type> {
  public:
-  typedef hollow_iterator_base<iterator, is_empty>& self_type;
+  typedef hollow_iterator_base<iterator, is_empty> self_type;
   typedef self_type& self_reference;
   typedef typename iterator::reference reference;
   typedef typename iterator::pointer pointer;

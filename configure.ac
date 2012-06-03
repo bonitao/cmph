@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE(cmph, 1.0)
+AM_INIT_AUTOMAKE(cmph, 2.0)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -50,9 +50,11 @@ if test x$cxxmph = xtrue; then
   AC_SUBST([CXXMPH], "cxxmph")
 fi
 
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.8]) 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.8], [HAVE_LIBCHECK=1], [HAVE_LIBCHECK=]) 
 if test "x$CHECK_LIBS" = "x" ; then
-  AC_MSG_WARN([Testing library not found, make check will fail.])
+  if test "x$cxxmph" = "xtrue"; then
+    AC_MSG_WARN([Testing library not found, make check will fail.])
+  fi
 fi
 AC_SUBST(CHECK_LIBS)
 AC_SUBST(CHECK_CFLAGS)

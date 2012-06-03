@@ -11,6 +11,7 @@
 
 namespace cxxmph {
 
+using namespace cxxmph;
 using namespace std;
 
 template <template<typename...> class map_type>
@@ -24,8 +25,9 @@ struct MapTester {
   static bool large_insert() {
     map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
-    for (int i = 1; i < 12 * 256 * 256; ++i) m.insert(make_pair(i, i));
-    return m.size() == 12 * 256 * 256 - 1;
+    int nkeys = 12 * 256 * 256;
+    for (int i = 1; i < nkeys; ++i) m.insert(make_pair(i, i));
+    return static_cast<int>(m.size()) == nkeys - 0;
   }
   static bool small_search() {
     map_type<int64_t, int64_t> m;
@@ -54,7 +56,7 @@ struct MapTester {
     int nkeys = 10 * 1000;
     vector<string> keys;
     for (int i = 0; i < nkeys; ++i) {
-      keys.push_back(cxxmph::format("%v", i));
+      keys.push_back(format("%v", i));
     }
     map_type<string, int64_t> m;
     for (int i = 0; i < nkeys; ++i) m.insert(make_pair(keys[i], i));
@@ -62,6 +64,42 @@ struct MapTester {
       auto it = m.find(keys[i]);
       if (it == m.end()) return false;
       if (it->second != i) return false;
+    }
+    return true;
+  }
+  static bool rehash_zero() {
+    map_type<int64_t, int64_t> m;
+    m.rehash(0);
+    return m.size() == 0;
+  }
+  static bool rehash_size() {
+    map_type<int64_t, int64_t> m;
+    int nkeys = 10 * 1000;
+    for (int i = 0; i < nkeys; ++i) { m.insert(make_pair(i, i)); }
+    m.rehash(nkeys);
+    for (int i = 0; i < nkeys; ++i) { if (m.find(i) == m.end()) return false; }
+    for (int i = nkeys; i < nkeys * 2; ++i) {
+      if (m.find(i) != m.end()) return false;
+    }
+    return true;
+  }
+  static bool erase_iterator() {
+    map_type<int64_t, int64_t> m;
+    int nkeys = 10 * 1000;
+    for (int i = 0; i < nkeys; ++i) { m.insert(make_pair(i, i)); }
+    for (int i = nkeys; i >= 0; --i) { 
+      m.erase(m.find(i));
+      if (static_cast<int>(m.size()) != i) return false;
+    }
+    return true;
+  }
+ static bool erase_value() {
+    map_type<int64_t, int64_t> m;
+    int nkeys = 10 * 1000;
+    for (int i = 0; i < nkeys; ++i) { m.insert(make_pair(i, i)); }
+    for (int i = nkeys; i >= 0; --i) { 
+      m.erase(i);
+      if (static_cast<int>(m.size()) != i) return false;
     }
     return true;
   }
