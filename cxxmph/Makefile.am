@@ -1,15 +1,15 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test flatten_iterator_test mph_map_test mph_index_test trigraph_test bfcr_map_test map_tester_test string_util_test
+check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test flatten_iterator_test mph_map_test mph_index_test trigraph_test bfcr_map_test map_tester_test string_util_test test_test
 noinst_PROGRAMS = bm_index bm_map
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
-cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h
+cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h macros.h bfcr_map.h
 
 check_LTLIBRARIES = libcxxmph_test.la
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
-libcxxmph_la_SOURCES = MurmurHash3.cpp trigragh.h trigraph.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc mph_bits.h mph_bits.cc string_util.cc
+libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_index.cc mph_bits.cc string_util.cc
 libcxxmph_la_LDFLAGS = -version-info 0:0:0
 libcxxmph_test_la_SOURCES = test.h test.cc
 libcxxmph_test_la_LIBADD = libcxxmph.la
