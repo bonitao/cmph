@@ -34,7 +34,7 @@ LDFLAGS="$LIBM $LDFLAGS"
 CFLAGS="-Wall"
 
 AC_PROG_CXX
-CXXFLAGS="-Werror -Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
+CXXFLAGS="-Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
@@ -50,9 +50,11 @@ if test x$cxxmph = xtrue; then
   AC_SUBST([CXXMPH], "cxxmph")
 fi
 
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.8]) 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.8], [HAVE_LIBCHECK=1], [HAVE_LIBCHECK=]) 
 if test "x$CHECK_LIBS" = "x" ; then
-  AC_MSG_WARN([Testing library not found, make check will fail.])
+  if test "x$cxxmph" = "xtrue"; then
+    AC_MSG_WARN([Testing library not found, make check will fail.])
+  fi
 fi
 AC_SUBST(CHECK_LIBS)
 AC_SUBST(CHECK_CFLAGS)

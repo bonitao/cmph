@@ -4,14 +4,17 @@ noinst_PROGRAMS = bm_index bm_map
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
-cxxmph_include_HEADERS = mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h
+cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h
 
-noinst_LTLIBRARIES = libcxxmph_test.la
+check_LTLIBRARIES = libcxxmph_test.la
+noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
-libcxxmph_la_SOURCES = MurmurHash3.h MurmurHash3.cpp trigragh.h trigraph.cc mph_bits.h mph_bits.cc mph_index.h mph_index.cc seeded_hash.h stringpiece.h benchmark.h benchmark.cc string_util.cc
+libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_bits.cc mph_index.cc benchmark.h benchmark.cc string_util.cc
 libcxxmph_la_LDFLAGS = -version-info 0:0:0
 libcxxmph_test_la_SOURCES = test.h test.cc
 libcxxmph_test_la_LIBADD = libcxxmph.la
+libcxxmph_bm_la_SOURCES = benchmark.h benchmark.cc bm_common.h bm_common.cc
+libcxxmph_bm_la_LIBADD = libcxxmph.la
 
 test_test_SOURCES = test_test.cc
 test_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
@@ -22,14 +25,14 @@ mph_map_test_SOURCES = mph_map_test.cc
 mph_index_test_LDADD   = libcxxmph.la
 mph_index_test_SOURCES = mph_index_test.cc
 
-bm_index_LDADD = libcxxmph.la -lcmph
-bm_index_SOURCES = bm_common.cc bm_index.cc 
-
 trigraph_test_LDADD   = libcxxmph.la
 trigraph_test_SOURCES = trigraph_test.cc
 
-bm_map_LDADD = libcxxmph.la
-bm_map_SOURCES = bm_common.cc bm_map.cc
+bm_index_LDADD = libcxxmph_bm.la -lcmph
+bm_index_SOURCES = bm_index.cc 
+
+bm_map_LDADD = libcxxmph_bm.la
+bm_map_SOURCES = bm_map.cc
 
 cxxmph_LDADD   = libcxxmph.la
 cxxmph_SOURCES = cxxmph.cc
