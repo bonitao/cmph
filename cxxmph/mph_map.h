@@ -3,15 +3,25 @@
 // Implementation of the unordered associative mapping interface using a
 // minimal perfect hash function.
 //
-// This class not necessarily faster than unordered_map (or ext/hash_map).
-// Benchmark your code before using it. If you do not call rehash() before
-// starting your reads, it will be very likely slower than unordered_map.
+// Since these are header-mostly libraries, make sure you compile your code
+// with -DNDEBUG and -O3. The code requires a modern C++11 compiler.
+//
+// The container comes in 3 flavors, all in the cxxmph namespace and drop-in
+// replacement for the popular classes with the same names.
+// * dense_hash_map
+//    -> fast, uses more memory, 2.93 bits per bucket, ~50% occupation
+// * unordered_map (aliases:  hash_map, mph_map)
+//    -> middle ground, uses 2.93 bits per bucket, ~81% occupation
+// * sparse_hash_map -> slower, uses 3.6 bits per bucket
+//    -> less fast, uses 3.6 bits per bucket, 100% occupation
+//
+// Those classes are not necessarily faster than their existing counterparts.
+// Benchmark your code before using it. The larger the key, the larger the
+// number of elements inserted, and the bigger the number of failed searches,
+// the more likely those classes will outperform existing code.
 //
 // For large sets of urls (>100k), which are a somewhat expensive to compare, I
-// found this class to be about 10%-30% faster than unordered_map.
-//
-// The space overhead of this map is 2.6 bits per bucket and it achieves 100%
-// occupation with a rehash call.
+// found those class to be about 10%-50% faster than unordered_map.
 
 #include <algorithm>
 #include <iostream>
