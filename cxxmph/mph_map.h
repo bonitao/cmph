@@ -5,12 +5,12 @@
 //
 // This class not necessarily faster than unordered_map (or ext/hash_map).
 // Benchmark your code before using it. If you do not call rehash() before
-// starting your reads, it will be definitively slower than unordered_map.
+// starting your reads, it will be very likely slower than unordered_map.
 //
-// For large sets of urls, which are a somewhat expensive to compare, I found
-// this class to be about 10% faster than unordered_map.
+// For large sets of urls (>100k), which are a somewhat expensive to compare, I
+// found this class to be about 10%-30% faster than unordered_map.
 //
-// The space overhead of this map is 1.93 bits per bucket and it achieves 100%
+// The space overhead of this map is 2.6 bits per bucket and it achieves 100%
 // occupation with a rehash call.
 
 #include <algorithm>
@@ -30,17 +30,18 @@ namespace cxxmph {
 
 using std::pair;
 using std::make_pair;
-using std::unordered_map;
 using std::vector;
 
 // Save on repetitive typing.
-#define MPH_MAP_TMPL_SPEC template <class Key, class Data, class HashFcn, class EqualKey, class Alloc>
-#define MPH_MAP_CLASS_SPEC mph_map<Key, Data, HashFcn, EqualKey, Alloc>
+#define MPH_MAP_TMPL_SPEC  \
+    template <bool minimal, bool square, \
+    class Key, class Data, class HashFcn, class EqualKey, class Alloc>
+#define MPH_MAP_CLASS_SPEC mph_map_base<minimal, square, Key, Data, HashFcn, EqualKey, Alloc>
 #define MPH_MAP_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
 #define MPH_MAP_INLINE_METHOD_DECL(r, m) MPH_MAP_TMPL_SPEC inline typename MPH_MAP_CLASS_SPEC::r MPH_MAP_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
-class mph_map {
+template <bool minimal, bool square, class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
+class mph_map_base {
  public:
   typedef Key key_type;
   typedef Data data_type;
@@ -63,8 +64,8 @@ class mph_map {
   typedef bool bool_type;
   typedef pair<iterator, bool> insert_return_type;
 
-  mph_map();
-  ~mph_map();
+  mph_map_base();
+  ~mph_map_base();
 
   iterator begin();
   iterator end();
@@ -83,7 +84,7 @@ class mph_map {
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
-  size_type bucket_count() const { return index_.minimal_perfect_hash_size() + slack_.bucket_count(); }
+  size_type bucket_count() const { return index_.size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
@@ -106,9 +107,9 @@ class mph_map {
    void pack();
    vector<value_type> values_;
    vector<bool> present_;
-   SimpleMPHIndex<Key, typename seeded_hash<HashFcn>::hash_function> index_;
+   FlexibleMPHIndex<minimal, square, Key, typename seeded_hash<HashFcn>::hash_function> index_;
    // TODO(davi) optimize slack to use hash from index rather than calculate its own
-   typedef unordered_map<h128, uint32_t, h128::hash32> slack_type;
+   typedef std::unordered_map<h128, uint32_t, h128::hash32> slack_type;
    slack_type slack_;
    size_type size_;
    typename seeded_hash<HashFcn>::hash_function hasher128_;
@@ -119,13 +120,11 @@ bool operator==(const MPH_MAP_CLASS_SPEC& lhs, const MPH_MAP_CLASS_SPEC& rhs) {
   return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
-MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::mph_map() : size_(0) {
+MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::mph_map_base() : size_(0) {
   clear();
   pack();
 }
-
-MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map() {
-}
+MPH_MAP_TMPL_SPEC MPH_MAP_CLASS_SPEC::~mph_map_base() { }
 
 MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   auto it = find(x.first);
@@ -154,13 +153,13 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
   if (!success) { exit(-1); }
-  vector<value_type> new_values(index_.minimal_perfect_hash_size());
+  vector<value_type> new_values(index_.size());
   new_values.reserve(new_values.size() * 2);
-  vector<bool> new_present(index_.minimal_perfect_hash_size(), false);
+  vector<bool> new_present(index_.size(), false);
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
-    size_type id = index_.minimal_perfect_hash(it->first);
-    assert(id < index_.minimal_perfect_hash_size());
+    size_type id = index_.index(it->first);
+    assert(id < index_.size());
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;
@@ -216,10 +215,10 @@ MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;
   }
-  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
-    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
-    if (__builtin_expect(present_[minimal_perfect_hash], true)) { 
-      return minimal_perfect_hash;
+  if (__builtin_expect(index_.size(), 1)) {
+    auto id = index_.index(k);
+    if (__builtin_expect(present_[id], true)) { 
+      return id;
     }
   }
   return -1;
@@ -235,6 +234,21 @@ MPH_MAP_METHOD_DECL(void_type, rehash)(size_type nbuckets) {
   slack_type().swap(slack_);
 }
 
+#define MPH_MAP_PREAMBLE template <class Key, class Data,\
+     class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>,\
+     class Alloc = std::allocator<Data> >
+
+MPH_MAP_PREAMBLE class mph_map : public mph_map_base<
+     false, false, Key, Data, HashFcn, EqualKey, Alloc> {};
+MPH_MAP_PREAMBLE class unordered_map : public mph_map_base<
+     false, false, Key, Data, HashFcn, EqualKey, Alloc> {};
+MPH_MAP_PREAMBLE class hash_map : public mph_map_base<
+     false, false, Key, Data, HashFcn, EqualKey, Alloc> {};
+
+MPH_MAP_PREAMBLE class dense_hash_map : public mph_map_base<
+     false, true, Key, Data, HashFcn, EqualKey, Alloc> {};
+MPH_MAP_PREAMBLE class sparse_hash_map : public mph_map_base<
+     true, false, Key, Data, HashFcn, EqualKey, Alloc> {};
 
 }  // namespace cxxmph
 
