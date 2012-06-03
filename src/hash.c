@@ -101,7 +101,7 @@ hash_state_t *hash_state_load(const char *buf, cmph_uint32 buflen)
 	{
 		if (strcmp(buf, cmph_hash_names[i]) == 0)
 		{
-			hashfunc = i;
+			hashfunc = (CMPH_HASH)(i);
 			break;
 		}
 	}

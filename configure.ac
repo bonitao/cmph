@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE(cmph, 1.0)
+AM_INIT_AUTOMAKE(cmph, 2.0)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -30,11 +30,11 @@ AC_CHECK_HEADERS([getopt.h math.h])
 
 dnl Checks for libraries.
 LT_LIB_M
-LDFLAGS="$LIBS $LIBM $LDFLAGS"
-CFLAGS="-Wall -Werror $CFLAGS"
+LDFLAGS="$LIBM $LDFLAGS"
+CFLAGS="-Wall -O3 -fomit-frame-pointer"
 
 AC_PROG_CXX
-CXXFLAGS="-Wall -Winline -Wno-unused-function -Werror -DNDEBUG -O3 $CXXFLAGS"
+CXXFLAGS="-Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
 AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
@@ -50,8 +50,15 @@ if test x$cxxmph = xtrue; then
   AC_SUBST([CXXMPH], "cxxmph")
 fi
 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.8], [HAVE_LIBCHECK=1], [HAVE_LIBCHECK=]) 
+if test "x$CHECK_LIBS" = "x" ; then
+  if test "x$cxxmph" = "xtrue"; then
+    AC_MSG_WARN([Testing library not found, make check will fail.])
+  fi
+fi
+AC_SUBST(CHECK_LIBS)
+AC_SUBST(CHECK_CFLAGS)
+
 AC_CHECK_SPOON
-dnl AC_CONFIG_FILES([Makefile tests/Makefile samples/Makefile])
-AC_OUTPUT
 AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc])
 AC_OUTPUT

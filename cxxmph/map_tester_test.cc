@@ -1,15 +1,9 @@
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
-#include "mph_map.h"
 #include "map_tester.h"
 #include "test.h"
 
 using namespace cxxmph;
 
-typedef MapTester<mph_map> Tester;
+typedef MapTester<std::unordered_map> Tester;
 
 CXXMPH_CXX_TEST_CASE(small_insert, Tester::small_insert);
 CXXMPH_CXX_TEST_CASE(large_insert, Tester::large_insert);

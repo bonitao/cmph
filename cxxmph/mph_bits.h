@@ -75,7 +75,8 @@ static uint32_t nextpoweroftwo(uint32_t k) {
 // Generalized theory to achieve something like debruijn multipliers
 // http://arxiv.org/pdf/1003.3196v2.pdf
 
-struct Ranktable { static uint8_t get(uint8_t); };
+// Too slow to compile. Should use constexpr instead.
+// struct Ranktable { static uint8_t get(uint8_t); };
 
 // From sux-0.7
 static uint8_t rank64(uint64_t x) {
@@ -235,7 +236,7 @@ inline int select(int x, int y, int ifXisSmaller, int ifYisSmaller) {
 }
 inline int minimum(int x, int y) { return select(x,y,x,y); }
 inline int maximum(int x, int y) { return select(x,y,y,x); }
- 
+
 }  // namespace cxxmph
 
 #endif

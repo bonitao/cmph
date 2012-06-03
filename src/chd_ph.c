@@ -221,7 +221,7 @@ cmph_uint8 chd_ph_mapping(cmph_config_t *mph, chd_ph_bucket_t * buckets, chd_ph_
 	char * key = NULL;
 	cmph_uint32 keylen = 0;
 	chd_ph_map_item_t * map_item;
-	chd_ph_map_item_t * map_items = malloc(chd_ph->m*sizeof(chd_ph_map_item_t));
+	chd_ph_map_item_t * map_items = (chd_ph_map_item_t *)malloc(chd_ph->m*sizeof(chd_ph_map_item_t));
 	register cmph_uint32 mapping_iterations = 1000;
 	*max_bucket_size = 0;
 	while(1)
@@ -317,7 +317,7 @@ chd_ph_sorted_list_t * chd_ph_ordering(chd_ph_bucket_t ** _buckets, chd_ph_item_
 	};
 	sorted_lists[i-1].size = 0;
 	// Store the buckets in a new array which is sorted by bucket sizes
-	output_buckets = calloc(nbuckets, sizeof(chd_ph_bucket_t)); // everything is initialized with zero
+	output_buckets = (chd_ph_bucket_t *)calloc(nbuckets, sizeof(chd_ph_bucket_t)); // everything is initialized with zero
 //  	non_empty_buckets = nbuckets;
 
 	for(i = 0; i < nbuckets; i++)
@@ -901,7 +901,7 @@ void chd_ph_destroy(cmph_t *mphf)
 
 cmph_uint32 chd_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 {
-	register chd_ph_data_t * chd_ph = mphf->data;
+	register chd_ph_data_t * chd_ph = (chd_ph_data_t *)mphf->data;
 	cmph_uint32 hl[3];
 	register cmph_uint32 disp,position;
 	register cmph_uint32 probe0_num,probe1_num;
@@ -921,7 +921,7 @@ cmph_uint32 chd_ph_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 void chd_ph_pack(cmph_t *mphf, void *packed_mphf)
 {
 	chd_ph_data_t *data = (chd_ph_data_t *)mphf->data;
-	cmph_uint8 * ptr = packed_mphf;
+	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 
 	// packing hl type
 	CMPH_HASH hl_type = hash_get_type(data->hl);
@@ -959,7 +959,7 @@ cmph_uint32 chd_ph_packed_size(cmph_t *mphf)
 
 cmph_uint32 chd_ph_search_packed(void *packed_mphf, const char *key, cmph_uint32 keylen)
 {
-	register CMPH_HASH hl_type  = *(cmph_uint32 *)packed_mphf;
+	register CMPH_HASH hl_type  = (CMPH_HASH)*(cmph_uint32 *)packed_mphf;
 	register cmph_uint8 *hl_ptr = (cmph_uint8 *)(packed_mphf) + 4;
 
 	register cmph_uint32 * ptr = (cmph_uint32 *)(hl_ptr + hash_state_packed_size(hl_type));

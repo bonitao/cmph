@@ -182,7 +182,7 @@ uint32_t MPHIndex::perfect_hash(const Key& key) const {
   h[2] = (h[2] % r_) + nest_displacement_[2];
   // h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
   // h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
- // h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
+  // h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
   assert((h[0]) < g_.size());
   assert((h[1]) < g_.size());
   assert((h[2]) < g_.size());

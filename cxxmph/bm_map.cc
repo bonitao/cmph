@@ -1,6 +1,6 @@
 #include <string>
-#include <tr1/unordered_map>
 #include <google/dense_hash_map>
+#include <unordered_map>
 
 #include "bm_common.h"
 #include "mph_map.h"
@@ -86,10 +86,11 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     }
     mymap_.rehash(mymap_.bucket_count());
     // Double check if everything is all right
+    cerr << "Doing double check" << endl;
     for (uint32_t i = 0; i < values_.size(); ++i) {
       if (mymap_[values_[i]] != values_[i]) {
-        cerr << "Looking for " << i << "th key value " << values_[i]
-             << " yielded " << mymap_[values_[i]] << endl;
+        cerr << "Looking for " << i << " th key value " << values_[i];
+        cerr << " yielded " << mymap_[values_[i]] << endl;
         return false;
       }
     }
@@ -99,8 +100,8 @@ class BM_SearchUint64 : public SearchUint64Benchmark {
     for (auto it = random_.begin(); it != random_.end(); ++it) {
       auto v = myfind(mymap_, *it);
       if (*v != *it) {
-        fprintf(stderr, "Looked for %llu got %llu\n", *it, *v);
-	exit(-1);
+        cerr << "Looked for " << *it << " got " << *v << endl;
+        exit(-1);
       }
     }
   }

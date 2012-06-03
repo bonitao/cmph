@@ -21,9 +21,10 @@
 #include <vector>
 #include <utility>  // for std::pair
 
+#include "hollow_iterator.h"
 #include "mph_bits.h"
 #include "mph_index.h"
-#include "hollow_iterator.h"
+#include "seeded_hash.h"
 
 namespace cxxmph {
 
@@ -82,7 +83,7 @@ class mph_map {
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
-  size_type bucket_count() const { return index_.perfect_hash_size() + slack_.bucket_count(); }
+  size_type bucket_count() const { return index_.minimal_perfect_hash_size() + slack_.bucket_count(); }
   void rehash(size_type nbuckets /*ignored*/); 
 
  protected:  // mimicking STL implementation
@@ -153,13 +154,13 @@ MPH_MAP_METHOD_DECL(void_type, pack)() {
       make_iterator_first(begin()),
       make_iterator_first(end()), size_);
   if (!success) { exit(-1); }
-  vector<value_type> new_values(index_.perfect_hash_size());
+  vector<value_type> new_values(index_.minimal_perfect_hash_size());
   new_values.reserve(new_values.size() * 2);
-  vector<bool> new_present(index_.perfect_hash_size(), false);
+  vector<bool> new_present(index_.minimal_perfect_hash_size(), false);
   new_present.reserve(new_present.size() * 2);
   for (iterator it = begin(), it_end = end(); it != it_end; ++it) {
-    size_type id = index_.perfect_hash(it->first);
-    assert(id < index_.perfect_hash_size());
+    size_type id = index_.minimal_perfect_hash(it->first);
+    assert(id < index_.minimal_perfect_hash_size());
     assert(id < new_values.size());
     new_values[id] = *it;
     new_present[id] = true;
@@ -215,10 +216,10 @@ MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
      auto sit = slack_.find(hasher128_.hash128(k, 0));
      if (sit != slack_.end()) return sit->second;
   }
-  if (__builtin_expect(index_.perfect_hash_size(), 1)) {
-    auto perfect_hash = index_.perfect_hash(k);
-    if (__builtin_expect(present_[perfect_hash], true)) { 
-      return perfect_hash;
+  if (__builtin_expect(index_.minimal_perfect_hash_size(), 1)) {
+    auto minimal_perfect_hash = index_.minimal_perfect_hash(k);
+    if (__builtin_expect(present_[minimal_perfect_hash], true)) {
+      return minimal_perfect_hash;
     }
   }
   return -1;

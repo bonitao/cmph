@@ -15,6 +15,30 @@ uint32_t fmix ( uint32_t h );
 // Used for a quick and dirty hash function for integers. Probably a bad idea.
 uint64_t fmix ( uint64_t h );
 
+inline uint32_t fmix ( uint32_t h )
+{
+  h ^= h >> 16;
+  h *= 0x85ebca6b;
+  h ^= h >> 13;
+  h *= 0xc2b2ae35;
+  h ^= h >> 16;
+
+  return h;
+}
+
+inline uint64_t fmix ( uint64_t k )
+{
+  k ^= k >> 33;
+  k *= 0xff51afd7ed558ccdLLU;
+  k ^= k >> 33;
+  k *= 0xc4ceb9fe1a85ec53LLU;
+  k ^= k >> 33;
+
+  return k;
+}
+
+
+
 namespace cxxmph {
 
 struct h128 {
