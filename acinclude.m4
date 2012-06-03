@@ -20,8 +20,8 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
   [AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   AC_TRY_COMPILE([
-  #include <unorderd_map>
-  #include <unorderd_set>
+  #include <unordered_map>
+  #include <unordered_set>
   template <typename T>
     struct check
     {
