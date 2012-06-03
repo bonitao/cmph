@@ -4,7 +4,21 @@
 #include <string>
 
 #include "mph_map.h"
+#include "map_tester.h"
+#include "test.h"
 
+using namespace cxxmph;
+
+typedef MapTester<mph_map> Tester;
+
+CXXMPH_CXX_TEST_CASE(small_insert, Tester::small_insert);
+CXXMPH_CXX_TEST_CASE(large_insert, Tester::large_insert);
+CXXMPH_CXX_TEST_CASE(small_search, Tester::small_search);
+CXXMPH_CXX_TEST_CASE(default_search, Tester::default_search);
+CXXMPH_CXX_TEST_CASE(large_search, Tester::large_search);
+CXXMPH_CXX_TEST_CASE(string_search, Tester::string_search);
+
+/*
 using std::make_pair;
 using std::string;
 using cxxmph::mph_map;
@@ -27,7 +41,6 @@ int main(int argc, char** argv) {
       exit(-1);
     }
   }
-  /*
   mph_map<string, int> h;
   h.insert(std::make_pair("-1",-1));
   mph_map<string, int>::const_iterator it;
@@ -57,5 +70,5 @@ int main(int argc, char** argv) {
        if (key < num_valid && it->second != key) exit(-1);
     }
   }
-  */
 }
+*/
