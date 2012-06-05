@@ -28,8 +28,9 @@ mph_index_test_SOURCES = mph_index_test.cc
 trigraph_test_LDADD   = libcxxmph.la
 trigraph_test_SOURCES = trigraph_test.cc
 
-bm_index_LDADD = libcxxmph_bm.la -lcmph
-bm_index_SOURCES = bm_index.cc 
+# Bad dependency, do not compile by default.
+# bm_index_LDADD = libcxxmph_bm.la -lcmph
+# bm_index_SOURCES = bm_index.cc 
 
 bm_map_LDADD = libcxxmph_bm.la
 bm_map_SOURCES = bm_map.cc
