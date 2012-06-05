@@ -1,12 +1,16 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = test_test seeded_hash_test mph_bits_test hollow_iterator_test mph_map_test mph_index_test trigraph_test map_tester_test string_util_test
-noinst_PROGRAMS = bm_index bm_map
+check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_index_test trigraph_test string_util_test
+if USE_LIBCHECK
+  check_PROGRAMS += test_test map_tester_test mph_map_test
+  check_LTLIBRARIES = libcxxmph_test.la
+endif
+
+noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
 cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h
 
-check_LTLIBRARIES = libcxxmph_test.la
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
 libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_bits.cc mph_index.cc benchmark.h benchmark.cc string_util.cc
