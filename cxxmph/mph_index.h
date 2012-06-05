@@ -10,15 +10,11 @@
 // This is a pretty uncommon data structure, and if you application has a real
 // use case for it, chances are that it is a real win. If all you are doing is
 // a straightforward implementation of an in-memory associative mapping data
-// structure, then it will probably be slower, since that the
-// evaluation of index() is typically slower than the total cost of running a
-// traditional hash function over a key and doing 2-3 conflict resolutions on
-// 100byte-ish strings. If you still want to do, take a look at mph_map.h
+// structure, then it will probably be slower. Take a look at mph_map.h
 // instead.
 //
 // Thesis presenting this and similar algorithms:
 // http://homepages.dcc.ufmg.br/~fbotelho/en/talks/thesis2008/thesis.pdf
-//
 //
 // Notes:
 //
@@ -48,8 +44,8 @@ namespace cxxmph {
 
 class MPHIndex {
  public:
-  MPHIndex(double c = 1.23, uint8_t b = 7) :
-      c_(c), b_(b), m_(0), n_(0), k_(0), r_(1),
+  MPHIndex(bool square = false, double c = 1.23, uint8_t b = 7) :
+      c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1),
       ranktable_(NULL), ranktable_size_(0) { }
   ~MPHIndex();
 
@@ -66,6 +62,8 @@ class MPHIndex {
   uint32_t perfect_hash_size() const { return n_; } 
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t perfect_hash(const Key& x) const;  // way faster than the minimal
+  template <class SeededHashFcn, class Key>  // must agree with Reset
+  uint32_t perfect_square(const Key& x) const;  // even faster but needs square=true
   uint32_t minimal_perfect_hash_size() const { return size(); }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
@@ -93,6 +91,7 @@ class MPHIndex {
   uint32_t m_;  // edges count
   uint32_t n_;  // vertex count
   uint32_t k_;  // kth index in ranktable, $k = log_2(n=3r)\varepsilon$
+  bool square_;  // make bit vector size a power of 2
 
   // Values used during search
 
@@ -124,7 +123,7 @@ bool MPHIndex::Reset(
   if ((r_ % 2) == 0) r_ += 1;
   // This can be used to speed mods, but increases occupation too much. 
   // Needs to try http://gmplib.org/manual/Integer-Exponentiation.html instead
-  // r_ = nextpoweroftwo(r_);
+  if (square_) r_ = nextpoweroftwo(r_);
   nest_displacement_[0] = 0;
   nest_displacement_[1] = r_;
   nest_displacement_[2] = (r_ << 1);
@@ -174,23 +173,35 @@ bool MPHIndex::Mapping(
 }
 
 template <class SeededHashFcn, class Key>
+uint32_t MPHIndex::perfect_square(const Key& key) const {
+  if (!g_.size()) return 0;
+  h128 h = SeededHashFcn().hash128(key, hash_seed_[0]);
+  h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
+  h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
+  h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
+  assert((h[0]) < g_.size());
+  assert((h[1]) < g_.size());
+  assert((h[2]) < g_.size());
+  uint8_t nest = threebit_mod3[g_[h[0]] + g_[h[1]] + g_[h[2]]];
+  uint32_t vertex = h[nest];
+  return vertex;
+}
+
+template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_hash(const Key& key) const {
   if (!g_.size()) return 0;
   h128 h = SeededHashFcn().hash128(key, hash_seed_[0]);
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
   h[2] = (h[2] % r_) + nest_displacement_[2];
-  // h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
-  // h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
-  // h[2] = (h[2] & (r_-1)) + nest_displacement_[2];
   assert((h[0]) < g_.size());
   assert((h[1]) < g_.size());
   assert((h[2]) < g_.size());
-  uint8_t nest = threebit_mod3[
-      g_[h[0]] + g_[h[1]] + g_[h[2]]];
+  uint8_t nest = threebit_mod3[g_[h[0]] + g_[h[1]] + g_[h[2]]];
   uint32_t vertex = h[nest];
   return vertex;
 }
+
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::minimal_perfect_hash(const Key& key) const {
   return Rank(perfect_hash<SeededHashFcn, Key>(key));
@@ -206,14 +217,47 @@ uint32_t MPHIndex::index(const Key& key) const {
 template <class Key, class HashFcn = typename seeded_hash<std::hash<Key>>::hash_function>
 class SimpleMPHIndex : public MPHIndex {
  public:
+  SimpleMPHIndex(bool advanced_usage = false) : MPHIndex(advanced_usage) {}
   template <class ForwardIterator>
   bool Reset(ForwardIterator begin, ForwardIterator end, uint32_t size) {
     return MPHIndex::Reset<HashFcn>(begin, end, size);
   }
   uint32_t index(const Key& key) const { return MPHIndex::index<HashFcn>(key); }
-  uint32_t perfect_hash(const Key& key) const { return MPHIndex::perfect_hash<HashFcn>(key); }
-  uint32_t minimal_perfect_hash(const Key& key) const { return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
 };
+
+// The parameters minimal and square trade memory usage for evaluation speed.
+// Minimal decreases speed and memory usage, and square does the opposite.
+// Using minimal=true and square=false is the same as SimpleMPHIndex.
+template <bool minimal, bool square, class Key, class HashFcn>
+struct FlexibleMPHIndex {};
+
+template <class Key, class HashFcn>
+struct FlexibleMPHIndex<true, false, Key, HashFcn> 
+    : public SimpleMPHIndex<Key, HashFcn> {
+  FlexibleMPHIndex() : SimpleMPHIndex<Key, HashFcn>(false) {}
+  uint32_t index(const Key& key) const {
+      return MPHIndex::minimal_perfect_hash<HashFcn>(key); }
+  uint32_t size() const { return MPHIndex::minimal_perfect_hash_size(); }
+};
+template <class Key, class HashFcn>
+struct FlexibleMPHIndex<false, true, Key, HashFcn> 
+    : public SimpleMPHIndex<Key, HashFcn> {
+  FlexibleMPHIndex() : SimpleMPHIndex<Key, HashFcn>(true) {}
+  uint32_t index(const Key& key) const {
+      return MPHIndex::perfect_square<HashFcn>(key); }
+  uint32_t size() const { return MPHIndex::perfect_hash_size(); }
+};
+template <class Key, class HashFcn>
+struct FlexibleMPHIndex<false, false, Key, HashFcn> 
+    : public SimpleMPHIndex<Key, HashFcn> {
+  FlexibleMPHIndex() : SimpleMPHIndex<Key, HashFcn>(false) {}
+  uint32_t index(const Key& key) const {
+      return MPHIndex::index<HashFcn>(key); }
+  uint32_t size() const { return MPHIndex::perfect_hash_size(); }
+};
+// From a trade-off perspective this case does not make much sense.
+// template <class Key, class HashFcn>
+// class FlexibleMPHIndex<true, true, Key, HashFcn>
 
 }  // namespace cxxmph
 

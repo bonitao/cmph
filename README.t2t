@@ -88,6 +88,16 @@ The CMPH Library encapsulates the newest and more efficient algorithms in an eas
 
 ----------------------------------------
 
+==News for version 2.0==
+
+Cleaned up most warnings for the c code.
+
+Experimental C++ interface (--enable-cxxmph) implementing the BDZ algorithm in
+a convenient interface, which serves as the basis
+for drop-in replacements for std::unordered_map, sparsehash::sparse_hash_map
+and sparsehash::dense_hash_map. Potentially faster lookup time at the expense
+of insertion time. See cxxmpph/mph_map.h and cxxmph/mph_index.h for details.
+
 ==News for version 1.1==
 
 Fixed a bug in the chd_pc algorithm and reorganized tests.
