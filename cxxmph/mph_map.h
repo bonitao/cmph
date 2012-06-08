@@ -209,14 +209,14 @@ MPH_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
 MPH_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   auto idx = index(k);
   typename vector<value_type>::const_iterator vit = values_.begin() + idx;
-  if (idx == -1 || vit->first != k) return end();
+  if (idx == -1 || !equal_(vit->first, k)) return end();
   return make_solid(&values_, &present_, vit);;
 }
 
 MPH_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   auto idx = index(k);
   typename vector<value_type>::iterator vit = values_.begin() + idx;
-  if (idx == -1 || vit->first != k) return end();
+  if (idx == -1 || !equal_(vit->first, k)) return end();
   return make_solid(&values_, &present_, vit);;
 }
 
