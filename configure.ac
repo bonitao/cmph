@@ -49,6 +49,7 @@ if test x$cxxmph = xtrue; then
   fi
   AC_SUBST([CXXMPH], "cxxmph")
 fi
+AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = yes])
 
 # Unit tests based on the check library. Disabled by default.
 # We do not use pkg-config because it is inconvenient for all developers to
@@ -68,5 +69,5 @@ AC_SUBST(CHECK_LIBS)
 AC_SUBST(CHECK_CFLAGS)
 
 AC_CHECK_SPOON
-AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc])
+AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc cxxmph.pc])
 AC_OUTPUT
