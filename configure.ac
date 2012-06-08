@@ -49,7 +49,7 @@ if test x$cxxmph = xtrue; then
   fi
   AC_SUBST([CXXMPH], "cxxmph")
 fi
-AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = yes])
+AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = true])
 
 # Unit tests based on the check library. Disabled by default.
 # We do not use pkg-config because it is inconvenient for all developers to
