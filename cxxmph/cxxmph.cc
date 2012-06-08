@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
   int verbosity = 0;
   while (1) {
-    char ch = (char)getopt(argc, argv, "hv");
+    char ch = (char)getopt(argc, argv, "hvV");
     if (ch == -1) break;
     switch (ch) {
       case 'h':
@@ -55,6 +55,10 @@ int main(int argc, char** argv) {
   }
   vector<string> keys;
   ifstream f(argv[optind]);
+  if (!f.is_open()) {
+    std::cerr << "Failed to open " << argv[optind] << std::endl;
+    exit(-1);
+  }
   string buffer;
   while (!getline(f, buffer).eof()) keys.push_back(buffer);
   for (uint32_t i = 0; i < keys.size(); ++i) string s = keys[i];
