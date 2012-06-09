@@ -52,11 +52,6 @@ inline void tostr(ostream* out, const pair<F, S>& v) {
   *out << ")";
 }
 
-template <typename... Args, class T >
-std::string infoln(const std::string& format_string, Args&&... args) {
-  return stream_printf(format_string, 0, &std::cout, std::forward<Args>(args)...);
-}
-
 bool stream_printf(
     const std::string& format_string, uint32_t offset, std::ostream* out);
 
@@ -77,18 +72,14 @@ template <> struct pod_snprintf<true> {
 template <typename T, typename... Args>
 bool stream_printf(const std::string& format_string, uint32_t offset,
                    std::ostream* out, const T& value, Args&&... args) {
-  auto b = format_string.c_str() + offset;
   auto txt = format_string.c_str() + offset;
-  for (; *txt; ++txt) {
-    if (*txt == '%') {  
-      if (*(txt + 1) != '%') break;
-      *out << "%";
-      return stream_printf(format_string, offset + 2, out, value,
-                           std::forward<Args>(args)...);
-    }
-  }
-  if (txt != b) {
+  while (*txt) {
+    auto b = txt;
+    for (; *txt != '%'; ++txt);
+    if (*(txt + 1) == '%') ++txt;
+    else if (txt == b) break;
     *out << string(b, txt - b);
+    if (*(txt - 1) == '%') ++txt;
   }
   auto fmt = txt + 1;
   while (*fmt && *fmt != '%') ++fmt;
@@ -116,15 +107,20 @@ std::string format(const std::string& format_string, Args&&... args) {
   return out.str();
 }
 
+template <typename... Args>
+void infoln(const std::string& format_string, Args&&... args) {
+  stream_printf(format_string + "\n", 0, &std::cout, std::forward<Args>(args)...);
+}
+
 struct variadic_print {
   variadic_print(const std::string& file, uint32_t line, std::ostream* out,
                  const std::string& format_line) 
      : file_(file), line_(line), out_(out), format_line_(format_line) {}
   template <typename... Args>
   void operator()(Args&&... args) {
-    std::string fancy_format = "%s:%d: ";
-    fancy_format += format_line_;
-    stream_printf(fancy_format, 0, out_, std::forward<Args>(args)...);
+    std::string fancy_format = "%v:%d: ";
+    fancy_format += format_line_ + "\n";
+    stream_printf(fancy_format, 0, out_, file_, line_, std::forward<Args>(args)...);
   }
   const std::string& file_;
   const uint32_t& line_;

@@ -31,6 +31,7 @@
 #include <vector>
 #include <utility>  // for std::pair
 
+#include "string_util.h"
 #include "hollow_iterator.h"
 #include "mph_bits.h"
 #include "mph_index.h"
@@ -156,7 +157,7 @@ MPH_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 }
 
 MPH_MAP_METHOD_DECL(void_type, pack)() {
-  // fprintf(stderr, "Paki %d values\n", values_.size());
+  // CXXMPH_DEBUGLN("Packing %v values")(values_.size());
   if (values_.empty()) return;
   assert(std::unordered_set<key_type>(make_iterator_first(begin()), make_iterator_first(end())).size() == size());
   bool success = index_.Reset(
@@ -196,7 +197,9 @@ MPH_MAP_METHOD_DECL(void_type, clear)() {
 }
 
 MPH_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
-  present_[pos.it_ - begin().it_] = false;
+  assert(pos.it_ - values_.begin() < present_.size());
+  assert(present_[pos.it_ - values_.begin()]);
+  present_[pos.it_ - values_.begin()] = false;
   *pos = value_type();
   --size_;
 }
@@ -227,9 +230,7 @@ MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
   }
   if (__builtin_expect(index_.size(), 1)) {
     auto id = index_.index(k);
-    if (__builtin_expect(present_[id], true)) { 
-      return id;
-    }
+    if (__builtin_expect(present_[id], true)) return id;
   }
   return -1;
 }

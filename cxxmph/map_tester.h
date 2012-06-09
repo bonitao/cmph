@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "string_util.h"
+#include <check.h>
 
 namespace cxxmph {
 
@@ -27,7 +28,7 @@ struct MapTester {
     // Start counting from 1 to not touch default constructed value bugs
     int nkeys = 12 * 256 * 256;
     for (int i = 1; i < nkeys; ++i) m.insert(make_pair(i, i));
-    return static_cast<int>(m.size()) == nkeys - 0;
+    return static_cast<int>(m.size()) == nkeys - 1;
   }
   static bool small_search() {
     map_type<int64_t, int64_t> m;
@@ -87,7 +88,18 @@ struct MapTester {
     map_type<int64_t, int64_t> m;
     int nkeys = 10 * 1000;
     for (int i = 0; i < nkeys; ++i) { m.insert(make_pair(i, i)); }
-    for (int i = nkeys; i >= 0; --i) { 
+    for (int i = 0; i < nkeys; ++i) {
+       if (m.find(i) == m.end()) return false;
+    }
+    for (int i = nkeys - 1; i >= 0; --i) { if (m.find(i) == m.end()) return false; }
+    for (int i = nkeys - 1; i >= 0; --i) {
+      fail_unless(m.find(i) != m.end(), "after erase %d cannot be found", i);
+      fail_unless(m.find(i)->first == i, "after erase key %d cannot be found", i);
+    }
+    for (int i = nkeys - 1; i >= 0; --i) {
+      fail_unless(m.find(i) != m.end(), "after erase %d cannot be found", i);
+      fail_unless(m.find(i)->first == i, "after erase key %d cannot be found", i);
+      if (!(m.find(i)->first == i)) return false;
       m.erase(m.find(i));
       if (static_cast<int>(m.size()) != i) return false;
     }
@@ -97,7 +109,8 @@ struct MapTester {
     map_type<int64_t, int64_t> m;
     int nkeys = 10 * 1000;
     for (int i = 0; i < nkeys; ++i) { m.insert(make_pair(i, i)); }
-    for (int i = nkeys; i >= 0; --i) { 
+    for (int i = nkeys - 1; i >= 0; --i) { 
+      fail_unless(m.find(i) != m.end());
       m.erase(i);
       if (static_cast<int>(m.size()) != i) return false;
     }
