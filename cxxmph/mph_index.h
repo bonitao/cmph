@@ -46,7 +46,11 @@ class MPHIndex {
  public:
   MPHIndex(bool square = false, double c = 1.23, uint8_t b = 7) :
       c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1), g_(8, true),
-      ranktable_(NULL), ranktable_size_(0) { }
+      ranktable_(NULL), ranktable_size_(0) {
+    nest_displacement_[0] = 0;
+    nest_displacement_[1] = r_;
+    nest_displacement_[2] = (r_ << 1);
+  }
   ~MPHIndex();
 
   template <class SeededHashFcn, class ForwardIterator>
@@ -193,6 +197,7 @@ uint32_t MPHIndex::perfect_hash(const Key& key) const {
   h[0] = (h[0] % r_) + nest_displacement_[0];
   h[1] = (h[1] % r_) + nest_displacement_[1];
   h[2] = (h[2] % r_) + nest_displacement_[2];
+  if (!(h[0] < g_.size())) std::cerr << "Fuck" << h[0] << " mod " << r_ << std::endl;
   assert((h[0]) < g_.size());
   assert((h[1]) < g_.size());
   assert((h[2]) < g_.size());
