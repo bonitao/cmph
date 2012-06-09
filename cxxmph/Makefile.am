@@ -55,6 +55,6 @@ mph_bits_test_LDADD   = libcxxmph.la
 string_util_test_SOURCES = string_util_test.cc
 string_util_test_LDADD   = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)
 
-map_tester_test_SOURCES = map_tester.cc map_tester_test.cc
+map_tester_test_SOURCES = map_tester.h map_tester.cc map_tester_test.cc
 map_tester_test_LDADD = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)
 
