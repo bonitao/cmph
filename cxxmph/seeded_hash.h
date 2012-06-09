@@ -10,11 +10,6 @@
 #include "MurmurHash3.h"
 #include "stringpiece.h"
 
-// From murmur, only used naively to extend 32 bits functions to 128 bits.
-uint32_t fmix ( uint32_t h );
-// Used for a quick and dirty hash function for integers. Probably a bad idea.
-uint64_t fmix ( uint64_t h );
-
 namespace cxxmph {
 
 struct h128 {
@@ -33,15 +28,16 @@ template <class HashFcn>
 struct seeded_hash_function {
   template <class Key>
   uint32_t operator()(const Key& k, uint32_t seed) const {
-    return HashFcn()(k) ^ seed;
+    uint32_t h;
+    uint32_t h0 = HashFcn()(k);
+    MurmurHash3_x86_32(reinterpret_cast<const void*>(&h0), 4, seed, &h);
+    return h;
   }
   template <class Key>
   h128 hash128(const Key& k, uint32_t seed) const {
     h128 h;
-    for (int i = 0; i < 4; ++i) {
-      h.uint32[i] = HashFcn()(k) ^ seed;
-      seed = fmix(seed);
-    }
+    uint32_t h0 = HashFcn()(k);
+    MurmurHash3_x64_128(reinterpret_cast<const void*>(&h0), 4, seed, &h);
     return h;
   }
 };
@@ -74,20 +70,6 @@ struct Murmur3StringPiece {
     h128 h;
     StringPiece s(k);
     MurmurHash3_x64_128(s.data(), s.length(), 1 /* seed */, &h);
-    return h;
-  }
-};
-
-struct Murmur3Fmix64bitsType {
-  template <class Key>
-  uint32_t operator()(const Key& k) const {
-    return fmix(*reinterpret_cast<const uint64_t*>(&k));
-  }
-  template <class Key>
-  h128 hash128(const Key& k) const {
-    h128 h;
-    h.set64(fmix(k), 0);
-    h.set64(fmix(h.get64(0)), 1);
     return h;
   }
 };
@@ -125,22 +107,6 @@ struct seeded_hash_function<Murmur3StringPiece> {
     return h;
   }
 };
-
-template <>
-struct seeded_hash_function<Murmur3Fmix64bitsType> {
-  template <class Key>
-  uint32_t operator()(const Key& k, uint32_t seed) const {
-    return fmix(k + seed);
-  }
-  template <class Key>
-  h128 hash128(const Key& k, uint32_t seed) const {
-    h128 h;
-    h.set64(fmix(k ^ seed), 0);
-    h.set64(fmix(h.get64(0)), 1);
-    return h;
-  }
-};
-
 
 template <class HashFcn> struct seeded_hash
 { typedef seeded_hash_function<HashFcn> hash_function; };

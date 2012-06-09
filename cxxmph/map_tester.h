@@ -104,7 +104,7 @@ struct MapTester {
       if (static_cast<int>(m.size()) != i) return false;
     }
     return true;
-  }
+ }
  static bool erase_value() {
     map_type<int64_t, int64_t> m;
     int nkeys = 10 * 1000;

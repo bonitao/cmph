@@ -252,7 +252,7 @@ struct FlexibleMPHIndex<false, false, Key, HashFcn>
     : public SimpleMPHIndex<Key, HashFcn> {
   FlexibleMPHIndex() : SimpleMPHIndex<Key, HashFcn>(false) {}
   uint32_t index(const Key& key) const {
-      return MPHIndex::index<HashFcn>(key); }
+      return MPHIndex::perfect_hash<HashFcn>(key); }
   uint32_t size() const { return MPHIndex::perfect_hash_size(); }
 };
 // From a trade-off perspective this case does not make much sense.
