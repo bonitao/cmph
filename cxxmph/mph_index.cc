@@ -182,7 +182,7 @@ void MPHIndex::Ranking() {
 }
 
 uint32_t MPHIndex::Rank(uint32_t vertex) const {
-  if (!g_.size()) return 0;
+  if (!ranktable_size_) return 0;
   uint32_t index = vertex >> b_;
   uint32_t base_rank = ranktable_[index];
   uint32_t beg_idx_v = index << b_;

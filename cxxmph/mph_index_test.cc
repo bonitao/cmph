@@ -33,10 +33,11 @@ int main(int argc, char** argv) {
   cerr << endl;
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
-   /*
-  char* serialized = new char[mph_index.serialize_bytes_needed()];
-  mph_index.serialize(serialized);
-  SimpleMPHIndex<string> other_mph_index;
-  other_mph_index.deserialize(serialized);
-  */
+
+  FlexibleMPHIndex<false, true, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> square_empty;
+  auto id = square_empty.index(1);
+  FlexibleMPHIndex<false, false, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> unordered_empty;
+  id ^= unordered_empty.index(1);
+  FlexibleMPHIndex<true, false, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> minimal_empty;
+  id ^= minimal_empty.index(1);
 }

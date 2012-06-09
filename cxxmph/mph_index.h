@@ -45,7 +45,7 @@ namespace cxxmph {
 class MPHIndex {
  public:
   MPHIndex(bool square = false, double c = 1.23, uint8_t b = 7) :
-      c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1),
+      c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1), g_(8, true),
       ranktable_(NULL), ranktable_size_(0) { }
   ~MPHIndex();
 
@@ -174,7 +174,6 @@ bool MPHIndex::Mapping(
 
 template <class SeededHashFcn, class Key>
 uint32_t MPHIndex::perfect_square(const Key& key) const {
-  if (!g_.size()) return 0;
   h128 h = SeededHashFcn().hash128(key, hash_seed_[0]);
   h[0] = (h[0] & (r_-1)) + nest_displacement_[0];
   h[1] = (h[1] & (r_-1)) + nest_displacement_[1];
