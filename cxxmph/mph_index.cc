@@ -108,7 +108,7 @@ void MPHIndex::Assigning(
     const vector<TriGraph::Edge>& edges, const vector<uint32_t>& queue) {
   uint32_t current_edge = 0;
   vector<bool> marked_vertices(n_ + 1);
-  dynamic_2bitset().swap(g_);
+  dynamic_2bitset(8, true).swap(g_);
   // Initialize vector of half nibbles with all bits set.
   dynamic_2bitset g(n_, true /* set bits to 1 */);
 
@@ -182,7 +182,7 @@ void MPHIndex::Ranking() {
 }
 
 uint32_t MPHIndex::Rank(uint32_t vertex) const {
-  if (!g_.size()) return 0;
+  if (!ranktable_size_) return 0;
   uint32_t index = vertex >> b_;
   uint32_t base_rank = ranktable_[index];
   uint32_t beg_idx_v = index << b_;

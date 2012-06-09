@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     exit(-1);
   }
 
-  unordered_map<uint64_t, int, Murmur3Fmix64bitsType> g;
+  unordered_map<uint64_t, int> g;
   for (int i = 0; i < 1000; ++i) g[i] = i;
   for (int i = 0; i < 1000; ++i) if (g[i] != i) exit(-1);
 

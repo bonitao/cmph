@@ -1,12 +1,16 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test flatten_iterator_test mph_map_test mph_index_test trigraph_test bfcr_map_test map_tester_test string_util_test test_test
-noinst_PROGRAMS = bm_index bm_map
+check_PROGRAMS = seeded_hash_test mph_bits_test hollow_iterator_test mph_index_test trigraph_test
+if USE_LIBCHECK
+  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test
+  check_LTLIBRARIES = libcxxmph_test.la
+endif
+
+noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
 cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h macros.h bfcr_map.h
 
-check_LTLIBRARIES = libcxxmph_test.la
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
 libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_index.cc mph_bits.cc string_util.cc
@@ -21,6 +25,8 @@ test_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 
 mph_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 mph_map_test_SOURCES = mph_map_test.cc
+dense_hash_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
+dense_hash_map_test_SOURCES = dense_hash_map_test.cc
 
 mph_index_test_LDADD   = libcxxmph.la
 mph_index_test_SOURCES = mph_index_test.cc
@@ -28,8 +34,9 @@ mph_index_test_SOURCES = mph_index_test.cc
 trigraph_test_LDADD   = libcxxmph.la
 trigraph_test_SOURCES = trigraph_test.cc
 
-bm_index_LDADD = libcxxmph_bm.la -lcmph
-bm_index_SOURCES = bm_index.cc 
+# Bad dependency, do not compile by default.
+# bm_index_LDADD = libcxxmph_bm.la -lcmph
+# bm_index_SOURCES = bm_index.cc 
 
 bm_map_LDADD = libcxxmph_bm.la
 bm_map_SOURCES = bm_map.cc
@@ -50,7 +57,7 @@ bfcr_map_test_SOURCES = bfcr_map_test.cc
 bfcr_map_test_LDADD   = libcxxmph.la
 
 string_util_test_SOURCES = string_util_test.cc
-string_util_test_LDADD   = libcxxmph.la
+string_util_test_LDADD   = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)
 
-map_tester_test_SOURCES = map_tester.cc map_tester_test.cc
+map_tester_test_SOURCES = map_tester.h map_tester.cc map_tester_test.cc
 map_tester_test_LDADD = libcxxmph.la libcxxmph_test.la $(CHECK_LIBS)

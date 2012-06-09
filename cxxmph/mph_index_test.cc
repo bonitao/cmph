@@ -37,8 +37,10 @@ int main(int argc, char** argv) {
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
 
-  vector<int> k2;
-  for (int i = 0; i < 512;  ++i) { k2.push_back(i); }
-  SimpleMPHIndex<int> k2_index;
-  if (!k2_index.Reset(k2.begin(), k2.end(), k2.size())) { exit(-1); }
+  FlexibleMPHIndex<false, true, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> square_empty;
+  auto id = square_empty.index(1);
+  FlexibleMPHIndex<false, false, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> unordered_empty;
+  id ^= unordered_empty.index(1);
+  FlexibleMPHIndex<true, false, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> minimal_empty;
+  id ^= minimal_empty.index(1);
 }

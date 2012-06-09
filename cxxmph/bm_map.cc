@@ -6,16 +6,19 @@
 #include "mph_map.h"
 #include "bfcr_map.h"
 
+<<<<<<< HEAD
 using cxxmph::mph_map;
 using cxxmph::bfcr_map;
+=======
+>>>>>>> master
 using std::string;
-using std::unordered_map;
 
 // Another reference benchmark:
 // http://blog.aggregateknowledge.com/tag/bigmemory/
 
 namespace cxxmph {
 
+<<<<<<< HEAD
 typedef google::dense_hash_map<StringPiece, StringPiece, Murmur3StringPiece> dense_map_type;
 template <class MapType> void set_empty_key(MapType* map) {}
 void set_empty_key(dense_map_type * map) {
@@ -23,6 +26,8 @@ void set_empty_key(dense_map_type * map) {
   map->set_empty_key(StringPiece("davi"));
 }
 
+=======
+>>>>>>> master
 template <class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
@@ -128,6 +133,6 @@ int main(int argc, char** argv) {
   Benchmark::Register(new BM_SearchUrls<unordered_map<StringPiece, StringPiece, Murmur3StringPiece>>("URLS100k", 10*1000 * 1000, 0.9));
   Benchmark::Register(new BM_SearchUint64<bfcr_map<uint64_t, uint64_t>>);
   Benchmark::Register(new BM_SearchUint64<mph_map<uint64_t, uint64_t>>);
-  Benchmark::Register(new BM_SearchUint64<unordered_map<uint64_t, uint64_t>>);
+  Benchmark::Register(new BM_SearchUint64<sparse_hash_map<uint64_t, uint64_t>>);
   Benchmark::RunAll();
 }

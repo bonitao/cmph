@@ -49,16 +49,25 @@ if test x$cxxmph = xtrue; then
   fi
   AC_SUBST([CXXMPH], "cxxmph")
 fi
+AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = true])
 
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.8], [HAVE_LIBCHECK=1], [HAVE_LIBCHECK=]) 
-if test "x$CHECK_LIBS" = "x" ; then
-  if test "x$cxxmph" = "xtrue"; then
-    AC_MSG_WARN([Testing library not found, make check will fail.])
-  fi
-fi
+# Unit tests based on the check library. Disabled by default.
+# We do not use pkg-config because it is inconvenient for all developers to
+# have check library installed.
+AC_ARG_ENABLE(check, AS_HELP_STRING(
+     [--enable-check],
+     [Build unit tests depending on check library (default: disabled)]))
+AS_IF([test "x$enable_check" = "xyes"],
+  [ AC_CHECK_LIB([check], [tcase_create])
+    AS_IF([test "$ac_cv_lib_check_tcase_create" = yes], [CHECK_LIBS="-lcheck"],
+          [AC_MSG_ERROR("Failed to find check library (http://check.sf.net).")])
+    AC_CHECK_HEADER(check.h,[],
+          [AC_MSG_ERROR("Failed to find check library header (http://check.sf.net).")])
+  ])
+AM_CONDITIONAL([USE_LIBCHECK], [test "$ac_cv_lib_check_tcase_create" = yes])
 AC_SUBST(CHECK_LIBS)
 AC_SUBST(CHECK_CFLAGS)
 
 AC_CHECK_SPOON
-AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc])
+AC_CONFIG_FILES([Makefile src/Makefile cxxmph/Makefile tests/Makefile examples/Makefile man/Makefile cmph.pc cxxmph.pc])
 AC_OUTPUT
