@@ -17,6 +17,21 @@ using namespace std;
 
 template <template<typename...> class map_type>
 struct MapTester {
+  static bool empty_find() {
+    map_type<int64_t, int64_t> m;
+    for (int i = 0; i < 1000; ++i) {
+      if (m.find(i) != m.end()) return false;
+    }
+    return true;
+  }
+  static bool empty_erase() {
+    map_type<int64_t, int64_t> m;
+    for (int i = 0; i < 1000; ++i) {
+      m.erase(i);
+      if (m.size()) return false;
+    }
+    return true;
+  }
   static bool small_insert() {
     map_type<int64_t, int64_t> m;
     // Start counting from 1 to not touch default constructed value bugs
