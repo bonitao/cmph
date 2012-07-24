@@ -7,7 +7,6 @@
 #include "bfcr_map.h"
 
 using cxxmph::mph_map;
-using cxxmph::bfcr_map;
 using std::string;
 
 // Another reference benchmark:
