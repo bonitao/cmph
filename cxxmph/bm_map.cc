@@ -6,11 +6,7 @@
 #include "mph_map.h"
 #include "bfcr_map.h"
 
-<<<<<<< HEAD
 using cxxmph::mph_map;
-using cxxmph::bfcr_map;
-=======
->>>>>>> master
 using std::string;
 
 // Another reference benchmark:
@@ -18,7 +14,6 @@ using std::string;
 
 namespace cxxmph {
 
-<<<<<<< HEAD
 typedef google::dense_hash_map<StringPiece, StringPiece, Murmur3StringPiece> dense_map_type;
 template <class MapType> void set_empty_key(MapType* map) {}
 void set_empty_key(dense_map_type * map) {
@@ -26,8 +21,6 @@ void set_empty_key(dense_map_type * map) {
   map->set_empty_key(StringPiece("davi"));
 }
 
-=======
->>>>>>> master
 template <class MapType, class T>
 const T* myfind(const MapType& mymap, const T& k) {
   auto it = mymap.find(k);
