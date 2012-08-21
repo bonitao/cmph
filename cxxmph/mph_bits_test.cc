@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
     // b &= -b;
     b *= de_bruijn32;
     b >>= 27;  // 32 - log(32)
-    fprintf(stderr, "b32: %u\n", b);
   }
   uint64_t de_bruijn64 = 0x218a392cd3d5dbfULL;
   for (int i = 0; i < 64; ++i) {
