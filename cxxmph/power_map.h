@@ -10,10 +10,12 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <set>
 #include <unordered_map>
 #include <vector>
 #include <utility>  // for std::pair
 
+#include "string_util.h"
 #include "seeded_hash.h"
 #include "mph_bits.h"
 #include "hollow_iterator.h"
@@ -73,7 +75,7 @@ class power_map {
   inline iterator find(const key_type& k);
   inline const_iterator find(const key_type& k) const;
   typedef int32_t my_int32_t;  // help macros
-  inline int32_t index(const key_type& k) const;
+  typedef uint32_t my_uint32_t;  // help macros
   data_type& operator[](const key_type &k);
   const data_type& operator[](const key_type &k) const;
 
@@ -84,12 +86,19 @@ class power_map {
   EqualKey equal_;
 
  private:
+  static constexpr uint32_t kMaxCost = 1ULL << 16;
+  inline uint32_t index(const key_type& k) const;
+  inline uint32_t bucket(const key_type& k) const;
   void pack();
   bool fast_insert(const value_type& x);
   bool slow_insert(const value_type& x);
   bool calculate_bucket_ph(
-    uint32_t pos, const h128* new_key,
+    uint32_t bucket, const h128* new_key,
     uint8_t* ph, vector<h128>* keys);
+  bool make_power_index(
+    const vector<h128>& keys,
+    const vector<uint32_t>& cost,
+    uint8_t* ph) const;
 
    vector<value_type> values_;
    vector<bool> present_;
@@ -106,12 +115,38 @@ inline uint8_t power_index(const h128& h, uint16_t ph) {
   uint8_t pos = (a * ph) >> 8;
   return pos;
 }
-bool make_power_index(
-    const vector<h128>& keys, const vector<uint32_t>& cost, uint8_t* ph) {
-  // Implement me
-  return true;
-}
 
+POWER_MAP_METHOD_DECL(bool_type, make_power_index)(
+    const vector<h128>& keys,
+    const vector<uint32_t>& cost,
+    uint8_t* ph_result) const {
+  assert(cost.size() == 256);
+  uint32_t best_cost = kMaxCost;
+  uint32_t best_ph = 0;
+  for (uint16_t ph = 0; ph < 256; ++ph) {
+    uint32_t total_cost = 0;
+    std::set<uint8_t> used;
+    for (const auto& h : keys) {
+      auto idx = power_index(h, ph);
+      if (!used.insert(idx).second) {
+        total_cost = kMaxCost;
+        break;
+      }
+      total_cost += cost[idx];
+    }
+    if (total_cost < best_cost) {
+      best_cost = total_cost;
+      best_ph = ph;
+    }
+  }
+  if (best_cost < kMaxCost) {
+    CXXMPH_DEBUGLN("Found a ph for %v keys at cost %v")(keys.size(), best_cost);
+    if (ph_result) *ph_result = best_ph;
+    return true;
+  }
+  CXXMPH_DEBUGLN("Failed to find a power index for %v keys")(keys.size());
+  return false;
+}
 
 POWER_MAP_TMPL_SPEC
 bool operator==(const POWER_MAP_CLASS_SPEC& lhs, const POWER_MAP_CLASS_SPEC& rhs) {
@@ -127,121 +162,134 @@ POWER_MAP_TMPL_SPEC POWER_MAP_CLASS_SPEC::~power_map() {
 }
 
 POWER_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
-  cerr << "Inserting key " << x.first << endl;
+  CXXMPH_DEBUGLN("Inserting key %v")(x);
   auto it = find(x.first);
   auto it_end = end();
   if (it != it_end) return make_pair(it, false);
   while (!(fast_insert(x) || slow_insert(x))) pack();
   it = find(x.first);
-  cerr << "Inserted key " << x.first << " (pos " << (hasher128_.hash128(x.first, seed_)[0] % capacity_) << ") at bucket " << (it.it_-values_.begin()) << endl;
+  CXXMPH_DEBUGLN("After insertion found %v at (%v+%v)")(
+      x, (hasher128_.hash128(x.first, seed_)[0] % capacity_),
+      (it.it_-values_.begin())-hasher128_.hash128(x.first, seed_)[0] % capacity_);
   assert(it != end());
+  ++size_;
   return make_pair(it, true);
 }
 
+// A fast insert is the tentative of storing a key in its exact location without
+// updating power indices.
 POWER_MAP_METHOD_DECL(bool_type, fast_insert)(const value_type& x) {
-  cerr << "Trying fast insert " << endl;
+  CXXMPH_DEBUGLN("Trying fast insert")();
   auto idx = index(x.first);
   if (ph_[idx] == 0 && !present_[idx]) {
     ph_[idx] = 1;
     present_[idx] = true;
+    assert(cost_[idx] == 0);
+    cost_[idx] = 1;
     values_[idx] = x;
     return true;
   }
+  CXXMPH_DEBUGLN("Index %v taken by key %v (%v+%v)")(
+      idx, values_[idx], bucket(values_[idx].first),
+      idx - bucket(values_[idx].first));
   return false;
 }
 
 POWER_MAP_METHOD_DECL(bool_type, calculate_bucket_ph)(
-    uint32_t pos, const h128* new_key, uint8_t* ph, vector<h128>* keys) {
+    uint32_t b, const h128* new_key, uint8_t* ph, vector<h128>* keys) {
   // Get keys and cost
   uint8_t nkeys = 0;
   h128 keys_array[256];
-  vector<uint32_t> cost(cost_.begin() + pos,
-                        cost_.begin() + pos + 256);;
+  vector<uint32_t> cost(cost_.begin() + b,
+                        cost_.begin() + b + 256);;
   for (int i = 0; i < 256; ++i) {
-    if (!present_[pos + i]) continue;
-    auto h = hasher128_.hash128(values_[pos + i].first, seed_);
-    if (h[0] % capacity_ == pos) {
+    if (!present_[b + i]) continue;
+    auto occupying_bucket = bucket(values_[b + i].first);
+    if (occupying_bucket == b) {
       cost[i] = 0;
+      auto h = hasher128_.hash128(values_[b+i].first, seed_);
       keys_array[nkeys++] = h;
     }
   }
   if (new_key) keys_array[nkeys++] = *new_key;
   vector<h128>(keys_array, keys_array + nkeys).swap(*keys);
-  cerr << "Making power index for " << keys->size() << " keys at bucket " << pos  << endl;
+  CXXMPH_DEBUGLN("Making power index for %v keys at bucket %v")(
+      keys->size(), b);
   bool r = make_power_index(*keys, cost, ph);
-  cerr << "New key has power index " << static_cast<uint16_t>(power_index(*new_key, *ph)) << endl;
   return r;
 }
 
 POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
-  cerr << "Trying slow insert " << endl;
+  CXXMPH_DEBUGLN("Trying slow insert");
   // Find the ph with smallest cost for this insertion
-  auto h = hasher128_.hash128(x.first, seed_);
-  auto pos = h[0] % capacity_;
+  auto b = bucket(x.first);
   uint8_t ph;
+  auto h = hasher128_.hash128(x.first, seed_);
   vector<h128> keys;
-  if (!calculate_bucket_ph(pos, &h, &ph, &keys)) return false; 
+  if (!calculate_bucket_ph(b, &h, &ph, &keys)) return false;
 
   // Update cost vector and rollback for cost vector if insertion fails
   unordered_map<uint32_t, uint32_t> cost_rollback;
   for (auto hit = keys.begin(); hit != keys.end(); ++hit) {
-    auto idx = pos + power_index(*hit, ph);
+    auto idx = b + power_index(*hit, ph);
     cost_rollback[idx] = cost_[idx];
-    cerr << "Updating bucket " << idx << " cost to infinite " << endl;
-    cost_[idx] = 1ULL << 16;
+    CXXMPH_DEBUGLN("Reserving idx (%v+%v) for key %v:%v")(b, idx-b, (*hit)[0], (*hit)[3]);
+    cost_[idx] = kMaxCost;
   }
 
   // Remove and reinsert under new cost vector any key using a bucket needed by
   // the generated ph
   for (auto hit = keys.begin(); hit != keys.end(); ++hit) {
-    auto idx = pos + power_index(*hit, ph);
-    auto hf = hasher128_.hash128(values_[idx].first, seed_);
-    if (present_[idx] && hf[0] % capacity_ != pos) {
-      auto y = values_[idx];
-      cerr << "Pushing key " << y.first << " at bucket " << idx << endl;
-      values_[idx] = x;
-      bool pushed = slow_insert(y);
-      if (!pushed) break;
+    auto idx = b + power_index(*hit, ph);
+    if (!present_[idx]) continue;
+    auto occupying_bucket = bucket(values_[idx].first);
+    if (occupying_bucket == b) continue;  // will be redistributed
+    auto y = values_[idx];
+    CXXMPH_DEBUGLN("Dumping key %v from idx (%v+%v)")(y.first, b, idx-b);
+    values_[idx] = x;
+    bool pushed = slow_insert(y);
+    if (pushed) {
       values_[idx] = y;
-      for (auto cit = cost_rollback.begin(); cit != cost_rollback.end(); ++cit) {
-        assert(cost_[cit->first] == 1ULL<<16);
-        cost_[cit->first] = cit->second;
-      }
-      values_[idx] = value_type();
+      continue;
     }
+    for (auto cit = cost_rollback.begin(); cit != cost_rollback.end(); ++cit) {
+      assert(cost_[cit->first] == kMaxCost);
+      cost_[cit->first] = cit->second;
+    }
+    CXXMPH_DEBUGLN("Failed to dump key. Rolled back and gave up.")();
+    return false;
   }
 
-  // TODO(davi) correctly update cost vector
-
   // Redistributes the keys for this new ph
-  for (int i = 0; i < 256; ++i) {
-    if (!present_[pos + i]) continue;
-    auto hf = hasher128_.hash128(values_[pos + i].first, seed_);
-    if (hf[0] % capacity_ != pos) continue;
-    auto idx = pos + power_index(hf, ph);
-    if (idx == pos + i) continue;
-    assert(pos + i == pos + power_index(hf, ph_[pos]));
-    cerr << "Swapping keys at " << (pos + i) << " and " << idx << endl;
-    swap(values_[pos + i], values_[idx]);
-    bool tmp = present_[pos + i];
-    present_[pos + i] = present_[idx];
-    present_[idx] = tmp;
-    assert(present_[idx]);
-
-    // pos + i either belongs to this bucket or is empty
+  for (auto hit = keys.begin(); hit != keys.end(); ++hit) {
+    if (*hit == h) continue;
+    auto old_idx = b + power_index(*hit, ph_[b]);
+    auto idx = b + power_index(*hit, ph);
+    if (present_[idx]) {
+      CXXMPH_DEBUGLN("Swapping val %v at (%v+%v) with val %v at (%v+%v)")(
+          values_[idx], b, idx-b, values_[old_idx], b, old_idx-b);
+      swap(values_[old_idx], values_[idx]);
+    } else {
+      CXXMPH_DEBUGLN("Moving val %v from (%v+%v) to (%v+%v)")(
+          values_[old_idx], b, old_idx-b, b, idx-b);
+      values_[idx] = values_[old_idx];
+      present_[idx] = true;
+      values_[old_idx] = value_type();
+      present_[old_idx] = false;
+      cost_[old_idx] = 0;
+    }
     cost_[idx] = keys.size() * keys.size();
-    if (!present_[pos + i]) cost_[pos + i] = 0;
-    else cost_[pos + i] = keys.size() * keys.size();
-
-    --i;
   }
 
   // And finally inserts
-  auto idx = pos + power_index(h, ph);
-  cerr << "Final idx for key " << x.first << " is (" << pos << "+" << static_cast<uint16_t>(power_index(h, ph)) << ")" << endl;
+  auto idx = b + power_index(h, ph);
+  CXXMPH_DEBUGLN("Final idx for key %v is (%v+%u)")(
+       x.first, b , power_index(h, ph));
+  assert(!present_[idx]);
   values_[idx] = x;
   present_[idx] = true;
-  ph_[pos] = ph;
+  cost_[idx] = keys.size() * keys.size();
+  ph_[b] = ph;
   return true;
 }
 
@@ -288,20 +336,22 @@ POWER_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
 POWER_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   auto idx = index(k);
   auto vit = values_.begin() + idx;
-  cerr << "Find at idx " << idx << " present " << static_cast<uint16_t>(present_[idx])
-       << " equals " << static_cast<uint16_t>(vit->first == k) << endl;
   key_type fk = vit->first;
   if (!present_[idx] || !(fk == k)) return end();
   return make_solid(&values_, &present_, vit);;
 }
 
-POWER_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
+POWER_MAP_INLINE_METHOD_DECL(my_uint32_t, index)(const key_type& k) const {
   auto h = hasher128_.hash128(k, seed_);
-  auto pos = h[0] % (capacity_);
-  auto ph = ph_[pos];
-  auto idx = pos + power_index(h, ph);
-  cerr << "key " << k << " seed " << seed_ << " pos " << pos << " ph " << static_cast<uint16_t>(ph) << " idx " << idx << endl; 
+  auto b = h[0] % (capacity_);
+  auto ph = ph_[b];
+  auto idx = b + power_index(h, ph);
   return idx;
+}
+
+POWER_MAP_INLINE_METHOD_DECL(my_uint32_t, bucket)(const key_type& k) const {
+  auto h = hasher128_.hash128(k, seed_);
+  return h[0] % (capacity_);
 }
 
 POWER_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {

@@ -22,14 +22,11 @@ struct bucketed_key {
   Key key;
   uint64_t bucket;
 };
-} // namespace cxxmph
-
-template <class Key>
-inline std::ostream& operator<<(std::ostream& o, const cxxmph::bucketed_key<Key>& k) {
-  if (k.bucket == std::numeric_limits<decltype(k.bucket)>::max()) o << k;
-  else o << k << "@" << k.bucket;
-  return o;
+template <typename Key>
+void tostr(std::ostream* out, const bucketed_key<Key>& k) {
+  (*out) << "{" << k.key << "@" << k.bucket << "}";
 }
+} // namespace cxxmph
 
 namespace std {
 template <> template<class Key>
@@ -91,6 +88,8 @@ struct MapTester {
     test_map m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_value(i));
+    fail_unless(m.size() == 11,
+                "Expected map size is 11, got %lu", m.size());
     return m.size() == 11;
   }
   static bool large_insert() {
@@ -105,7 +104,8 @@ struct MapTester {
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_value(i));
     for (int i = 1; i < 12; ++i) {
-      if (m.find(make_key(i)) == m.end()) return false;
+      fail_unless(m.find(make_key(i)) != m.end(),
+                  "Failed to find key %d just inserted", i);
     }
     return true;
   }
