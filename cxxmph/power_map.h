@@ -107,7 +107,10 @@ inline uint8_t power_index(const h128& h, uint16_t ph) {
   return pos;
 }
 bool make_power_index(
-    const vector<h128>& keys, const vector<uint32_t>& cost, uint8_t* ph);
+    const vector<h128>& keys, const vector<uint32_t>& cost, uint8_t* ph) {
+  // Implement me
+  return true;
+}
 
 
 POWER_MAP_TMPL_SPEC
