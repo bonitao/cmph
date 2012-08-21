@@ -29,7 +29,7 @@ using std::ostream;
 using std::vector;
 
 template <class T> void tostr(ostream *out, const T& v) {
-  *out << v;
+  (*out) << v;
 }
 inline void tostr(std::ostream* out, uint8_t v) {
   *out << static_cast<uint32_t>(v);
@@ -118,7 +118,7 @@ struct variadic_print {
      : file_(file), line_(line), out_(out), format_line_(format_line) {}
   template <typename... Args>
   void operator()(Args&&... args) {
-    std::string fancy_format = "%v:%d: ";
+    std::string fancy_format = "%v:%u: ";
     fancy_format += format_line_ + "\n";
     stream_printf(fancy_format, 0, out_, file_, line_, std::forward<Args>(args)...);
   }
