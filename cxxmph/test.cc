@@ -2,13 +2,19 @@
 
 #include "test.h"
 
-Suite* global_suite = suite_create("cxxmph_test_suite");
-TCase* global_tc_core = tcase_create("Core");
+Suite* global_suite() {
+  static Suite* gs = suite_create("cxxmph_test_suite");
+  return gs;
+}
+TCase* global_tc_core() {
+  static TCase* gtc = tcase_create("Core");
+  return gtc;
+}
 
 int main (void) {
-  suite_add_tcase(global_suite, global_tc_core);
+  suite_add_tcase(global_suite(), global_tc_core());
   int number_failed;
-  SRunner *sr = srunner_create (global_suite);
+  SRunner *sr = srunner_create (global_suite());
   srunner_run_all (sr, CK_NORMAL);
   number_failed = srunner_ntests_failed (sr);
   srunner_free (sr);
