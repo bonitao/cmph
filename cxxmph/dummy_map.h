@@ -2,6 +2,10 @@
 #define __CXXMPH_DUMMY_MAP_H__
 
 // Associative mapping implementation assuming no collisions.
+//
+// This class demands that the key implements the concepts of struct
+// bucketed_key. The easiest way to do it is to pass your class as a template
+// parameter to it.
 
 #include <algorithm>
 #include <bitset>
@@ -77,7 +81,7 @@ class dummy_map {
 
  private:
   uint32_t n_;  // number of keys
-  hasher hasher_;
+  hasher hasher_;  // unused
   vector<value_type> values_;
   vector<bool> present_;
 };
@@ -132,7 +136,6 @@ DUMMY_MAP_METHOD_DECL(void_type, erase)(const key_type& k) {
   if (it == end()) return;
   erase(it);
 }
-
 
 }  // namespace cxxmph
 #endif
