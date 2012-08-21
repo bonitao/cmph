@@ -43,6 +43,7 @@ class power_map {
   typedef pair<Key, Data> value_type;
   typedef HashFcn hasher;
   typedef EqualKey key_equal;
+  typedef power_map<Key, Data, HashFcn, EqualKey, Alloc> self_type;
 
   typedef typename vector<value_type>::pointer pointer;
   typedef typename vector<value_type>::reference reference;
@@ -294,6 +295,34 @@ POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
 }
 
 POWER_MAP_METHOD_DECL(void_type, pack)() {
+  CXXMPH_DEBUGLN("All failed, time to PACK");
+  if (size_ == 0) return;
+  while (true) {
+    bool success = true;
+    self_type rhs;
+    uint32_t newsize = (values_.size() - 8)*2 + 8;
+    if (values_.size() == 0) newsize = 256 + 8;
+    rhs.values_.resize(newsize);
+    rhs.present_.resize(newsize);
+    rhs.ph_.resize(newsize);
+    rhs.cost_.resize(newsize);
+    rhs.capacity_ = newsize - 256 + 8;
+    for (const auto& v : *this) {
+      if (!rhs.slow_insert(v)) {
+        success = false;
+        break;
+      }
+    }
+    if (!success) continue;
+    CXXMPH_DEBUGLN("PACK succeeded");
+    rhs.values_.swap(values_);
+    rhs.present_.swap(present_);
+    rhs.ph_.swap(ph_);
+    rhs.cost_.swap(cost_);
+    std::swap(rhs.capacity_, capacity_);
+    std::swap(rhs.size_, size_);
+    std::swap(rhs.seed_, seed_);
+  }
 }
 
 POWER_MAP_METHOD_DECL(iterator, begin)() { return make_hollow(&values_, &present_, values_.begin()); }
