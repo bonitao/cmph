@@ -5,6 +5,8 @@ using namespace cxxmph;
 
 typedef MapTester<std::unordered_map> Tester;
 
+CXXMPH_CXX_TEST_CASE(empty_find, Tester::empty_find);
+CXXMPH_CXX_TEST_CASE(empty_erase, Tester::empty_erase);
 CXXMPH_CXX_TEST_CASE(small_insert, Tester::small_insert);
 CXXMPH_CXX_TEST_CASE(large_insert, Tester::large_insert);
 CXXMPH_CXX_TEST_CASE(small_search, Tester::small_search);
