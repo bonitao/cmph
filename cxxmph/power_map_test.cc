@@ -3,13 +3,13 @@
 #include <iostream>
 #include <string>
 
-#include "power_map.h"
+#include "dummy_map.h"
 #include "map_tester.h"
 #include "test.h"
 
 using namespace cxxmph;
 
-typedef MapTester<power_map> Tester;
+typedef MapTester<dummy_map> Tester;
 
 CXXMPH_CXX_TEST_CASE(empty_find, Tester::empty_find);
 CXXMPH_CXX_TEST_CASE(empty_erase, Tester::empty_erase);

@@ -1,10 +1,7 @@
 #ifndef __CXXMPH_DUMMY_MAP_H__
 #define __CXXMPH_DUMMY_MAP_H__
 
-// On collision, find an empty position up to k positions ahead and insert.
-// Then store the set S of positions p \in [0;k] for the c keys that have
-// collided. The higher k, the bigger occupation we can have. The lower k, the
-// more likely it is to find a function h(v, seed) that maps [v]->S.
+// Associative mapping implementation assuming no collisions.
 
 #include <algorithm>
 #include <bitset>
@@ -30,7 +27,7 @@ using std::vector;
 #define DUMMY_MAP_METHOD_DECL(r, m) DUMMY_MAP_TMPL_SPEC typename DUMMY_MAP_CLASS_SPEC::r DUMMY_MAP_CLASS_SPEC::m
 #define DUMMY_MAP_INLINE_METHOD_DECL(r, m) DUMMY_MAP_TMPL_SPEC inline typename DUMMY_MAP_CLASS_SPEC::r DUMMY_MAP_CLASS_SPEC::m
 
-template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<typename Key::first_type>, class Alloc = std::allocator<Data> >
+template <class Key, class Data, class HashFcn = std::hash<Key>, class EqualKey = std::equal_to<Key>, class Alloc = std::allocator<Data> >
 class dummy_map {
  public:
   typedef Key key_type;
@@ -79,13 +76,13 @@ class dummy_map {
 
  private:
   uint32_t n_;  // number of keys
-  uint32_t seed_;
-  typename seeded_hash<hasher>::hash_function hasher_;
+  hasher hasher_;
   vector<value_type> values_;
+  vector<bool> present_;
 };
 
 DUMMY_MAP_TMPL_SPEC DUMMY_MAP_CLASS_SPEC::dummy_map()
-    : n_(0), seed_(random()) { }
+    : n_(0) { }
 
 DUMMY_MAP_TMPL_SPEC DUMMY_MAP_CLASS_SPEC::~dummy_map() {}
 
@@ -94,17 +91,21 @@ DUMMY_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
   auto it_end = end();
   if (it != it_end) { return make_pair(it, false); }
 
-  auto insert_index = x.first.second;
-  if (insert_index >= values_.size()) values_.resize(insert_index+1);
+  auto insert_index = x.first.bucket;
+  if (insert_index >= values_.size()) {
+    present_.resize(insert_index+1);
+    values_.resize(insert_index+1);
+  }
   values_[insert_index] = x;
+  present_[insert_index] = true;
   ++n_;
   return make_pair(values_.begin() + insert_index, true);
 }
 
 DUMMY_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (k.second < values_.size()) {
-    auto vit = values_.begin() + k.second;
-    if (equal_(k.first, vit->first.first)) return vit;
+  if (k.bucket < values_.size()) {
+    auto vit = values_.begin() + k.bucket;
+    if (equal_(k, vit->first)) return vit;
   }
   return end();
 }
@@ -112,7 +113,7 @@ DUMMY_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 DUMMY_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
   if (k.second < values_.size()) {
     auto vit = values_.begin() + k.second;
-    if (equal_(k.first, vit->first.first)) return vit;
+    if (equal_(k, vit->first)) return vit;
   }
   return end();
 }

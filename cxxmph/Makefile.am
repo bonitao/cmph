@@ -1,7 +1,7 @@
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = seeded_hash_test mph_bits_test flatten_iterator_test hollow_iterator_test mph_index_test trigraph_test
 if USE_LIBCHECK
-  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test power_map_test
+  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test power_map_test dummy_map_test
   check_LTLIBRARIES = libcxxmph_test.la
 endif
 
@@ -29,6 +29,9 @@ dense_hash_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 dense_hash_map_test_SOURCES = dense_hash_map_test.cc
 power_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 power_map_test_SOURCES = power_map_test.cc
+
+dummy_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
+dummy_map_test_SOURCES = dummy_map_test.cc
 
 mph_index_test_LDADD   = libcxxmph.la
 mph_index_test_SOURCES = mph_index_test.cc
