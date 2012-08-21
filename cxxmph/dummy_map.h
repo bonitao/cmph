@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 
+#include "string_util.h"
 #include "seeded_hash.h"
 
 namespace cxxmph {
@@ -103,7 +104,7 @@ DUMMY_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
 }
 
 DUMMY_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
-  if (k.bucket < values_.size()) {
+  if (k.bucket < values_.size() && present_[k.bucket]) {
     auto vit = values_.begin() + k.bucket;
     if (equal_(k, vit->first)) return vit;
   }
@@ -111,7 +112,7 @@ DUMMY_MAP_METHOD_DECL(iterator, find)(const key_type& k) {
 }
 
 DUMMY_MAP_INLINE_METHOD_DECL(const_iterator, find)(const key_type& k) const {
-  if (k.second < values_.size()) {
+  if (k.bucket < values_.size() && present_[k.bucket]) {
     auto vit = values_.begin() + k.second;
     if (equal_(k, vit->first)) return vit;
   }

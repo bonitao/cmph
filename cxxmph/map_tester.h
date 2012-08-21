@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <unordered_map>
+#include <limits>
 
 #include "string_util.h"
 #include <check.h>
@@ -14,8 +15,9 @@ namespace cxxmph {
 template <typename Key>
 struct bucketed_key {
   bucketed_key() : key(), bucket() {}
+  // bucketed_key(const Key& k) : key(k), bucket(std::numeric_limits<decltype(k)>::max()) {}
   bucketed_key(const Key& k) : key(k), bucket(k) {}
-  bucketed_key(const Key& k, uint64_t b) : key(k), bucket(-1) {}
+  bucketed_key(const Key& k, uint64_t b) : key(k), bucket(b) {}
   bool operator==(const bucketed_key<Key>& rhs) {
     return key == rhs.key;
   }
@@ -26,7 +28,7 @@ struct bucketed_key {
 
 template <class Key>
 inline std::ostream& operator<<(std::ostream& o, const cxxmph::bucketed_key<Key>& k) {
-  if (k.bucket == -1) o << k;
+  if (k.bucket == std::numeric_limits<decltype(k.bucket)>::max()) o << k;
   else o << k << "@" << k.bucket;
   return o;
 }
@@ -63,7 +65,7 @@ struct MapTester {
     return make_pair(typename test_map::key_type(k), k);
   }
   static typename str_test_map::key_type make_str_key(int64_t k) {
-    return typename str_test_map::key_type(format("%v"), k);
+    return typename str_test_map::key_type(format("%v", k), k);
   }
   static typename str_test_map::value_type make_str_value(int64_t k) {
     return make_pair(make_str_key(k), k);
@@ -82,6 +84,7 @@ struct MapTester {
     return true;
   }
   static bool small_insert() {
+    CXXMPH_DEBUGLN("on small insert");
     test_map m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_value(i));
@@ -90,7 +93,7 @@ struct MapTester {
   static bool large_insert() {
     test_map m;
     // Start counting from 1 to not touch default constructed value bugs
-    int nkeys = 12 * 256 * 256;
+    int nkeys = 12 * 256 * 32;  // chosen to not timeout on debug builds
     for (int i = 1; i < nkeys; ++i) m.insert(make_value(i));
     return static_cast<int>(m.size()) == nkeys - 1;
   }
@@ -105,11 +108,14 @@ struct MapTester {
   }
   static bool default_search() {
     test_map m;
-    if (m.find(0) != m.end()) return false;
+    fail_unless(m.find(0) == m.end(),
+                "Found default value in empty map");
     for (int i = 1; i < 256; ++i) m.insert(make_value(i));
-    if (m.find(0) != m.end()) return false;
+    fail_unless(m.find(0) == m.end(),
+                "Found 0 value in map holding [1;256)");
     for (int i = 0; i < 256; ++i) m.insert(make_value(i));
-    if (m.find(0) == m.end()) return false;
+    fail_unless(m.find(0) != m.end(),
+                "Did not find 0 value in map holding [0;256)");
     return true;
   }
   static bool large_search() {
@@ -122,12 +128,21 @@ struct MapTester {
   static bool string_search() {
     int nkeys = 10 * 1000;
     str_test_map m;
-    for (int i = 0; i < nkeys; ++i) m.insert(make_str_value(i));
+    for (int i = 0; i < nkeys; ++i) {
+      auto v = make_str_value(i);
+
+      fprintf(stderr, "key: %s bucket: %llu value %lld\n", v.first.key.c_str(), v.first.bucket, v.second);
+      m.insert(make_str_value(i));
+      return true;
+    }
     for (int i = 0; i < nkeys; ++i) {
       auto k = make_str_key(i);
+      CXXMPH_DEBUGLN("inserting key %v")(k);
       auto it = m.find(k);
-      if (it == m.end()) return false;
-      if (it->second != i) return false;
+      fail_unless(m.find(k) != m.end(),
+                  format("cannot find string %v cannot be found", k.key).c_str());
+      fail_unless(it->second == i,
+                  "value is %d and not expected %d", it->second, i);
     }
     return true;
   }
