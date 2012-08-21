@@ -15,7 +15,6 @@ namespace cxxmph {
 template <typename Key>
 struct bucketed_key {
   bucketed_key() : key(), bucket(std::numeric_limits<uint64_t>::max()) {}
-  bucketed_key(const Key& k) : key(k), bucket(k) {}
   bucketed_key(const Key& k, uint64_t b) : key(k), bucket(b) {}
   bool operator==(const bucketed_key<Key>& rhs) {
     return key == rhs.key;
@@ -60,8 +59,11 @@ template <template<typename...> class map_type>
 struct MapTester {
   typedef map_type<bucketed_key<int64_t>, int64_t> test_map;
   typedef map_type<bucketed_key<string>, int64_t> str_test_map;
+  static typename test_map::key_type make_key(int64_t k) {
+    return typename test_map::key_type(k, k);
+  }
   static typename test_map::value_type make_value(int64_t k) {
-    return make_pair(typename test_map::key_type(k), k);
+    return make_pair(make_key(k), k);
   }
   static typename str_test_map::key_type make_str_key(int64_t k) {
     return typename str_test_map::key_type(format("%v", k), k);
@@ -71,19 +73,21 @@ struct MapTester {
   }
   static bool empty_find() {
     test_map m;
-    for (int i = 0; i < 1000; ++i) if (m.find(i) != m.end()) return false;
+    for (int i = 0; i < 1000; ++i) {
+      fail_unless(m.find(make_key(i)) == m.end(),
+                  "Found key in empty map");
+    }
     return true;
   }
   static bool empty_erase() {
     test_map m;
     for (int i = 0; i < 1000; ++i) {
-      m.erase(i);
+      m.erase(make_key(i));
       if (m.size()) return false;
     }
     return true;
   }
   static bool small_insert() {
-    CXXMPH_DEBUGLN("on small insert");
     test_map m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_value(i));
@@ -100,20 +104,20 @@ struct MapTester {
     test_map m;
     // Start counting from 1 to not touch default constructed value bugs
     for (int i = 1; i < 12; ++i) m.insert(make_value(i));
-    for (int i = 1; i < 12; ++i) if (m.find(i) == m.end()) {
-      return false; 
+    for (int i = 1; i < 12; ++i) {
+      if (m.find(make_key(i)) == m.end()) return false;
     }
     return true;
   }
   static bool default_search() {
     test_map m;
-    fail_unless(m.find(0) == m.end(),
+    fail_unless(m.find(make_key(0)) == m.end(),
                 "Found default value in empty map");
     for (int i = 1; i < 256; ++i) m.insert(make_value(i));
-    fail_unless(m.find(0) == m.end(),
+    fail_unless(m.find(make_key(0)) == m.end(),
                 "Found 0 value in map holding [1;256)");
     for (int i = 0; i < 256; ++i) m.insert(make_value(i));
-    fail_unless(m.find(0) != m.end(),
+    fail_unless(m.find(make_key(0)) != m.end(),
                 "Did not find 0 value in map holding [0;256)");
     return true;
   }
@@ -121,7 +125,9 @@ struct MapTester {
     int nkeys = 10 * 1000;
     test_map m;
     for (int i = 0; i < nkeys; ++i) m.insert(make_value(i));
-    for (int i = 0; i < nkeys; ++i) if (m.find(i) == m.end()) return false; 
+    for (int i = 0; i < nkeys; ++i) {
+      if (m.find(make_key(i)) == m.end()) return false; 
+    }
     return true;
   }
   static bool string_search() {
@@ -156,10 +162,10 @@ struct MapTester {
     for (int i = 0; i < nkeys; ++i) { m.insert(make_value(i)); }
     m.rehash(nkeys);
     for (int i = 0; i < nkeys; ++i) {
-      if (m.find(i) == m.end()) return false;
+      if (m.find(make_key(i)) == m.end()) return false;
     }
     for (int i = nkeys; i < nkeys * 2; ++i) {
-      if (m.find((i)) != m.end()) return false;
+      if (m.find(make_key(i)) != m.end()) return false;
     }
     return true;
   }
@@ -168,24 +174,24 @@ struct MapTester {
     int nkeys = 10 * 1000;
     for (int i = 0; i < nkeys; ++i) { m.insert(make_value(i)); }
     for (int i = 0; i < nkeys; ++i) {
-       if (m.find(i) == m.end()) return false;
+       if (m.find(make_key(i)) == m.end()) return false;
     }
     for (int i = nkeys - 1; i >= 0; --i) {
-      if (m.find(i) == m.end()) return false;
+      if (m.find(make_key(i)) == m.end()) return false;
     }
     for (int i = nkeys - 1; i >= 0; --i) {
-      fail_unless(m.find(i) != m.end(),
+      fail_unless(m.find(make_key(i)) != m.end(),
                   "after erase %d cannot be found", i);
-      fail_unless(m.find(i)->first.key == i,
+      fail_unless(m.find(make_key(i))->first.key == i,
                   "after erase key %d cannot be found", i);
     }
     for (int i = nkeys - 1; i >= 0; --i) {
-      fail_unless(m.find(i) != m.end(),
+      fail_unless(m.find(make_key(i)) != m.end(),
                   "after erase %d cannot be found", i);
-      fail_unless(m.find(i)->first.key == i,
+      fail_unless(m.find(make_key(i))->first.key == i,
                   "after erase key %d cannot be found", i);
-      if (!(m.find(i)->first.key == i)) return false;
-      m.erase(m.find(i));
+      if (!(m.find(make_key(i))->first.key == i)) return false;
+      m.erase(m.find(make_key(i)));
       if (static_cast<int>(m.size()) != i) return false;
     }
     return true;
@@ -195,8 +201,8 @@ struct MapTester {
     int nkeys = 10 * 1000;
     for (int i = 0; i < nkeys; ++i) { m.insert(make_value(i)); }
     for (int i = nkeys - 1; i >= 0; --i) {
-      fail_unless(m.find(i) != m.end());
-      m.erase(i);
+      fail_unless(m.find(make_key(i)) != m.end());
+      m.erase(make_key(i));
       if (static_cast<int>(m.size()) != i) return false;
     }
     return true;
