@@ -290,7 +290,8 @@ POWER_MAP_INLINE_METHOD_DECL(iterator, find)(const key_type& k) {
   auto vit = values_.begin() + idx;
   cerr << "Find at idx " << idx << " present " << static_cast<uint16_t>(present_[idx])
        << " equals " << static_cast<uint16_t>(vit->first == k) << endl;
-  if (!present_[idx] || vit->first != k) return end();
+  key_type fk = vit->first;
+  if (!present_[idx] || !(fk == k)) return end();
   return make_solid(&values_, &present_, vit);;
 }
 
