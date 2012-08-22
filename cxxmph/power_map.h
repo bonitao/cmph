@@ -82,15 +82,17 @@ class power_map {
 
   size_type bucket_count() const { return ph_.size(); }
   void rehash(size_type nbuckets); 
+  void swap(self_type& rhs); 
 
  protected:  // mimicking STL implementation
   EqualKey equal_;
 
  private:
   static constexpr uint32_t kMaxCost = 1ULL << 16;
+  void pack();
+  bool Reset(const_iterator it, const_iterator end);
   inline uint32_t index(const key_type& k) const;
   inline uint32_t bucket(const key_type& k) const;
-  void pack();
   bool fast_insert(const value_type& x);
   bool slow_insert(const value_type& x);
   bool calculate_bucket_ph(
@@ -141,7 +143,8 @@ POWER_MAP_METHOD_DECL(bool_type, make_power_index)(
     }
   }
   if (best_cost < kMaxCost) {
-    CXXMPH_DEBUGLN("Found a ph for %v keys at cost %v")(keys.size(), best_cost);
+    CXXMPH_DEBUGLN("Found a ph for %v keys at cost %v after %v tentatives")(
+        keys.size(), best_cost, best_ph);
     if (ph_result) *ph_result = best_ph;
     return true;
   }
@@ -154,10 +157,7 @@ bool operator==(const POWER_MAP_CLASS_SPEC& lhs, const POWER_MAP_CLASS_SPEC& rhs
   return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
-POWER_MAP_TMPL_SPEC POWER_MAP_CLASS_SPEC::power_map() {
-  clear();
-  pack();
-}
+POWER_MAP_TMPL_SPEC POWER_MAP_CLASS_SPEC::power_map() { clear(); }
 
 POWER_MAP_TMPL_SPEC POWER_MAP_CLASS_SPEC::~power_map() {
 }
@@ -173,21 +173,23 @@ POWER_MAP_METHOD_DECL(insert_return_type, insert)(const value_type& x) {
       x, (hasher128_.hash128(x.first, seed_)[0] % capacity_),
       (it.it_-values_.begin())-hasher128_.hash128(x.first, seed_)[0] % capacity_);
   assert(it != end());
-  ++size_;
   return make_pair(it, true);
 }
 
 // A fast insert is the tentative of storing a key in its exact location without
 // updating power indices.
 POWER_MAP_METHOD_DECL(bool_type, fast_insert)(const value_type& x) {
-  CXXMPH_DEBUGLN("Trying fast insert")();
+  CXXMPH_DEBUGLN("Trying fast insert for key %v")(x.first);
   auto idx = index(x.first);
-  if (ph_[idx] == 0 && !present_[idx]) {
+  if (!present_[idx]) {
     ph_[idx] = 1;
     present_[idx] = true;
     assert(cost_[idx] == 0);
     cost_[idx] = 1;
     values_[idx] = x;
+    ++size_;
+    CXXMPH_DEBUGLN("Fast insert for key %v at (%v+%v)")(
+        x.first.key, bucket(x.first), idx-bucket(x.first));
     return true;
   }
   CXXMPH_DEBUGLN("Index %v taken by key %v (%v+%v)")(
@@ -208,11 +210,15 @@ POWER_MAP_METHOD_DECL(bool_type, calculate_bucket_ph)(
     auto occupying_bucket = bucket(values_[b + i].first);
     if (occupying_bucket == b) {
       cost[i] = 0;
-      auto h = hasher128_.hash128(values_[b+i].first, seed_);
-      keys_array[nkeys++] = h;
+      auto hk = hasher128_.hash128(values_[b+i].first, seed_);
+      keys_array[nkeys++] = hk;
+      CXXMPH_DEBUGLN("Added %v [%v:%v] at (%v+%v) to candidates")(
+          values_[b+i].first, hk[0], hk[3], b, i);
     }
   }
   if (new_key) keys_array[nkeys++] = *new_key;
+  CXXMPH_DEBUGLN("Added new [%v:%v] at (%v+?) to candidates")(
+          (*new_key)[0], (*new_key)[3], b);
   vector<h128>(keys_array, keys_array + nkeys).swap(*keys);
   CXXMPH_DEBUGLN("Making power index for %v keys at bucket %v")(
       keys->size(), b);
@@ -221,7 +227,7 @@ POWER_MAP_METHOD_DECL(bool_type, calculate_bucket_ph)(
 }
 
 POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
-  CXXMPH_DEBUGLN("Trying slow insert");
+  CXXMPH_DEBUGLN("Trying slow insert")();
   // Find the ph with smallest cost for this insertion
   auto b = bucket(x.first);
   uint8_t ph;
@@ -246,18 +252,17 @@ POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
     auto occupying_bucket = bucket(values_[idx].first);
     if (occupying_bucket == b) continue;  // will be redistributed
     auto y = values_[idx];
-    CXXMPH_DEBUGLN("Dumping key %v from idx (%v+%v)")(y.first, b, idx-b);
+    CXXMPH_DEBUGLN("Dumping key %v from idx (%v+%v)")(
+        y.first, occupying_bucket, idx-occupying_bucket);
     values_[idx] = x;
     bool pushed = slow_insert(y);
-    if (pushed) {
-      values_[idx] = y;
-      continue;
-    }
+    if (pushed) continue;
+    values_[idx] = y;
+    CXXMPH_DEBUGLN("Failed to dump key. Rolling back and giving up.")();
     for (auto cit = cost_rollback.begin(); cit != cost_rollback.end(); ++cit) {
       assert(cost_[cit->first] == kMaxCost);
       cost_[cit->first] = cit->second;
     }
-    CXXMPH_DEBUGLN("Failed to dump key. Rolled back and gave up.")();
     return false;
   }
 
@@ -266,10 +271,12 @@ POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
     if (*hit == h) continue;
     auto old_idx = b + power_index(*hit, ph_[b]);
     auto idx = b + power_index(*hit, ph);
+    if (old_idx == idx) continue;
+    if (!present_[old_idx]) continue;  // maybe a collision
     if (present_[idx]) {
-      CXXMPH_DEBUGLN("Swapping val %v at (%v+%v) with val %v at (%v+%v)")(
+      CXXMPH_DEBUGLN("Swaping val %v at (%v+%v) with val %v at (%v+%v)")(
           values_[idx], b, idx-b, values_[old_idx], b, old_idx-b);
-      swap(values_[old_idx], values_[idx]);
+      std::swap(values_[old_idx], values_[idx]);
     } else {
       CXXMPH_DEBUGLN("Moving val %v from (%v+%v) to (%v+%v)")(
           values_[old_idx], b, old_idx-b, b, idx-b);
@@ -277,52 +284,45 @@ POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
       present_[idx] = true;
       values_[old_idx] = value_type();
       present_[old_idx] = false;
-      cost_[old_idx] = 0;
+      cost_[old_idx] = 0;  // wrong - should calculate over all keys
     }
     cost_[idx] = keys.size() * keys.size();
+    CXXMPH_DEBUGLN("Cost at idx %v now is %v")(idx, cost_[idx]);
   }
 
   // And finally inserts
   auto idx = b + power_index(h, ph);
   CXXMPH_DEBUGLN("Final idx for key %v is (%v+%u)")(
        x.first, b , power_index(h, ph));
-  assert(!present_[idx]);
+  assert((!present_[idx]) || values_[idx] == x);
   values_[idx] = x;
   present_[idx] = true;
   cost_[idx] = keys.size() * keys.size();
   ph_[b] = ph;
+  ++size_;
   return true;
 }
 
 POWER_MAP_METHOD_DECL(void_type, pack)() {
-  CXXMPH_DEBUGLN("All failed, time to PACK");
-  if (size_ == 0) return;
-  while (true) {
-    bool success = true;
-    self_type rhs;
-    uint32_t newsize = (values_.size() - 8)*2 + 8;
-    if (values_.size() == 0) newsize = 256 + 8;
-    rhs.values_.resize(newsize);
-    rhs.present_.resize(newsize);
-    rhs.ph_.resize(newsize);
-    rhs.cost_.resize(newsize);
-    rhs.capacity_ = newsize - 256 + 8;
-    for (const auto& v : *this) {
-      if (!rhs.slow_insert(v)) {
-        success = false;
-        break;
-      }
-    }
-    if (!success) continue;
-    CXXMPH_DEBUGLN("PACK succeeded");
-    rhs.values_.swap(values_);
-    rhs.present_.swap(present_);
-    rhs.ph_.swap(ph_);
-    rhs.cost_.swap(cost_);
-    std::swap(rhs.capacity_, capacity_);
-    std::swap(rhs.size_, size_);
-    std::swap(rhs.seed_, seed_);
+  int8_t iterations = 16;
+  self_type rhs;
+  while (iterations--) {
+    CXXMPH_DEBUGLN("Trying to PACK - %d iterations left ")(
+        iterations);
+    if (rhs.Reset(begin(), end())) break;
   }
+  assert(iterations > 0);
+  this->swap(rhs);
+}
+POWER_MAP_METHOD_DECL(void_type, swap)(self_type& rhs) {
+  CXXMPH_DEBUGLN("Doing swap");
+  std::swap(size_, rhs.size_);
+  std::swap(capacity_, rhs.capacity_);
+  std::swap(seed_, rhs.seed_);
+  values_.swap(rhs.values_);
+  present_.swap(rhs.present_);
+  ph_.swap(rhs.ph_);
+  cost_.swap(rhs.cost_);
 }
 
 POWER_MAP_METHOD_DECL(iterator, begin)() { return make_hollow(&values_, &present_, values_.begin()); }
@@ -333,14 +333,32 @@ POWER_MAP_METHOD_DECL(bool_type, empty)() const { return size_ == 0; }
 POWER_MAP_METHOD_DECL(size_type, size)() const { return size_; }
 
 POWER_MAP_METHOD_DECL(void_type, clear)() {
-  decltype(values_)(256+8).swap(values_);
-  decltype(present_)(256+8).swap(present_);
-  decltype(ph_)(256+8).swap(ph_);
-  decltype(cost_)(256+8).swap(cost_);
-  capacity_ = 8;
+  Reset(end(), end());
+}
+POWER_MAP_METHOD_DECL(bool_type, Reset)(
+    const_iterator a, const_iterator b) {
+  uint32_t cnt = 0;
+  for (auto it = a; it != b; ++it) ++cnt;
+  uint32_t nbuckets = 8;
+  while (nbuckets < cnt*2) {
+    nbuckets = nextpoweroftwo(nbuckets + 1);
+  }
+  uint32_t siz = 256 + nbuckets;
+  decltype(values_)(siz).swap(values_);
+  decltype(present_)(siz).swap(present_);
+  decltype(ph_)(siz).swap(ph_);
+  decltype(cost_)(siz).swap(cost_);
+  capacity_ = nbuckets;
   size_ = 0;
   seed_ = random();
-  cerr << "seed initialized to " << seed_ << endl;
+  CXXMPH_DEBUGLN("Seed initialized to %v for %v buckets (siz %v)")(
+      seed_, nbuckets, siz);
+  for (auto it = a; it != b; ++it) {
+    if (fast_insert(*it)) continue;
+    if (slow_insert(*it)) continue;
+    return false;
+  }
+  return true;
 }
 
 POWER_MAP_METHOD_DECL(void_type, erase)(iterator pos) {
@@ -385,12 +403,6 @@ POWER_MAP_INLINE_METHOD_DECL(my_uint32_t, bucket)(const key_type& k) const {
 
 POWER_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
   return insert(make_pair(k, data_type())).first->second;
-}
-POWER_MAP_METHOD_DECL(void_type, rehash)(size_type nbuckets) {
-  pack();
-  vector<value_type>(values_.begin(), values_.end()).swap(values_);
-  vector<bool>(present_.begin(), present_.end()).swap(present_);
-  decltype(ph_)(ph_.begin(), ph_.end()).swap(ph_);
 }
 
 }  // namespace cxxmph

@@ -16,7 +16,7 @@ template <typename Key>
 struct bucketed_key {
   bucketed_key() : key(), bucket(std::numeric_limits<uint64_t>::max()) {}
   bucketed_key(const Key& k, uint64_t b) : key(k), bucket(b) {}
-  bool operator==(const bucketed_key<Key>& rhs) {
+  bool operator==(const bucketed_key<Key>& rhs) const {
     return key == rhs.key;
   }
   Key key;
