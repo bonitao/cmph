@@ -103,6 +103,16 @@ class power_map {
     const vector<uint32_t>& cost,
     uint8_t* ph) const;
 
+  // Organize code around this
+  struct BucketView {
+    uint32_t bucket;
+    uint8_t power_index[32];
+    uint16_t cost[128];
+    uint8_t size;
+    uint32_t cost;
+  };
+  BucketView bucket_view(uint32_t bucket);
+
    vector<value_type> values_;
    vector<bool> present_;
    vector<uint8_t> ph_;
@@ -198,22 +208,42 @@ POWER_MAP_METHOD_DECL(bool_type, fast_insert)(const value_type& x) {
   return false;
 }
 
-POWER_MAP_METHOD_DECL(bool_type, calculate_bucket_ph)(
-    uint32_t b, const h128* new_key, uint8_t* ph, vector<h128>* keys) {
-  // Get keys and cost
-  uint8_t nkeys = 0;
-  h128 keys_array[256];
-  vector<uint32_t> cost(cost_.begin() + b,
-                        cost_.begin() + b + 256);;
+POWER_MAP_METHOD_DECL(BucketView, bucket_view)(uint32_t bucket) {
+  BucketView bv;
+  bv.bucket = bucket;
+  bv.size = 0;
   for (int i = 0; i < 256; ++i) {
     if (!present_[b + i]) continue;
     auto occupying_bucket = bucket(values_[b + i].first);
     if (occupying_bucket == b) {
-      cost[i] = 0;
-      auto hk = hasher128_.hash128(values_[b+i].first, seed_);
-      keys_array[nkeys++] = hk;
-      CXXMPH_DEBUGLN("Added %v [%v:%v] at (%v+%v) to candidates")(
-          values_[b+i].first, hk[0], hk[3], b, i);
+      bv.power_index[bv.size++] = i;
+    }
+  }
+  // A more interesting cost is (ph_ + 1)^2
+  for (int i = 0; i < 256; ++i) {
+    bv.cost[i] = bv.size*bv.size + 1;
+  }
+  for (int i = 0; i < bv.size; ++i) {
+    bv.cost[bv.power_index[i]] = bv.size * bv.size;
+  }
+  return bv;
+}
+
+POWER_MAP_METHOD_DECL(bool_type, calculate_bucket_ph)(
+    uint32_t b, const h128* new_key, uint8_t* ph, vector<h128>* keys) {
+  // Get keys and cost
+  uint8_t nkeys = 0;
+  // need to modify bucketview to calculate cost
+  vector<uint32_t> cost(cost_.begin() + b,
+                        cost_.begin() + b + 256);  
+  h128 keys_array[256];
+  const auto& bv = bucket_view(b);
+  for (int i = 0; i < bv.size; ++i) {}
+    auto idx = b + bv.power_index[i];
+    auto hk = hasher128_.hash128(values_[idx].first, seed_);
+    keys_array[nkeys++] = hk;
+    CXXMPH_DEBUGLN("Added %v [%v:%v] at (%v+%v) to candidates")(
+        values_[idx].first, hk[0], hk[3], b, bv.power_index[i]);
     }
   }
   if (new_key) keys_array[nkeys++] = *new_key;
@@ -232,8 +262,11 @@ POWER_MAP_METHOD_DECL(bool_type, slow_insert)(const value_type& x) {
   auto b = bucket(x.first);
   uint8_t ph;
   auto h = hasher128_.hash128(x.first, seed_);
-  vector<h128> keys;
+  vector<uint32_t> used_power_index;
   if (!calculate_bucket_ph(b, &h, &ph, &keys)) return false;
+  if (!recursively_solve_collisions(keys, ph)) return false;
+  rearrange_values(b, x);
+  return true;
 
   // Update cost vector and rollback for cost vector if insertion fails
   unordered_map<uint32_t, uint32_t> cost_rollback;
