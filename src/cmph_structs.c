@@ -38,12 +38,17 @@ cmph_t *__cmph_load(FILE *f)
 	register size_t nbytes;
 
 	DEBUGP("Loading mphf\n");
-	while(1)
+	for(i = 0; i < BUFSIZ; i++)
 	{
 		size_t c = fread(ptr, (size_t)1, (size_t)1, f);
 		if (c != 1) return NULL;
 		if (*ptr == 0) break;
 		++ptr;
+	}
+	if(algo_name[i] != 0)
+	{
+		DEBUGP("Attempted buffer overflow while loading mph file\n");
+		return NULL;
 	}
 	for(i = 0; i < CMPH_COUNT; ++i)
 	{
