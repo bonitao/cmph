@@ -157,11 +157,11 @@ static cmph_uint32 count_nlfile_keys(FILE *fd)
 	{
 		char buf[BUFSIZ];
 		ptr = fgets(buf, BUFSIZ, fd);
-		if (feof(fd)) break;
-                if (ferror(fd) || ptr == NULL) {
-                  perror("Error reading input file");
-                  return 0;
-                }
+        if (feof(fd)) break;
+        if (ferror(fd) || ptr == NULL) {
+            perror("Error reading input file");
+            return 0;
+        }
 		if (buf[strlen(buf) - 1] != '\n') continue;
 		++count;
 	}
