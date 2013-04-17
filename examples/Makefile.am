@@ -1,4 +1,4 @@
-noinst_PROGRAMS = vector_adapter_ex1 file_adapter_ex2 struct_vector_adapter_ex3
+noinst_PROGRAMS = vector_adapter_ex1 file_adapter_ex2 struct_vector_adapter_ex3 small_set_test
 
 INCLUDES = -I../src/
 
@@ -10,3 +10,6 @@ file_adapter_ex2_SOURCES   = file_adapter_ex2.c
 
 struct_vector_adapter_ex3_LDADD     = ../src/libcmph.la
 struct_vector_adapter_ex3_SOURCES   = struct_vector_adapter_ex3.c
+
+small_set_test_LDADD     = ../src/libcmph.la
+small_set_test_SOURCES   = small_set_test.c
