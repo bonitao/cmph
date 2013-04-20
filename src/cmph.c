@@ -96,11 +96,15 @@ static int key_struct_vector_read(void *data, char **key, cmph_uint32 *keylen)
 {
     cmph_struct_vector_t *cmph_struct_vector = (cmph_struct_vector_t *)data;
     char *keys_vd = (char *)cmph_struct_vector->vector;
+    cmph_uint64 keys_vd_offset;
     size_t size;
     *keylen = cmph_struct_vector->key_len;
     size = *keylen;
     *key = (char *)malloc(size);
-    memcpy(*key, (keys_vd + (cmph_struct_vector->position * cmph_struct_vector->struct_size) + cmph_struct_vector->key_offset), size);
+    keys_vd_offset = ((cmph_uint64)cmph_struct_vector->position * 
+                      (cmph_uint64)cmph_struct_vector->struct_size) + 
+                     (cmph_uint64)cmph_struct_vector->key_offset;
+    memcpy(*key, keys_vd + keys_vd_offset, size);
     cmph_struct_vector->position = cmph_struct_vector->position + 1;
     return (int)(*keylen);
 }
