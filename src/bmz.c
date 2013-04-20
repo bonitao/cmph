@@ -70,6 +70,12 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;
 	bmz->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);
+
+    if (bmz->n < 5) // workaround for small key sets
+    {
+        bmz->n = 5;
+    }
+
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", bmz->m, bmz->n, c);
 	bmz->graph = graph_new(bmz->n, bmz->m);
 	DEBUGP("Created graph\n");

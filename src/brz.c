@@ -27,9 +27,9 @@ static char * brz_copy_partial_bmz8_mphf(brz_config_data_t *brz, bmz8_data_t * b
 brz_config_data_t *brz_config_new(void)
 {
 	brz_config_data_t *brz = NULL;
-	brz = (brz_config_data_t *)malloc(sizeof(brz_config_data_t));
-        if (!brz) return NULL;
-	brz->algo = CMPH_FCH;
+    brz = (brz_config_data_t *)malloc(sizeof(brz_config_data_t));
+    if (!brz) return NULL;
+    brz->algo = CMPH_FCH;
 	brz->b = 128;
 	brz->hashfuncs[0] = CMPH_HASH_JENKINS;
 	brz->hashfuncs[1] = CMPH_HASH_JENKINS;
@@ -131,6 +131,15 @@ cmph_t *brz_new(cmph_config_t *mph, double c)
 
 	DEBUGP("c: %f\n", c);
 	brz_config_data_t *brz = (brz_config_data_t *)mph->data;
+
+    // Since we keep dumping partial pieces of the MPHF as it gets created
+    // the caller must set the file to store the resulting MPHF before calling
+    // this function.
+    if (brz->mphf_fd == NULL)
+    { 
+        return NULL;
+    }
+
 	switch(brz->algo) // validating restrictions over parameter c.
 	{
 		case CMPH_BMZ8:
@@ -144,6 +153,11 @@ cmph_t *brz_new(cmph_config_t *mph, double c)
 	}
 	brz->c = c;
 	brz->m = mph->key_source->nkeys;
+    if (brz->m < 5)
+    {
+        brz->c = 5;
+    }
+
 	DEBUGP("m: %u\n", brz->m);
         brz->k = (cmph_uint32)ceil(brz->m/((double)brz->b));
 	DEBUGP("k: %u\n", brz->k);
@@ -364,7 +378,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 	{
 		fprintf(stderr, "\nMPHF generation \n");
 	}
-	/* Starting to dump to disk the resultant MPHF: __cmph_dump function */
+	/* Starting to dump to disk the resulting MPHF: __cmph_dump function */
 	nbytes = fwrite(cmph_names[CMPH_BRZ], (size_t)(strlen(cmph_names[CMPH_BRZ]) + 1), (size_t)1, brz->mphf_fd);
 	nbytes = fwrite(&(brz->m), sizeof(brz->m), (size_t)1, brz->mphf_fd);
 	nbytes = fwrite(&(brz->c), sizeof(double), (size_t)1, brz->mphf_fd);
@@ -442,7 +456,7 @@ static int brz_gen_mphf(cmph_config_t *mph)
 			source = cmph_io_byte_vector_adapter(keys_vd, (cmph_uint32)nkeys_vd);
 			config = cmph_config_new(source);
 			cmph_config_set_algo(config, brz->algo);
-			//cmph_config_set_algo(config, CMPH_BMZ8);
+			cmph_config_set_hashfuncs(config, brz->hashfuncs);
 			cmph_config_set_graphsize(config, brz->c);
 			mphf_tmp = cmph_new(config);
 			if (mphf_tmp == NULL)
@@ -565,7 +579,7 @@ int brz_dump(cmph_t *mphf, FILE *fd)
 	cmph_uint32 buflen;
 	register size_t nbytes;
 	DEBUGP("Dumping brzf\n");
-	// The initial part of the MPHF have already been dumped to disk during construction
+	// The initial part of the MPHF has already been dumped to disk during construction
 	// Dumping h0
         hash_state_dump(data->h0, &buf, &buflen);
         DEBUGP("Dumping hash state with %u bytes to disk\n", buflen);
@@ -730,7 +744,13 @@ void brz_pack(cmph_t *mphf, void *packed_mphf)
 	brz_data_t *data = (brz_data_t *)mphf->data;
 	cmph_uint8 * ptr = (cmph_uint8 *)packed_mphf;
 	cmph_uint32 i,n;
-
+ 
+    // This assumes that if one function pointer is NULL, 
+    // all the others will be as well.
+    if (data->h1 == NULL) 
+    {
+        return;
+    }
 	// packing internal algo type
 	memcpy(ptr, &(data->algo), sizeof(data->algo));
 	ptr += sizeof(data->algo);
@@ -821,9 +841,21 @@ cmph_uint32 brz_packed_size(cmph_t *mphf)
 	cmph_uint32 i;
 	cmph_uint32 size = 0;
 	brz_data_t *data = (brz_data_t *)mphf->data;
-	CMPH_HASH h0_type = hash_get_type(data->h0);
-	CMPH_HASH h1_type = hash_get_type(data->h1[0]);
-	CMPH_HASH h2_type = hash_get_type(data->h2[0]);
+	CMPH_HASH h0_type;
+	CMPH_HASH h1_type;
+	CMPH_HASH h2_type;
+
+    // This assumes that if one function pointer is NULL, 
+    // all the others will be as well.
+    if (data->h1 == NULL) 
+    {
+        return 0U;
+    }
+
+	h0_type = hash_get_type(data->h0);
+	h1_type = hash_get_type(data->h1[0]);
+	h2_type = hash_get_type(data->h2[0]);
+
 	size = (cmph_uint32)(2*sizeof(CMPH_ALGO) + 3*sizeof(CMPH_HASH) + hash_state_packed_size(h0_type) + sizeof(cmph_uint32) +
 			sizeof(double) + sizeof(cmph_uint8)*data->k + sizeof(cmph_uint32)*data->k);
 	// pointers to g_is
