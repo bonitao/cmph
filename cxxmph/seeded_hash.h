@@ -18,6 +18,7 @@ struct h128 {
   uint64_t get64(bool second) const { return (static_cast<uint64_t>(uint32[second << 1]) << 32) | uint32[1 + (second << 1)]; }
   void set64(uint64_t v, bool second) { uint32[second << 1] = v >> 32; uint32[1+(second<<1)] = ((v << 32) >> 32); }
   bool operator==(const h128 rhs) const { return memcmp(uint32, rhs.uint32, sizeof(uint32)) == 0; }
+  bool operator<(const h128 rhs) const { return memcmp(uint32, rhs.uint32, sizeof(uint32)) < 0; }
 
   uint32_t uint32[4];
 

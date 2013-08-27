@@ -1,0 +1,27 @@
+Running suite(s): cxxmph_test_suite
+power_index.cc:32: Found a ph for 16 keys at cost 6 after 75 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 1 keys at cost 0 after 0 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 2 keys at cost 0 after 2 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 3 keys at cost 0 after 3 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 4 keys at cost 0 after 21 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 5 keys at cost 0 after 33 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 6 keys at cost 0 after 55 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 7 keys at cost 1 after 105 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 8 keys at cost 4 after 42 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 9 keys at cost 0 after 35 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 10 keys at cost 0 after 75 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 11 keys at cost 0 after 75 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 12 keys at cost 0 after 75 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 13 keys at cost 0 after 36 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 14 keys at cost 0 after 68 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 15 keys at cost 0 after 128 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 16 keys at cost 6 after 75 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 17 keys at cost 22 after 134 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 18 keys at cost 0 after 135 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 19 keys at cost 16841 after 230 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 20 keys at cost 0 after 102 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 21 keys at cost 0 after 135 tentatives in domain [0;1]
+power_index.cc:32: Found a ph for 22 keys at cost 53 after 76 tentatives in domain [0;1]
+power_index.cc:37: Failed to find a power index for 23 keys
+50%: Checks: 2, Failures: 1, Errors: 0
+index_tester.h:34:F:Core:f:0: Failed to increase index

@@ -8,6 +8,8 @@
 // Adds the extra format %v to the printf formatting language. Uses the method
 // cxxmph::tostr to implement custom printers and fallback to operator
 // ostream::operator<< otherwise.
+//
+// Consider using https://github.com/c42f/tinyformat instead.
 
 #include <cstdint>
 #include <cstdio>

@@ -1,7 +1,7 @@
 TESTS = $(check_PROGRAMS)
 check_PROGRAMS = seeded_hash_test mph_bits_test flatten_iterator_test hollow_iterator_test mph_index_test trigraph_test
 if USE_LIBCHECK
-  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test power_map_test dummy_map_test
+  check_PROGRAMS += test_test map_tester_test mph_map_test dense_hash_map_test string_util_test dummy_map_test power_index_test
   check_LTLIBRARIES = libcxxmph_test.la
 endif
 
@@ -9,11 +9,11 @@ noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/
-cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h power_map.h
+cxxmph_include_HEADERS = mph_bits.h mph_map.h mph_index.h MurmurHash3.h trigraph.h seeded_hash.h stringpiece.h hollow_iterator.h string_util.h power_index.h
 
 noinst_LTLIBRARIES = libcxxmph_bm.la
 lib_LTLIBRARIES = libcxxmph.la
-libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_index.cc mph_bits.cc string_util.cc
+libcxxmph_la_SOURCES = MurmurHash3.cpp trigraph.cc mph_index.cc mph_bits.cc string_util.cc power_index.cc
 libcxxmph_la_LDFLAGS = -version-info 0:0:0
 libcxxmph_test_la_SOURCES = test.h test.cc
 libcxxmph_test_la_LIBADD = libcxxmph.la
@@ -27,8 +27,8 @@ mph_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 mph_map_test_SOURCES = mph_map_test.cc
 dense_hash_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 dense_hash_map_test_SOURCES = dense_hash_map_test.cc
-power_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
-power_map_test_SOURCES = power_map_test.cc
+power_index_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
+power_index_test_SOURCES = power_index_test.cc
 
 dummy_map_test_LDADD = libcxxmph_test.la $(CHECK_LIBS)
 dummy_map_test_SOURCES = dummy_map_test.cc

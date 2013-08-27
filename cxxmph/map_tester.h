@@ -12,6 +12,7 @@
 #include <check.h>
 
 namespace cxxmph {
+
 template <typename Key>
 struct bucketed_key {
   bucketed_key() : key(), bucket(std::numeric_limits<uint64_t>::max()) {}

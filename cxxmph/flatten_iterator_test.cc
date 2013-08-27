@@ -20,14 +20,14 @@ int main(int argc, char** argv) {
     }
   }
   flat.clear();
-  for (int i = 0; i < v.size(); ++i) {
-    for (int j = 0; j < v[i].size(); ++j) {
-      flat.push_back(v[i][j]);
+  for (const auto& ie : v) {
+    for (const auto& je : ie) {
+      flat.push_back(je);
     }
   }
   auto begin = make_flatten_begin(&v);
   auto end = make_flatten_end(&v);
-  int i = 0;
+  uint32_t i = 0;
   for (auto it = begin; it != end; ++it, ++i) {
     if (i > flat.size()) { fprintf(stderr, "size error\n");  exit(-1); }
     if (flat[i] != *it) {
@@ -38,9 +38,9 @@ int main(int argc, char** argv) {
 
   v[v.size()-1].clear();
   flat.clear();
-  for (int i = 0; i < v.size(); ++i) {
-    for (int j = 0; j < v[i].size(); ++j) {
-      flat.push_back(v[i][j]);
+  for (const auto& ie : v) {
+    for (const auto& je : ie) {
+      flat.push_back(je);
     }
   }
   begin = make_flatten_begin(&v);
@@ -56,9 +56,9 @@ int main(int argc, char** argv) {
 
   v[v.size()/2].clear();
   flat.clear();
-  for (int i = 0; i < v.size(); ++i) {
-    for (int j = 0; j < v[i].size(); ++j) {
-      flat.push_back(v[i][j]);
+  for (const auto& ie : v) {
+    for (const auto& je : ie) {
+      flat.push_back(je);
     }
   }
   begin = make_flatten_begin(&v);
@@ -90,5 +90,5 @@ int main(int argc, char** argv) {
   vector<vector<pair<string, string>>> vs;
   vector<vector<pair<string, string>>>::iterator myot;
   vector<pair<string, string>>::iterator myit;
-  auto fit = make_flatten(&vs, myot, myit);
+  make_flatten(&vs, myot, myit);
 }

@@ -77,12 +77,12 @@ class power_map {
   inline const_iterator find(const key_type& k) const;
   typedef int32_t my_int32_t;  // help macros
   typedef uint32_t my_uint32_t;  // help macros
-  data_type& operator[](const key_type &k);
-  const data_type& operator[](const key_type &k) const;
+  data_type& operator[](const key_type& k);
+  const data_type& operator[](const key_type& k) const;
 
   size_type bucket_count() const { return ph_.size(); }
-  void rehash(size_type nbuckets); 
-  void swap(self_type& rhs); 
+  void rehash(size_type nbuckets);
+  void swap(self_type& rhs);
 
  protected:  // mimicking STL implementation
   EqualKey equal_;
@@ -109,18 +109,17 @@ class power_map {
     uint8_t power_index[32];
     uint16_t cost[128];
     uint8_t size;
-    uint32_t cost;
   };
   BucketView bucket_view(uint32_t bucket);
 
-   vector<value_type> values_;
-   vector<bool> present_;
-   vector<uint8_t> ph_;
-   vector<uint32_t> cost_;
-   typename seeded_hash<HashFcn>::hash_function hasher128_;
-   uint32_t seed_;
-   uint32_t capacity_;  // values_.size() - 256;
-   size_type size_;
+  vector<value_type> values_;
+  vector<bool> present_;
+  vector<uint8_t> ph_;
+  vector<uint32_t> cost_;
+  typename seeded_hash<HashFcn>::hash_function hasher128_;
+  uint32_t seed_;
+  uint32_t capacity_;  // values_.size() - 256;
+  size_type size_;
 };
 
 inline uint8_t power_index(const h128& h, uint16_t ph) {
