@@ -13,8 +13,6 @@ using std::make_pair;
 
 #include "hollow_iterator.h"
 
-using namespace cxxmph;
-
 int main(int, char**) {
   vector<int> v;
   vector<bool> p;
