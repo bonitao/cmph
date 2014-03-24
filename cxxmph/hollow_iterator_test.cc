@@ -12,7 +12,7 @@ using cxxmph::hollow_iterator_base;
 using cxxmph::make_hollow;
 using cxxmph::is_empty;
 
-int main(int argc, char** argv) {
+int main(int, char**) {
   vector<int> v;
   vector<bool> p;
   for (int i = 0; i < 100; ++i) {

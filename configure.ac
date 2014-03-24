@@ -40,7 +40,7 @@ if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
   if test x$ac_cv_cxx_compile_cxx0x_native = "xno"; then
     if test x$ac_cv_cxx_compile_cxx0x_cxx = "xyes"; then
-      CXXFLAGS="$CXXFLAGS -std=c++0x"
+      CXXFLAGS="$CXXFLAGS -std=c++11"
     elif test x$ac_cv_cxx_compile_cxx0x_gxx = "xyes"; then
       CXXFLAGS="$CXXFLAGS -std=gnu++0x"
     else
