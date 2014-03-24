@@ -28,7 +28,7 @@ class power_index_h128 {
  public:
   uint32_t index(const h128& h) { return power_hash(h, perfect_hash_); }
   bool Reset(
-      h128* begin, h128* end, uint16_t* cost_begin, uint16_t* cost_end);
+      const h128* begin, const h128* end, const uint16_t* cost_begin, const uint16_t* cost_end);
   void clear();
 
  private:
@@ -43,10 +43,6 @@ class power_index {
   bool Reset(ForwardIterator begin, ForwardIterator end, uint8_t nkeys);
   template <class SeededHashFcn, class Key>  // must agree with Reset
   // Get a unique identifier for k, in the range [0;size()). If x wasn't part
-  // of the input in the last Reset call, returns a random value.
-  uint8_t index(const Key& x) const;
-  uint16_t capacity() const { return capacity_; }
-  uint32_t size() const { return nkeys_; }
   void clear();
 
  private:
@@ -86,9 +82,9 @@ bool power_index::Reset(ForwardIterator begin, ForwardIterator end, uint8_t nkey
   vector<uint16_t> cost(capacity_);
   for (uint16_t i = 0; i < cost.size(); ++i) cost[i] = i;
   assert(cost.size());
-  auto cost_begin = &(cost[0]);
-  auto cost_end = cost_begin + cost.size();
-  CXXMPH_DEBUGLN("Generating a ph for %v keys at [0;%d]")(nkeys, cost.size());
+  const uint16_t* cost_begin = &(cost[0]);
+  const uint16_t* cost_end = cost_begin + cost.size();
+  CXXMPH_DEBUGLN("Generating a ph for %v keys at [0;%u]")(nkeys, cost_end - cost_begin);
 
   bool ok = index_.Reset(key_begin, key_end,
                          cost_begin, cost_end);
