@@ -6,6 +6,12 @@
 // This class has faster reads than most hash map implementations on all use
 // cases, at the expense of significantly higher insertion cost. It has exactly
 // 1 byte of overhead per bucket, and 100% occupation on the limit.
+//
+// Update from myself: the idea is that there is one bucket per key. Instead of
+// a bucket holding an offset, it holds a perfect hash function, so collisions
+// within the bucket can be resolved with it. Even if there are too many
+// collisions for a single bucket, re-bucketing through the extra bytes in h
+// could prove to be even more powerful.
 
 #include <algorithm>
 #include <iostream>
