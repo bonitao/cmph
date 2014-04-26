@@ -33,7 +33,7 @@ bool power_index_h128::Reset(
     }
   }
   if (best_cost < kMaxCost) {
-    CXXMPH_DEBUGLN("Found a ph %v for %v keys at cost %v in domain [0;%u]")(
+    CXXMPH_DEBUGLN("Found a ph %v for %v keys at cost %v in domain [0;%u)")(
         best_ph, nkeys, best_cost, capacity);
     perfect_hash_ = best_ph;
     return true;
