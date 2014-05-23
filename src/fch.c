@@ -264,12 +264,12 @@ cmph_t *fch_new(cmph_config_t *mph, double c)
 	fch->h2 = NULL;
 	fch->g = NULL;
 	do
-	{	
+	{
 		if (mph->verbosity)
 		{
 			fprintf(stderr, "Entering mapping step for mph creation of %u keys\n", fch->m);
 		}
-		if (buckets) fch_buckets_destroy(buckets);
+		if (buckets) fch_buckets_destroy(buckets, mph);
 		buckets = mapping(mph);
 		if (mph->verbosity)
 		{
@@ -285,7 +285,7 @@ cmph_t *fch_new(cmph_config_t *mph, double c)
 		iterations--;
 
         } while(restart_mapping && iterations > 0);
-	if (buckets) fch_buckets_destroy(buckets);
+	if (buckets) fch_buckets_destroy(buckets, mph);
 	if (sorted_indexes) free (sorted_indexes);
 	if (iterations == 0) return NULL;
 	mphf = (cmph_t *)malloc(sizeof(cmph_t));

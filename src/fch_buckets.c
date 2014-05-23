@@ -1,5 +1,6 @@
 #include "vqueue.h"
 #include "fch_buckets.h"
+#include "cmph_structs.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -28,13 +29,14 @@ static void fch_bucket_new(fch_bucket_t *bucket)
 	bucket->capacity = 0;
 }
 
-static void fch_bucket_destroy(fch_bucket_t *bucket)
+static void fch_bucket_destroy(fch_bucket_t *bucket, cmph_config_t *mph)
 {
 	cmph_uint32 i;
 	assert(bucket);
 	for (i = 0; i < bucket->size; i++)
 	{
-		free((bucket->entries + i)->value);
+    fch_bucket_entry_t * entry = bucket->entries + i;
+		mph->key_source->dispose(mph->key_source->data, entry->value, entry->length);
 	}
 	free(bucket->entries);
 }
@@ -205,10 +207,10 @@ void fch_buckets_print(fch_buckets_t * buckets)
 	for (i = 0; i < buckets->nbuckets; i++) fch_bucket_print(buckets->values + i, i);
 }
 
-void fch_buckets_destroy(fch_buckets_t * buckets)
+void fch_buckets_destroy(fch_buckets_t * buckets, cmph_config_t *mph)
 {
 	cmph_uint32 i;
-	for (i = 0; i < buckets->nbuckets; i++) fch_bucket_destroy(buckets->values + i);
+	for (i = 0; i < buckets->nbuckets; i++) fch_bucket_destroy(buckets->values + i, mph);
 	free(buckets->values);
 	free(buckets);
 }

@@ -2,6 +2,7 @@
 #define __CMPH_FCH_BUCKETS_H__
 
 #include "cmph_types.h"
+#include "cmph.h"
 typedef struct __fch_buckets_t fch_buckets_t;
 
 fch_buckets_t * fch_buckets_new(cmph_uint32 nbuckets);
@@ -26,5 +27,5 @@ cmph_uint32 * fch_buckets_get_indexes_sorted_by_size(fch_buckets_t * buckets);
 
 void fch_buckets_print(fch_buckets_t * buckets);
 
-void fch_buckets_destroy(fch_buckets_t * buckets);
+void fch_buckets_destroy(fch_buckets_t * buckets, cmph_config_t* mph);
 #endif
