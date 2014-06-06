@@ -3,7 +3,7 @@
 cmph \- minimum perfect hashing tool
 .SH SYNOPSIS
 .B cmph
-[-v] [-h] [-V] [-k nkeys] [-f hash_function] [-g [-c value][-s seed] ] [-a algorithm] [-M memory_in_MB] [-b BRZ_parameter] [-d tmp_dir] [-m file.mph] keysfile
+[\-v] [\-h] [\-V] [\-k nkeys] [\-f hash_function] [\-g [\-c value][\-s seed] ] [\-a algorithm] [\-M memory_in_MB] [\-b BRZ_parameter] [\-d tmp_dir] [\-m file.mph] keysfile
 .SH DESCRIPTION
 .PP
 Command line tool to generate and query minimal perfect hash functions.
@@ -56,11 +56,11 @@ $ # Using the default algorithm (chm) for constructing a mphf
 .br
 $ # for keys in file keys_file. Lines in keys_file _must_ be unique.
 .br
-$ ./cmph -v -g keys_file
+$ ./cmph \-v \-g keys_file
 .br
 $ # Query id of keys in the file keys_query
 .br
-$ ./cmph -v -m keys_file.mph keys_query
+$ ./cmph \-v \-m keys_file.mph keys_query
 .SH AUTHOR
 This manual page was written by Enrico Tassi <gareuselesinge@users.sourceforge.net>,
 for the Debian project (but may be used by others).
