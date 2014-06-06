@@ -44,7 +44,7 @@ class dynamic_2bitset {
     other.data_.swap(data_);
   }
   void clear() { data_.clear(); size_ = 0; }
-    
+
   uint32_t size() const { return size_; }
   static const uint8_t vmask[];
   const std::vector<uint8_t>& data() const { return data_; }

@@ -70,6 +70,12 @@ cmph_t *bmz_new(cmph_config_t *mph, double c)
 	DEBUGP("c: %f\n", c);
 	bmz->m = mph->key_source->nkeys;
 	bmz->n = (cmph_uint32)ceil(c * mph->key_source->nkeys);
+
+    if (bmz->n < 5) // workaround for small key sets
+    {
+        bmz->n = 5;
+    }
+
 	DEBUGP("m (edges): %u n (vertices): %u c: %f\n", bmz->m, bmz->n, c);
 	bmz->graph = graph_new(bmz->n, bmz->m);
 	DEBUGP("Created graph\n");
@@ -530,7 +536,7 @@ cmph_uint32 bmz_search(cmph_t *mphf, const char *key, cmph_uint32 keylen)
 	cmph_uint32 h1 = hash(bmz->hashes[0], key, keylen) % bmz->n;
 	cmph_uint32 h2 = hash(bmz->hashes[1], key, keylen) % bmz->n;
 	DEBUGP("key: %.*s h1: %u h2: %u\n", keylen, key, h1, h2);
-	if (h1 == h2 && ++h2 > bmz->n) h2 = 0;
+	if (h1 == h2 && ++h2 >= bmz->n) h2 = 0;
 	DEBUGP("key: %.*s g[h1]: %u g[h2]: %u edges: %u\n", keylen, key, bmz->g[h1], bmz->g[h2], bmz->m);
 	return bmz->g[h1] + bmz->g[h2];
 }
@@ -620,6 +626,6 @@ cmph_uint32 bmz_search_packed(void *packed_mphf, const char *key, cmph_uint32 ke
 
 	register cmph_uint32 h1 = hash_packed(h1_ptr, h1_type, key, keylen) % n;
 	register cmph_uint32 h2 = hash_packed(h2_ptr, h2_type, key, keylen) % n;
-	if (h1 == h2 && ++h2 > n) h2 = 0;
+	if (h1 == h2 && ++h2 >= n) h2 = 0;
 	return (g_ptr[h1] + g_ptr[h2]);
 }

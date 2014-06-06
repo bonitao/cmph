@@ -98,7 +98,7 @@ void jenkins_state_destroy(jenkins_state_t *state)
 }
 
 
-static inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
+static inline void __jenkins_hash_vector(cmph_uint32 seed, const unsigned char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
 {
 	register cmph_uint32 len, length;
 
@@ -154,7 +154,7 @@ static inline void __jenkins_hash_vector(cmph_uint32 seed, const char *k, cmph_u
 cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keylen)
 {
 	cmph_uint32 hashes[3];
-	__jenkins_hash_vector(state->seed, k, keylen, hashes);
+	__jenkins_hash_vector(state->seed, (const unsigned char*)k, keylen, hashes);
 	return hashes[2];
 /*	cmph_uint32 a, b, c;
 	cmph_uint32 len, length;
@@ -215,7 +215,7 @@ cmph_uint32 jenkins_hash(jenkins_state_t *state, const char *k, cmph_uint32 keyl
 
 void jenkins_hash_vector_(jenkins_state_t *state, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
 {
-	__jenkins_hash_vector(state->seed, k, keylen, hashes);
+	__jenkins_hash_vector(state->seed, (const unsigned char*)k, keylen, hashes);
 }
 
 void jenkins_state_dump(jenkins_state_t *state, char **buf, cmph_uint32 *buflen)
@@ -282,7 +282,7 @@ cmph_uint32 jenkins_state_packed_size(void)
 cmph_uint32 jenkins_hash_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen)
 {
 	cmph_uint32 hashes[3];
-	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), k, keylen, hashes);
+	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), (const unsigned char*)k, keylen, hashes);
 	return hashes[2];
 }
 
@@ -294,5 +294,5 @@ cmph_uint32 jenkins_hash_packed(void *jenkins_packed, const char *k, cmph_uint32
  */
 void jenkins_hash_vector_packed(void *jenkins_packed, const char *k, cmph_uint32 keylen, cmph_uint32 * hashes)
 {
-	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), k, keylen, hashes);
+	__jenkins_hash_vector(*((cmph_uint32 *)jenkins_packed), (const unsigned char*)k, keylen, hashes);
 }

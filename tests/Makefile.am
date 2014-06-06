@@ -2,7 +2,7 @@ TESTS = $(check_PROGRAMS)
 check_PROGRAMS = graph_tests select_tests compressed_seq_tests compressed_rank_tests cmph_benchmark_test
 noinst_PROGRAMS = packed_mphf_tests mphf_tests
 
-INCLUDES = -I../src/
+AM_CPPFLAGS = -I../src/
 
 graph_tests_SOURCES = graph_tests.c
 graph_tests_LDADD = ../src/libcmph.la

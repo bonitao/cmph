@@ -627,7 +627,8 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 
 	register double load_factor = c;
 	register cmph_uint8 searching_success = 0;
-	register cmph_uint32 max_probes = 1 << 20; // default value for max_probes
+	register cmph_uint32 max_probes_default = 1 << 20; // default value for max_probes
+	register cmph_uint32 max_probes; 
 	register cmph_uint32 iterations = 100;
 	chd_ph_bucket_t * buckets = NULL;
 	chd_ph_item_t * items = NULL;
@@ -688,7 +689,13 @@ cmph_t *chd_ph_new(cmph_config_t *mph, double c)
 	buckets = chd_ph_bucket_new(chd_ph->nbuckets);
 	items   = (chd_ph_item_t *) calloc(chd_ph->m, sizeof(chd_ph_item_t));
 
-	max_probes = (cmph_uint32)(((log(chd_ph->m)/log(2))/20) * max_probes);
+	max_probes = (cmph_uint32)((log(chd_ph->m)/log(2))/20);
+
+    if (max_probes == 0) {
+        max_probes = max_probes_default;
+    } else {
+        max_probes = max_probes * max_probes_default;
+    }
 
 	if(chd_ph->keys_per_bin == 1)
 		chd_ph->occup_table = (cmph_uint8 *) calloc(((chd_ph->n + 31)/32), sizeof(cmph_uint32));

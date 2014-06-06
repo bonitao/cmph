@@ -4,5 +4,6 @@ pkgconfig_DATA = cmph.pc
 if USE_CXXMPH
   pkgconfig_DATA += cxxmph.pc
 endif
+ACLOCAL_AMFLAGS="-I m4"
 
 pkgconfigdir = $(libdir)/pkgconfig

@@ -238,7 +238,7 @@ MPH_MAP_INLINE_METHOD_DECL(my_int32_t, index)(const key_type& k) const {
 MPH_MAP_METHOD_DECL(data_type&, operator[])(const key_type& k) {
   return insert(make_pair(k, data_type())).first->second;
 }
-MPH_MAP_METHOD_DECL(void_type, rehash)(size_type nbuckets) {
+MPH_MAP_METHOD_DECL(void_type, rehash)(size_type /*nbuckets*/) {
   pack();
   vector<value_type>(values_.begin(), values_.end()).swap(values_);
   vector<bool>(present_.begin(), present_.end()).swap(present_);

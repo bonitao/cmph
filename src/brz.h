@@ -3,6 +3,21 @@
 
 #include "cmph.h"
 
+/*
+ * The BRZ algorithm has been built so to consume the bare minimum 
+ * amount of memory to generate the MPHFs. Thereby we decided
+ * to dump the resulting MPHFs to disk while creating them. Thus,
+ * to use the BRZ algorithm, one has to call brz_config_set_mphf_fd
+ * before calling brz_new. Otherwise we will fail the MPHF creation. 
+ * One side effect of this design decision is that the resulting 
+ * MPHF cannot be used until its dumping process is finalized 
+ * by calling brz_dump and the caller must use brz_load before 
+ * any call to  either one of the following functions is made:
+ *      brz_search
+ *      brz_pack
+ *      brz_packed_size
+ *      brz_search_packed
+ */
 typedef struct __brz_data_t brz_data_t;
 typedef struct __brz_config_data_t brz_config_data_t;
 

@@ -39,6 +39,7 @@ namespace cxxmph {
 
 MPHIndex::~MPHIndex() {
   clear();
+
 }
 
 void MPHIndex::clear() {

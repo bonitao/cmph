@@ -254,6 +254,11 @@ cmph_t *bdz_ph_new(cmph_config_t *mph, double c)
 	bdz_ph->m = mph->key_source->nkeys;
 	bdz_ph->r = (cmph_uint32)ceil((c * mph->key_source->nkeys)/3);
 	if ((bdz_ph->r % 2) == 0) bdz_ph->r += 1;
+
+    if (bdz_ph->r == 1) { // workaround for small key sets
+        bdz_ph->r = 3;
+    }
+
 	bdz_ph->n = 3*bdz_ph->r;
 
 
