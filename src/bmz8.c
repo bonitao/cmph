@@ -84,7 +84,7 @@ cmph_t *bmz8_new(cmph_config_t *mph, double c)
 	bmz8->graph = graph_new(bmz8->n, bmz8->m);
 	DEBUGP("Created graph\n");
 
-	bmz8->hashes = (hash_state_t **)malloc(sizeof(hash_state_t *)*3);
+	bmz8->hashes = (hash_state_t **)calloc(3,sizeof(hash_state_t *));
 	for(i = 0; i < 3; ++i) bmz8->hashes[i] = NULL;
 
 	do
@@ -101,18 +101,22 @@ cmph_t *bmz8_new(cmph_config_t *mph, double c)
 	  {
 		int ok;
 		DEBUGP("hash function 1\n");
+		if (bmz8->hashes[0])
+			hash_state_destroy(bmz8->hashes[0]);
 		bmz8->hashes[0] = hash_state_new(bmz8->hashfuncs[0], bmz8->n);
 		DEBUGP("hash function 2\n");
+		if (bmz8->hashes[1])
+			bmz8->hashes[1] = NULL;
 		bmz8->hashes[1] = hash_state_new(bmz8->hashfuncs[1], bmz8->n);
 		DEBUGP("Generating edges\n");
 		ok = bmz8_gen_edges(mph);
 		if (!ok)
 		{
 			--iterations;
-			hash_state_destroy(bmz8->hashes[0]);
-			bmz8->hashes[0] = NULL;
-			hash_state_destroy(bmz8->hashes[1]);
-			bmz8->hashes[1] = NULL;
+			// hash_state_destroy(bmz8->hashes[0]);
+			// bmz8->hashes[0] = NULL;
+			// hash_state_destroy(bmz8->hashes[1]);
+			// bmz8->hashes[1] = NULL;
 			DEBUGP("%u iterations remaining\n", iterations);
 			if (mph->verbosity)
 			{
