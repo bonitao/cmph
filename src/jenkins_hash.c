@@ -87,12 +87,10 @@ acceptable.  Do NOT use for cryptographic purposes.
 jenkins_state_t *jenkins_state_new(cmph_uint32 size) //size of hash table
 {
 	jenkins_state_t *state = (jenkins_state_t *)malloc(sizeof(jenkins_state_t));
-        if (!state) return NULL;
+	if (!state) return NULL;
 	DEBUGP("Initializing jenkins hash\n");
-  if(size > 0)
-  	state->seed = ((cmph_uint32)rand() % size);
-  else
-    state->seed = 0;
+	if (size > 0) state->seed = ((cmph_uint32)rand() % size);
+	else state->seed = 0;
 	return state;
 }
 void jenkins_state_destroy(jenkins_state_t *state)
