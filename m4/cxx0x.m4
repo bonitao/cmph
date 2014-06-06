@@ -23,6 +23,30 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
   AC_LANG_RESTORE
   ])
 
+  AC_CACHE_CHECK(if compiler supports C++0x features with -std=c++11,
+  ac_cv_cxx_compile_cxx11_cxx,
+  [AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+  AC_TRY_COMPILE([
+  #include <unordered_map>
+  template <typename T>
+    struct check
+    {
+      static_assert(sizeof(int) <= sizeof(T), "not big enough");
+    };
+
+    typedef check<check<bool>> right_angle_brackets;
+
+    int a;
+    decltype(a) b;],,
+  ac_cv_cxx_compile_cxx11_cxx=yes, ac_cv_cxx_compile_cxx11_cxx=no)
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+  ])
+
+
   AC_CACHE_CHECK(if compiler supports C++0x features with -std=c++0x,
   ac_cv_cxx_compile_cxx0x_cxx,
   [AC_LANG_SAVE
