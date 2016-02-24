@@ -34,6 +34,16 @@ int main(int argc, char** argv) {
   sort(ids.begin(), ids.end());
   for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
 
+  // Test serialization
+  vector<uint32_t> params;
+  dynamic_2bitset g;
+  vector<uint32_t> ranktable;
+  mph_index.swap(params, g, ranktable);
+  assert(mph_index.size() == 0);
+  mph_index.swap(params, g, ranktable);
+  assert(mph_index.size() == ids.size());
+  for (vector<int>::size_type i = 0; i < ids.size(); ++i) assert(ids[i] == static_cast<vector<int>::value_type>(i));
+
   FlexibleMPHIndex<false, true, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> square_empty;
   auto id = square_empty.index(1);
   FlexibleMPHIndex<false, false, int64_t, seeded_hash<std::hash<int64_t>>::hash_function> unordered_empty;

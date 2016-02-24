@@ -43,10 +43,10 @@ MPHIndex::~MPHIndex() {
 }
 
 void MPHIndex::clear() {
-  delete [] ranktable_;
-  ranktable_ = NULL;
-  ranktable_size_ = 0;
-  // TODO(davi) implement me
+  std::vector<uint32_t> empty_ranktable;
+  ranktable_.swap(empty_ranktable);
+  dynamic_2bitset empty_g;
+  g_.swap(empty_g);
 }
 
 bool MPHIndex::GenerateQueue(
@@ -159,17 +159,14 @@ void MPHIndex::Assigning(
 void MPHIndex::Ranking() {
   uint32_t nbytes_total = static_cast<uint32_t>(ceil(n_ / 4.0));
   uint32_t size = k_ >> 2U;
-  ranktable_size_ = static_cast<uint32_t>(
+  uint32_t ranktable_size = static_cast<uint32_t>(
       ceil(n_ / static_cast<double>(k_)));
-  delete [] ranktable_;
-  ranktable_ = NULL;
-  uint32_t* ranktable = new uint32_t[ranktable_size_];
-  memset(ranktable, 0, ranktable_size_*sizeof(uint32_t));
+  vector<uint32_t> ranktable(ranktable_size);
   uint32_t offset = 0;
   uint32_t count = 0;
   uint32_t i = 1;
   while (1) {
-    if (i == ranktable_size_) break;
+    if (i == ranktable.size()) break;
     uint32_t nbytes = size < nbytes_total ? size : nbytes_total;
     for (uint32_t j = 0; j < nbytes; ++j) {
       count += kBdzLookupIndex[g_.data()[offset + j]];
@@ -179,11 +176,11 @@ void MPHIndex::Ranking() {
     nbytes_total -= size;
     ++i;
   }
-  ranktable_ = ranktable;
+  ranktable_.swap(ranktable);
 }
 
 uint32_t MPHIndex::Rank(uint32_t vertex) const {
-  if (!ranktable_size_) return 0;
+  if (ranktable_.empty()) return 0;
   uint32_t index = vertex >> b_;
   uint32_t base_rank = ranktable_[index];
   uint32_t beg_idx_v = index << b_;
@@ -209,6 +206,24 @@ uint32_t MPHIndex::Rank(uint32_t vertex) const {
   }
   // cerr << "Base rank: " << base_rank << endl;
   return base_rank;
+}
+
+void MPHIndex::swap(std::vector<uint32_t>& params, dynamic_2bitset& g, std::vector<uint32_t>& ranktable) {
+  params.resize(12);
+  uint32_t rounded_c = c_ * 1000 * 1000;
+  std::swap(params[0], rounded_c);
+  c_ = static_cast<double>(rounded_c) / 1000 / 1000;
+  std::swap(params[1], m_);
+  std::swap(params[2], n_);
+  std::swap(params[3], k_);
+  uint32_t uint32_square = static_cast<uint32_t>(square_);
+  std::swap(params[4], uint32_square);
+  square_ = uint32_square;
+  std::swap(params[5], hash_seed_[0]);
+  std::swap(params[6], hash_seed_[1]);
+  std::swap(params[7], hash_seed_[2]);
+  g.swap(g_);
+  ranktable.swap(ranktable_);
 }
 
 }  // namespace cxxmph

@@ -45,8 +45,7 @@ namespace cxxmph {
 class MPHIndex {
  public:
   MPHIndex(bool square = false, double c = 1.23, uint8_t b = 7) :
-      c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1), g_(8, true),
-      ranktable_(NULL), ranktable_size_(0) {
+      c_(c), b_(b), m_(0), n_(0), k_(0), square_(square), r_(1), g_(8, true) {
     nest_displacement_[0] = 0;
     nest_displacement_[1] = r_;
     nest_displacement_[2] = (r_ << 1);
@@ -63,7 +62,7 @@ class MPHIndex {
   void clear();
 
   // Advanced users functions. Please avoid unless you know what you are doing.
-  uint32_t perfect_hash_size() const { return n_; } 
+  uint32_t perfect_hash_size() const { return n_; }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t perfect_hash(const Key& x) const;  // way faster than the minimal
   template <class SeededHashFcn, class Key>  // must agree with Reset
@@ -71,6 +70,11 @@ class MPHIndex {
   uint32_t minimal_perfect_hash_size() const { return size(); }
   template <class SeededHashFcn, class Key>  // must agree with Reset
   uint32_t minimal_perfect_hash(const Key& x) const;
+
+  // Experimental api to use as a serialization building block.
+  // Since this signature exposes some implementation details, expect it to
+  // change.
+  void swap(std::vector<uint32_t>& params, dynamic_2bitset& g, std::vector<uint32_t>& ranktable);
 
  private:
   template <class SeededHashFcn, class ForwardIterator>
@@ -85,7 +89,7 @@ class MPHIndex {
 
   // Algorithm parameters
   // Perfect hash function density. If this was a 2graph,
-  // then probability of having an acyclic graph would be 
+  // then probability of having an acyclic graph would be
   // sqrt(1-(2/c)^2). See section 3 for details.
   // http://www.it-c.dk/people/pagh/papers/simpleperf.pdf
   double c_;
@@ -107,8 +111,7 @@ class MPHIndex {
   dynamic_2bitset g_;
   uint8_t threebit_mod3[10];  // speed up mod3 calculation for 3bit ints
   // The table used for the rank step of the minimal perfect hash function
-  const uint32_t* ranktable_;
-  uint32_t ranktable_size_;
+  std::vector<uint32_t> ranktable_;
   // The selected hash seed triplet for finding the edges in the minimal
   // perfect hash function graph.
   uint32_t hash_seed_[3];
@@ -142,7 +145,7 @@ bool MPHIndex::Reset(
   std::vector<TriGraph::Edge> edges;
   std::vector<uint32_t> queue;
   while (1) {
-    // cerr << "Iterations missing: " << iterations << endl;
+    cerr << "Iterations missing: " << iterations << endl;
     for (int i = 0; i < 3; ++i) hash_seed_[i] = random();
     if (Mapping<SeededHashFcn>(begin, end, &edges, &queue)) break;
     else --iterations;
@@ -160,7 +163,7 @@ bool MPHIndex::Mapping(
     ForwardIterator begin, ForwardIterator end,
     std::vector<TriGraph::Edge>* edges, std::vector<uint32_t>* queue) {
   TriGraph graph(n_, m_);
-  for (ForwardIterator it = begin; it != end; ++it) { 
+  for (ForwardIterator it = begin; it != end; ++it) {
     h128 h = SeededHashFcn().hash128(*it, hash_seed_[0]);
     // for (int i = 0; i < 3; ++i) h[i] = SeededHashFcn()(*it, hash_seed_[i]);
     uint32_t v0 = h[0] % r_;
