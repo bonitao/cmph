@@ -3,6 +3,10 @@
 
 // Split from power_map.h. Indexing class with low probability success. Accepts
 // a cost model to define which positions are better left empty.
+//
+// Some new ideas: Have the seed value represent both the number of keys hashed
+// to its corresponding bucket and the seed value for those keys. Additionally,
+// use the rightmost bit to represent whether the bucket is empty or not.
 
 #include <cassert>
 #include <cmath>
