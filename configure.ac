@@ -53,6 +53,14 @@ if test x$cxxmph = xtrue; then
 fi
 AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = true])
 
+AC_ENABLE_BENCHMARKS
+if test x$benchmarks = xtrue; then
+  AC_LANG_PUSH([C++])
+  AC_CHECK_HEADERS([hopscotch_map.h])
+  AC_LANG_POP([C++])
+fi
+AM_CONDITIONAL([USE_BENCHMARKS], [test "$benchmarks" = true])
+
 # Unit tests based on the check library. Disabled by default.
 # We do not use pkg-config because it is inconvenient for all developers to
 # have check library installed.
