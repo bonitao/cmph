@@ -261,6 +261,12 @@ MPH_MAP_PREAMBLE class dense_hash_map : public mph_map_base<
 MPH_MAP_PREAMBLE class sparse_hash_map : public mph_map_base<
      true, false, Key, Data, HashFcn, EqualKey, Alloc> {};
 
+#undef MPH_MAP_TMPL_SPEC
+#undef MPH_MAP_CLASS_SPEC
+#undef MPH_MAP_METHOD_DECL
+#undef MPH_MAP_INLINE_METHOD_DECL
+#undef MPH_MAP_PREAMBLE
+
 }  // namespace cxxmph
 
 #endif  // __CXXMPH_MPH_MAP_H__
