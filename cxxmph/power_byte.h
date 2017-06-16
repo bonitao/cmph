@@ -24,97 +24,110 @@ namespace cxxmph {
 using std::set;
 using std::vector;
 
-inline uint8_t power_hash(const h128& h, uint16_t ph) {
-  uint8_t a = h[3] >> (ph & 31);
-  uint8_t pos = (a * ph) >> 8;
-  return pos;
+inline uint16_t power_byte_hash(uint32_t value, uint8_t seed) {
+  // Secret sauce. The higher the seed value, the more bits 
+  // we use from the hash, allowing for more spread.
+  return (value * seed) & (seed * seed);
 }
 
-// Perfect hash function for fixed size data structures and pre-hashed keys.
-class power_index_h128 {
+class power_byte_index {
  public:
-  uint32_t index(const h128& h) { return power_hash(h, perfect_hash_); }
-  bool Reset(
-      const h128* begin, const h128* end, const uint16_t* cost_begin, const uint16_t* cost_end);
-  uint8_t perfect_hash() const { return perfect_hash_; }
-  void clear();
-
- private:
-  uint8_t perfect_hash_;
-};
-
-// Add size() and generalize
-class power_index {
- public:
-  // We use log2capacity to be able to express a maximum value of 256 and
-  // enforce that it is a power of 2.
-  power_index(uint8_t log2capacity, uint32_t seed = 3) :
-      capacity_(1L << log2capacity), seed_(seed), nkeys_(0) {}
-  template <class SeededHashFcn, class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end, uint8_t nkeys);
-  template <class SeededHashFcn, class Key>  // must agree with Reset
-  uint32_t index(const Key& key) const;
-  // Get a unique identifier for k, in the range [0;size()). If x wasn't part
-  void clear();
-
- private:
-  const uint16_t capacity_;
-  uint32_t seed_;
-  uint8_t nkeys_;
-  power_index_h128 index_;
-};
-
-template <class Key, class HashFcn = typename seeded_hash<std::hash<Key>>::hash_function>
-class simple_power_index : public power_index {
- public:
-  simple_power_index(uint8_t log2capacity) : power_index(log2capacity) {}
-  template <class ForwardIterator>
-  bool Reset(ForwardIterator begin, ForwardIterator end, uint8_t nkeys) {
-    return power_index::Reset<HashFcn, ForwardIterator>(begin, end, nkeys);
+  uint32_t index(const h128& h) { 
+    auto bucket = h[0] & size_mask;
+    auto seed = index_[bucket];
+    return bucket + power_byte_hash(h[3], seed) 
   }
-  uint32_t index(const Key& key) const { return power_index::index<HashFcn>(key); }
+  bool Reset(const h128* begin, const h128* end)
+  void clear();
+
+ private:
+  vector<uint8_t> index_;
+  std::vector<bool> present_;
+  vector<h128> values_;
+  typename vector<uint8_t>::size_type size_;
 };
 
-
-template <class SeededHashFcn, class Key>
-uint32_t power_index::index(const Key& key) const {
-  SeededHashFcn hasher;
-  auto h = hasher.hash128(key, seed_);
-  return index_.index(h);
-}
-
-template <class SeededHashFcn, class ForwardIterator>
-bool power_index::Reset(ForwardIterator begin, ForwardIterator end, uint8_t nkeys) {
-  SeededHashFcn hasher;
-  uint32_t seed = 3;
-  set<h128> hashed_keys;
+bool power_byte_index::Reset(const h128* begin, const h128* end) {
+  uint32_t capacity = (end - begin)*2;
+  vector<uint8_t> index(capacity + UINT16_MAX);
+  index_.swap(index);
   for (auto it = begin; it != end; ++it) {
-    auto h = hasher.hash128(*it, seed);
-    if (!hashed_keys.insert(h).second) return false;
+    insert(*it);
   }
-  if (nkeys == 0) { nkeys_ = 0; return true; }
-  assert(hashed_keys.size() == nkeys);
+}
+vector<uint16_t> keys_in_bucket::insert(uint32_t bucket) {
+  vector<value_type> keys;
+  uint8_t byte = index_[bucket];
+  // Find all existing keys hashed into this byte
+  // For a fixed seed byte, there are at most 256 positions to check.
+  uint16_t max_offset = byte * byte;
+  for (uint32_t i = 0; ++i) { 
+    uint16_t offset = power_byte_hash(i, seed)
+    if (offset >= max_offset) break; // done
+    if (!present_[bucket + offset]) continue;  // empty bucket
+    auto key = values_[bucket + offset];
+    if (key == x) return false;  // key already present
+    if (values_[bucket + offset][0] == h[0]) {
+      keys.push_back(key);
+    }
+  }
+  return keys;
+}
 
-  vector<h128> keys(hashed_keys.begin(), hashed_keys.end());
-  assert(keys.size());
-  auto key_begin = &(keys[0]);
-  auto key_end = key_begin + keys.size();
+uint32_t power_byte_index::seed_cost(vector<h128> keys, uint32_t bucket, uint8_t seed) {
+  uint32_t cost = 0;
+  for (key: keys) {
+    assert(key[0] == bucket);
+    auto idx = index(key);
+    cost += index_[idx];
+  }
+  return cost;
+}
+uint8_t power_byte_index::low_cost_seed(vector<h128> keys, uint32_t low) {
+  uint32_t min_cost = UINT32_MAX;
+  uint32_t seed = 0;
+  for (; seed < UINT8_MAX; ++seed) {
+    auto cost = seed_cost(keys, seed);
+    if (min_cost > cost) min_cost = cost;
+    if (cost <= low) break;
+  }
+  return seed;
+}
 
-  vector<uint16_t> cost(capacity_);
-  for (uint16_t i = 0; i < cost.size(); ++i) cost[i] = i;
-  assert(cost.size());
-  const uint16_t* cost_begin = &(cost[0]);
-  const uint16_t* cost_end = cost_begin + cost.size();
-  CXXMPH_DEBUGLN("Generating a ph for %v keys at [0;%u]")(nkeys, cost_end - cost_begin);
-
-  bool ok = index_.Reset(key_begin, key_end,
-                         cost_begin, cost_end);
-  if (!ok) return false;
-
-  nkeys_ = nkeys;
-  return ok;
+bool power_byte_index::insert(const h128& x) {
+  insert(h, UINT32_MAX);
+}
+bool power_byte_index::insert(const h128& x, uint32_t max_cost) {
+  auto h = x;
+  uint32_t bucket = h[0] & nkeys;
+  auto existing_keys = keys_in_bucket(bucket);
+  auto new_keys = existing_keys + x
+  auto seed = low_cost_seed(new_keys, max_cost);
+  auto new_max_cost = seed_cost(new_keys, bucket, seed);
+  if (new_max_cost >= max_cost) {
+    rehash();
+    return insert(x, max_cost);
+  }
+  // Erase all existing keys.
+  for (key: existing_keys) present_[index(key)] = 0;
+  // Erase the keys from the slots we need.
+  vector<h128> collisions;
+  for (key: new_keys) {
+    if (present_[index(key)]) {
+      present_[index(key)] = 0;
+      collisions.push_back(key);
+    }
+  }
+  // Insert with seed.
+  for (key: new_keys) {
+    index_[bucket] = seed;
+    values_[index(key)] = key;
+    present_[index(key)] = true;
+  }
+  // Insert the collisions recursively. Guaranteed to finish due to cost
+  // decrease design.
+  for (key: collisions) insert(key, seed_cost(new_keys, bucket, seed));
 }
 
 }  // namespace cxxmph
-
 #endif
