@@ -23,37 +23,81 @@ namespace cxxmph {
 
 using std::set;
 using std::vector;
+using std::pair;
 
 inline uint16_t power_byte_hash(uint32_t value, uint8_t seed) {
   // Secret sauce. The higher the seed value, the more bits 
   // we use from the hash, allowing for more spread.
-  return (value * seed) & (seed * seed);
+  return value & (seed * seed);
 }
 
 class power_byte_index {
  public:
-  uint32_t index(const h128& h) { 
-    auto bucket = h[0] & size_mask;
+  typedef h128 key_type;
+  typedef uint32_t data_type;
+  typedef pair<h128, uint32_t> value_type;
+  typedef pair<h128, uint32_t> value_type;
+  typedef std::equal<h128> key_equal;
+  typedef std::hash<h128> hasher;
+
+  typedef typename vector<value_type>::pointer pointer;
+  typedef typename vector<value_type>::reference reference;
+  typedef typename vector<value_type>::const_reference const_reference;
+  typedef typename vector<value_type>::size_type size_type;
+  typedef typename vector<value_type>::difference_type difference_type;
+
+  bool Reset(const h128* begin, const h128* end)
+  uint32_t index(const h128& h) const { 
+    auto bucket = h[0] & (capacity_ - 1);
     auto seed = index_[bucket];
     return bucket + power_byte_hash(h[3], seed) 
   }
-  bool Reset(const h128* begin, const h128* end)
+  uint32_t size() const { return size_; }
   void clear();
 
+  void erase(const h128* k) { present_[index(k)] = false; }
+  void rehash(size_type nbuckets); 
+
  private:
+  void rehash(size_type nbuckets, const vector<value_type>& extra_values); 
   vector<uint8_t> index_;
-  std::vector<bool> present_;
-  vector<h128> values_;
-  typename vector<uint8_t>::size_type size_;
+  vector<bool> present_;
+  vector<value_type> values_;
+  size_type size_;
+  size_type capacity_;
 };
 
 bool power_byte_index::Reset(const h128* begin, const h128* end) {
-  uint32_t capacity = (end - begin)*2;
-  vector<uint8_t> index(capacity + UINT16_MAX);
+  // Allocate new data structures
+  size_type capacity = (end - begin)*2;
+  vector<uint8_t> index(capacity_ + UINT16_MAX);
+  vector<bool> present(capacity_ + UINT16_MAX);
+  vector<value_type> values(capacity_ + UINT16_MAX);
+  size_type size = 0;
+  // Swap with existing ones for atomic reset.
+  swap(capacity, capacity_); 
   index_.swap(index);
+  present_.swap(present);
+  values_.swap(values);
+  swap(size, size_);
+  // Try to insert all keys in the now empty hash table
+  bool failed = false;
   for (auto it = begin; it != end; ++it) {
-    insert(*it);
+    if (!insert(*it)) {
+      failed = true;
+      break;
+    }
   }
+  // If failed, roll back and return false
+  if (failed) {
+    swap(capacity_, capacity);
+    index_.swap(index);
+    swap(size_, size);
+    present_.swap(present);
+    values_.swap(values);
+    return false;
+  }
+  return true;
 }
 vector<uint16_t> keys_in_bucket::insert(uint32_t bucket) {
   vector<value_type> keys;
