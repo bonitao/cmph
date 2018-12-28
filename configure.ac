@@ -13,13 +13,13 @@ AC_PROG_LN_S
 LT_INIT
 AC_SYS_EXTRA_LARGEFILE
 if test "x$ac_cv_sys_largefile_CFLAGS" = "xno" ; then
-	ac_cv_sys_largefile_CFLAGS=""
+  ac_cv_sys_largefile_CFLAGS=""
 fi
 if test "x$ac_cv_sys_largefile_LDFLAGS" = "xno" ; then
-	ac_cv_sys_largefile_LDFLAGS=""
+  ac_cv_sys_largefile_LDFLAGS=""
 fi
 if test "x$ac_cv_sys_largefile_LIBS" = "xno" ; then
-	ac_cv_sys_largefile_LIBS=""
+  ac_cv_sys_largefile_LIBS=""
 fi
 CFLAGS="$ac_cv_sys_largefile_CFLAGS $CFLAGS"
 LDFLAGS="$ac_cv_sys_largefile_LDFLAGS $LDFLAGS"
@@ -29,9 +29,9 @@ dnl Checks for headers
 AC_CHECK_HEADERS([getopt.h math.h])
 
 dnl Checks for libraries.
-LT_LIB_M  
-LDFLAGS="$LIBM $LDFLAGS"
-#CFLAGS="-Wall -g"
+LT_LIB_M
+LDFLAGS="$LIBS $LIBM $LDFLAGS"
+CFLAGS="-Wall $CFLAGS"
 
 AC_PROG_CXX
 CXXFLAGS="-Wall -Wno-unused-function -DNDEBUG -O3 -fomit-frame-pointer $CXXFLAGS"
