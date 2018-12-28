@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 	if (generate)
 	{
 		//Create mphf
-		mphf_fd = fopen(mphf_file, "w");
+		mphf_fd = fopen(mphf_file, "wb");
 		config = cmph_config_new(source);
 		cmph_config_set_algo(config, mph_algo);
 		if (nhashes) cmph_config_set_hashfuncs(config, hashes);
@@ -286,7 +286,7 @@ int main(int argc, char **argv)
 	else
 	{
 		cmph_uint8 * hashtable = NULL;
-		mphf_fd = fopen(mphf_file, "r");
+		mphf_fd = fopen(mphf_file, "rb");
 		if (mphf_fd == NULL)
 		{
 			fprintf(stderr, "Unable to open input file %s: %s\n", mphf_file, strerror(errno));

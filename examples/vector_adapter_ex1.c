@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     const char *vector[] = {"aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee", 
         "ffffffffff", "gggggggggg", "hhhhhhhhhh", "iiiiiiiiii", "jjjjjjjjjj"};
     unsigned int nkeys = 10;
-    FILE* mphf_fd = fopen("temp.mph", "w");
+    FILE* mphf_fd = fopen("temp.mph", "wb");
     // Source of keys
     cmph_io_adapter_t *source = cmph_io_vector_adapter((char **)vector, nkeys);
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     fclose(mphf_fd);
 
     //Find key
-    mphf_fd = fopen("temp.mph", "r");
+    mphf_fd = fopen("temp.mph", "rb");
     hash = cmph_load(mphf_fd);
     while (i < nkeys) {
         const char *key = vector[i];

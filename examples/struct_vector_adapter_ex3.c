@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     			{7, "gggggggggg", 2005}, {8, "hhhhhhhhhh", 2006}, {9, "iiiiiiiiii", 2007},
     			{10,"jjjjjjjjjj", 2008}};
     unsigned int nkeys = 10;
-    FILE* mphf_fd = fopen("temp_struct_vector.mph", "w");
+    FILE* mphf_fd = fopen("temp_struct_vector.mph", "wb");
     // Source of keys
     cmph_io_adapter_t *source = cmph_io_struct_vector_adapter(vector, (cmph_uint32)sizeof(rec_t), (cmph_uint32)sizeof(cmph_uint32), 11, nkeys); 
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     fclose(mphf_fd);
    
     //Find key
-    mphf_fd = fopen("temp_struct_vector.mph", "r");
+    mphf_fd = fopen("temp_struct_vector.mph", "rb");
     hash = cmph_load(mphf_fd);
     while (i < nkeys) {
       const char *key = vector[i].key;
