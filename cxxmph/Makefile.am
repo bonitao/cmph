@@ -5,7 +5,9 @@ if USE_LIBCHECK
   check_LTLIBRARIES = libcxxmph_test.la
 endif
 
-noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
+if USE_BENCHMARKS
+  noinst_PROGRAMS = bm_map # bm_index - disabled because of cmph dependency
+endif
 bin_PROGRAMS = cxxmph
 
 cxxmph_includedir = $(includedir)/cxxmph/

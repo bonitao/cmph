@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT
+AC_INIT([cmph], [2.0.1])
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE(cmph, 2.0)
+AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -31,7 +31,7 @@ AC_CHECK_HEADERS([getopt.h math.h])
 dnl Checks for libraries.
 LT_LIB_M
 LDFLAGS="$LIBS $LIBM $LDFLAGS"
-CFLAGS="-Wall -Werror $CFLAGS"
+CFLAGS="-Wall $CFLAGS"
 
 AC_PROG_CXX
 CXXFLAGS="-Wall -Winline -Wno-unused-function -Werror -DNDEBUG -O3 $CXXFLAGS"
@@ -39,8 +39,10 @@ AC_ENABLE_CXXMPH
 if test x$cxxmph = xtrue; then
   AC_COMPILE_STDCXX_0X
   if test x$ac_cv_cxx_compile_cxx0x_native = "xno"; then
-    if test x$ac_cv_cxx_compile_cxx0x_cxx = "xyes"; then
+    if test x$ac_cv_cxx_compile_cxx11_cxx = "xyes"; then
       CXXFLAGS="$CXXFLAGS -std=c++11"
+    elif test x$ac_cv_cxx_compile_cxx0x_cxx = "xyes"; then
+      CXXFLAGS="$CXXFLAGS -std=c++0x"
     elif test x$ac_cv_cxx_compile_cxx0x_gxx = "xyes"; then
       CXXFLAGS="$CXXFLAGS -std=gnu++0x"
     else
@@ -50,6 +52,14 @@ if test x$cxxmph = xtrue; then
   AC_SUBST([CXXMPH], "cxxmph")
 fi
 AM_CONDITIONAL([USE_CXXMPH], [test "$cxxmph" = true])
+
+AC_ENABLE_BENCHMARKS
+if test x$benchmarks = xtrue; then
+  AC_LANG_PUSH([C++])
+  AC_CHECK_HEADERS([hopscotch_map.h])
+  AC_LANG_POP([C++])
+fi
+AM_CONDITIONAL([USE_BENCHMARKS], [test "$benchmarks" = true])
 
 # Unit tests based on the check library. Disabled by default.
 # We do not use pkg-config because it is inconvenient for all developers to
