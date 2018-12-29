@@ -1,0 +1,457 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<LINK REL="stylesheet" TYPE="text/css" HREF="DOC.css">
+<TITLE>Comparison Between BMZ And CHM Algorithms</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>Comparison Between BMZ And CHM Algorithms</H1>
+</CENTER>
+
+
+<HR NOSHADE SIZE=1>
+
+<H2>Characteristics</H2>
+
+<P>
+Table 1 presents the main characteristics of the two algorithms. 
+The number of edges in the graph <IMG ALIGN="middle" SRC="figs/img27.png" BORDER="0" ALT=""> is <IMG ALIGN="middle" SRC="figs/img236.png" BORDER="0" ALT="">, 
+the number of keys in the input set <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+The number of vertices of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> is equal 
+to <IMG ALIGN="bottom" SRC="figs/img12.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img237.png" BORDER="0" ALT=""> for BMZ algorithm and the CHM algorithm, respectively.
+This measure is related to the amount of space to store the array <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">.
+This improves the space required to store a function in BMZ algorithm to <IMG ALIGN="middle" SRC="figs/img238.png" BORDER="0" ALT=""> of the space required by the CHM algorithm.
+The number of critical edges is <IMG ALIGN="middle" SRC="figs/img76.png" BORDER="0" ALT=""> and 0, for BMZ algorithm and the CHM algorithm,
+respectively.
+BMZ algorithm generates random graphs that necessarily contains cycles and the
+CHM algorithm
+generates 
+acyclic random graphs.
+Finally, the CHM algorithm generates <A HREF="concepts.html">order preserving functions</A>
+while BMZ algorithm does not preserve order.
+</P>
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="center">
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">
+Characteristics </SMALL></TD>
+<TD ALIGN="CENTER" COLSPAN=2><SMALL CLASS="FOOTNOTESIZE"> <SPAN>Algorithms</SPAN></SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+
+                 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  BMZ  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  CHM  </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+
+<SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img1.png"
+ ALT="$c$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 1.15     </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.09 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<SPAN CLASS="MATH"><IMG
+ WIDTH="50" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img239.png"
+ ALT="$\vert E(G)\vert$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img8.png"
+ ALT="$n$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img8.png"
+ ALT="$n$"></SPAN> </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<SPAN CLASS="MATH"><IMG
+ WIDTH="89" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img240.png"
+ ALT="$\vert V(G)\vert=\vert g\vert$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img241.png"
+ ALT="$cn$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="20" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img241.png"
+ ALT="$cn$"></SPAN> </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<!-- MATH
+ $|E(G_{\rm crit})|$
+ -->
+<SPAN CLASS="MATH"><IMG
+ WIDTH="70" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img111.png"
+ ALT="$\vert E(G_{\rm crit})\vert$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="71" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img242.png"
+ ALT="$0.5\vert E(G)\vert$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 0</SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<SPAN CLASS="MATH"><IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img32.png"
+ ALT="$G$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> cyclic   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> acyclic </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+Order preserving </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> no       </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> yes </SMALL></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 1:</B> Main characteristics of the algorithms.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Memory Consumption</H2>
+
+<UL>
+<LI>Memory consumption to generate the minimal perfect  hash function (MPHF):
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH>Algorithm</TH>
+<TH><I>c</I></TH>
+<TH>Memory consumption to generate a MPHF</TH>
+</TR>
+<TR>
+<TD ALIGN="center">BMZ</TD>
+<TD>0.93</TD>
+<TD ALIGN="center"><I>24.80n + O(1)</I></TD>
+</TR>
+<TR>
+<TD ALIGN="center">BMZ</TD>
+<TD>1.15</TD>
+<TD ALIGN="center"><I>26.42n + O(1)</I></TD>
+</TR>
+<TR>
+<TD ALIGN="center">CHM</TD>
+<TD>2.09</TD>
+<TD ALIGN="center"><I>33.00n + O(1)</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 2:</B> Memory consumption to generate a MPHF using the algorithms BMZ and CHM.</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI>Memory consumption to store the resulting minimal perfect  hash function (MPHF):
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH>Algorithm</TH>
+<TH><I>c</I></TH>
+<TH>Memory consumption to store a MPHF</TH>
+</TR>
+<TR>
+<TD ALIGN="center">BMZ</TD>
+<TD>0.93</TD>
+<TD ALIGN="center"><I>3.72n</I></TD>
+</TR>
+<TR>
+<TD ALIGN="center">BMZ</TD>
+<TD>1.15</TD>
+<TD ALIGN="center"><I>4.60n</I></TD>
+</TR>
+<TR>
+<TD ALIGN="center">CHM</TD>
+<TD>2.09</TD>
+<TD ALIGN="center"><I>8.36n</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 3:</B> Memory consumption to store a MPHF generated by the algorithms BMZ and CHM.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Run times</H2>
+
+<P>
+We now present some experimental results to compare the BMZ and CHM algorithms.
+The data consists of a collection of 100 million universe resource locations
+(URLs) collected from the Web.
+The average length of a URL in the collection is 63 bytes.
+All experiments were carried on
+a computer running the Linux operating system, version 2.6.7,
+with a 2.4 gigahertz processor and
+4 gigabytes of main memory.
+</P>
+<P>
+Table 4 presents time measurements. 
+All times are in seconds.
+The table entries represent averages over 50 trials.
+The column labelled as <IMG ALIGN="middle" SRC="figs/img243.png" BORDER="0" ALT=""> represents
+the number of iterations to generate the random graph <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> in the 
+mapping step of the algorithms.
+The next columns represent the run times
+for the mapping plus ordering steps together and the searching
+step for each algorithm.
+The last column represents the percent gain of our algorithm
+over the CHM algorithm.
+</P>
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="center">
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img8.png"
+ ALT="$n$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER" COLSPAN=4><SMALL CLASS="FOOTNOTESIZE"> <SPAN> BMZ </SPAN> </SMALL></TD>
+<TD ALIGN="CENTER" COLSPAN=4><SMALL CLASS="FOOTNOTESIZE">  
+<SPAN>CHM algorithm</SPAN></SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> Gain</SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img243.png"
+ ALT="$N_i$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Map+Ord </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+Search </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Total  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img243.png"
+ ALT="$N_i$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Map+Ord </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Search </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">
+Total </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> (%)</SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  1,562,500    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.28 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 8.54   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.37   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 10.91   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.70 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 14.56    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 1.57   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 16.13    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 48 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  3,125,000    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.16 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 15.92  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 4.88   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 20.80   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.85 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 30.36    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 3.20   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 33.56    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 61 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  6,250,000    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.20 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 33.09  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 10.48  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 43.57   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.90 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 62.26    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 6.76   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 69.02    </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 58 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  12,500,000   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.00 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 63.26  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 23.04  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 86.30   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.60 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 117.99   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 14.94  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 132.92   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 54 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  25,000,000   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.00 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 130.79 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 51.55  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 182.34  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.80 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 262.05   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 33.68  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 295.73   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 62 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  50,000,000   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.07 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 273.75 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 114.12 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 387.87  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.90 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 577.59   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 73.97  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 651.56   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 68 </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  100,000,000  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.07 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 567.47 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 243.13 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 810.60  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.80 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 1,131.06 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 157.23 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 1,288.29 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 59 </SMALL></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 4:</B> Time measurements for BMZ and the CHM algorithm.</TD>
+</TR>
+</TABLE>
+
+<P>
+The mapping step of the BMZ algorithm is faster because 
+the expected number of iterations in the mapping step to generate <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> are 
+2.13 and 2.92 for BMZ algorithm and the CHM algorithm, respectively
+(see <A HREF="bmz.html#papers">[2</A>] for details).
+The graph <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> generated by BMZ algorithm
+has <IMG ALIGN="bottom" SRC="figs/img12.png" BORDER="0" ALT=""> vertices, against <IMG ALIGN="bottom" SRC="figs/img237.png" BORDER="0" ALT=""> for the CHM algorithm.
+These two facts make BMZ algorithm faster in the mapping step.
+The ordering step of BMZ algorithm is approximately equal to
+the time to check if <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> is acyclic for the CHM algorithm.
+The searching step of the CHM algorithm is faster, but the total
+time of BMZ algorithm is, on average, approximately 59 % faster
+than the CHM algorithm.
+It is important to notice the times for the searching step:
+for both algorithms they are not the dominant times,
+and the experimental results clearly show
+a linear behavior for the searching step.
+</P>
+<P>
+We now present run times for BMZ algorithm using a <A HREF="bmz.html#heuristic">heuristic</A> that 
+reduces the space requirement
+to any given value between <IMG ALIGN="bottom" SRC="figs/img12.png" BORDER="0" ALT=""> words and <IMG ALIGN="bottom" SRC="figs/img13.png" BORDER="0" ALT=""> words.
+For example, for <IMG ALIGN="bottom" SRC="figs/img244.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img6.png" BORDER="0" ALT="">, the analytical expected number 
+of iterations are <IMG ALIGN="bottom" SRC="figs/img245.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img246.png" BORDER="0" ALT="">, respectively
+(for <IMG ALIGN="middle" SRC="figs/img247.png" BORDER="0" ALT="">, the number of iterations are 2.78 for <IMG ALIGN="bottom" SRC="figs/img244.png" BORDER="0" ALT=""> and 3.04
+for <IMG ALIGN="bottom" SRC="figs/img6.png" BORDER="0" ALT="">).
+Table 5 presents the total times to construct a 
+function for <IMG ALIGN="middle" SRC="figs/img247.png" BORDER="0" ALT="">, with an increase from <IMG ALIGN="bottom" SRC="figs/img237.png" BORDER="0" ALT=""> seconds 
+for <IMG ALIGN="bottom" SRC="figs/img128.png" BORDER="0" ALT=""> (see Table 4) to <IMG ALIGN="bottom" SRC="figs/img249.png" BORDER="0" ALT=""> seconds for <IMG ALIGN="bottom" SRC="figs/img244.png" BORDER="0" ALT=""> and 
+to <IMG ALIGN="bottom" SRC="figs/img250.png" BORDER="0" ALT=""> seconds for <IMG ALIGN="bottom" SRC="figs/img6.png" BORDER="0" ALT="">.
+</P>
+<TABLE CELLPADDING=3 BORDER="1" ALIGN="center">
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img8.png"
+ ALT="$n$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER" COLSPAN=4><SMALL CLASS="FOOTNOTESIZE"> <SPAN> BMZ <SPAN CLASS="MATH"><IMG
+ WIDTH="60" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img5.png"
+ ALT="$c=1.00$"></SPAN></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER" COLSPAN=4><SMALL CLASS="FOOTNOTESIZE">  
+<SPAN> BMZ <SPAN CLASS="MATH"><IMG
+ WIDTH="60" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="figs/img6.png"
+ ALT="$c=0.93$"></SPAN></SPAN> </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> <SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img243.png"
+ ALT="$N_i$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Map+Ord </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+Search </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Total  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 
+<SPAN CLASS="MATH"><IMG
+ WIDTH="22" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="figs/img243.png"
+ ALT="$N_i$"></SPAN> </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Map+Ord </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">Search </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">
+Total </SMALL></TD>
+</TR>
+<TR><TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE">  12,500,000   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 2.78 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 76.68  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 25.06  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 101.74  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 3.04 </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 76.39   </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 25.80  </SMALL></TD>
+<TD ALIGN="CENTER"><SMALL CLASS="FOOTNOTESIZE"> 102.19 </SMALL></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 5:</B> Time measurements for BMZ tuned algorithm with <IMG ALIGN="bottom" SRC="figs/img5.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img6.png" BORDER="0" ALT="">.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><A HREF="index.html">Home</A></TD>
+<TD><A HREF="chd.html">CHD</A></TD>
+<TD><A HREF="bdz.html">BDZ</A></TD>
+<TD><A HREF="bmz.html">BMZ</A></TD>
+<TD><A HREF="chm.html">CHM</A></TD>
+<TD><A HREF="brz.html">BRZ</A></TD>
+<TD><A HREF="fch.html">FCH</A></TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<P>
+Enjoy!
+</P>
+<P>
+<A HREF="mailto:davi@users.sourceforge.net">Davi de Castro Reis</A>
+</P>
+<P>
+<A HREF="mailto:db8192@users.sourceforge.net">Djamel Belazzougui</A>
+</P>
+<P>
+<A HREF="mailto:fc_botelho@users.sourceforge.net">Fabiano Cupertino Botelho</A>
+</P>
+<P>
+<A HREF="mailto:nivio@dcc.ufmg.br">Nivio Ziviani</A>
+</P>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7698683-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags -t html -i COMPARISON.t2t -o docs/comparison.html -->
+</BODY></HTML>

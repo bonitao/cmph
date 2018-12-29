@@ -1,0 +1,581 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<LINK REL="stylesheet" TYPE="text/css" HREF="DOC.css">
+<TITLE>BMZ Algorithm</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>BMZ Algorithm</H1>
+</CENTER>
+
+
+<HR NOSHADE SIZE=1>
+
+<H2>History</H2>
+
+<P>
+At the end of 2003, professor <A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> was
+finishing the second edition of his <A HREF="http://www.dcc.ufmg.br/algoritmos/">book</A>.
+During the <A HREF="http://www.dcc.ufmg.br/algoritmos/">book</A> writing, 
+professor <A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> studied the problem of generating 
+<A HREF="concepts.html">minimal perfect hash functions</A>
+(if you are not familiarized with this problem, see <A HREF="#papers">[1</A>]<A HREF="#papers">[2</A>]). 
+Professor <A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> coded a modified version of 
+the <A HREF="chm.html">CHM algorithm</A>, which was proposed by
+Czech, Havas and Majewski, and put it in his <A HREF="http://www.dcc.ufmg.br/algoritmos/">book</A>.
+The <A HREF="chm.html">CHM algorithm</A> is based on acyclic random graphs to generate 
+<A HREF="concepts.html">order preserving minimal perfect hash functions</A> in linear time. 
+Professor <A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> 
+argued himself, why must the random graph 
+be acyclic? In the modified version availalbe in his <A HREF="http://www.dcc.ufmg.br/algoritmos/">book</A> he got rid of this restriction.
+</P>
+<P>
+The modification presented a problem, it was impossible to generate minimal perfect hash functions
+for sets with more than 1000 keys.
+At the same time, <A HREF="http://www.dcc.ufmg.br/~fbotelho">Fabiano C. Botelho</A>,
+a master degree student at <A HREF="http://www.dcc.ufmg.br">Departament of Computer Science</A> in 
+<A HREF="http://www.ufmg.br">Federal University of Minas Gerais</A>,
+started to be advised by <A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> who presented the problem 
+to <A HREF="http://www.dcc.ufmg.br/~fbotelho">Fabiano</A>.
+</P>
+<P>
+During the master, <A HREF="http://www.dcc.ufmg.br/~fbotelho">Fabiano</A> and 
+<A HREF="http://www.dcc.ufmg.br/~nivio">Nivio Ziviani</A> faced lots of problems.
+In april of 2004, <A HREF="http://www.dcc.ufmg.br/~fbotelho">Fabiano</A> was talking with a 
+friend of him (David Menoti) about the problems
+and many ideas appeared.
+The ideas were implemented and a very fast algorithm to generate
+minimal perfect hash functions had been designed.
+We refer the algorithm to as <B>BMZ</B>, because it was conceived by Fabiano C. <B>B</B>otelho,
+David <B>M</B>enoti and Nivio <B>Z</B>iviani. The algorithm is described in <A HREF="#papers">[1</A>].
+To analyse BMZ algorithm we needed some results from the random graph theory, so 
+we invited professor <A HREF="http://www.ime.usp.br/~yoshi">Yoshiharu Kohayakawa</A> to help us.
+The final description and analysis of BMZ algorithm is presented in <A HREF="#papers">[2</A>].
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H2>The Algorithm</H2>
+
+<P>
+The BMZ algorithm shares several features with the <A HREF="chm.html">CHM algorithm</A>.   
+In particular, BMZ algorithm is also
+based on the generation of random graphs <IMG ALIGN="middle" SRC="figs/img27.png" BORDER="0" ALT="">, where <IMG ALIGN="bottom" SRC="figs/img28.png" BORDER="0" ALT=""> is in 
+one-to-one correspondence with the key set <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> for which we wish to 
+generate a <A HREF="concepts.html">minimal perfect hash function</A>.
+The two main differences between BMZ algorithm and CHM algorithm
+are as follows: (<I>i</I>)  BMZ algorithm generates random 
+graphs <IMG ALIGN="middle" SRC="figs/img27.png" BORDER="0" ALT=""> with <IMG ALIGN="middle" SRC="figs/img29.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img30.png" BORDER="0" ALT="">, where <IMG ALIGN="middle" SRC="figs/img31.png" BORDER="0" ALT="">, 
+and hence <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> necessarily contains cycles, 
+while CHM algorithm generates <I>acyclic</I> random 
+graphs <IMG ALIGN="middle" SRC="figs/img27.png" BORDER="0" ALT=""> with <IMG ALIGN="middle" SRC="figs/img29.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img30.png" BORDER="0" ALT="">,
+with a greater number of vertices: <IMG ALIGN="middle" SRC="figs/img33.png" BORDER="0" ALT="">;
+(<I>ii</I>) CHM algorithm generates <A HREF="concepts.html">order preserving minimal perfect hash functions</A>
+while BMZ algorithm does not preserve order.  Thus, BMZ algorithm improves
+the space requirement at the expense of generating functions that are not
+order preserving. 
+</P>
+<P>
+Suppose <IMG ALIGN="bottom" SRC="figs/img14.png" BORDER="0" ALT=""> is a universe of <I>keys</I>.
+Let <IMG ALIGN="middle" SRC="figs/img17.png" BORDER="0" ALT=""> be a set of <IMG ALIGN="bottom" SRC="figs/img8.png" BORDER="0" ALT=""> keys from <IMG ALIGN="bottom" SRC="figs/img14.png" BORDER="0" ALT="">.
+Let us show how the BMZ algorithm constructs a minimal perfect hash function <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT="">.
+We make use of two auxiliary random functions <IMG ALIGN="middle" SRC="figs/img41.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img55.png" BORDER="0" ALT="">, 
+where <IMG ALIGN="middle" SRC="figs/img56.png" BORDER="0" ALT=""> for some suitably chosen integer <IMG ALIGN="bottom" SRC="figs/img57.png" BORDER="0" ALT="">, 
+where <IMG ALIGN="middle" SRC="figs/img58.png" BORDER="0" ALT="">.We build a random graph <IMG ALIGN="middle" SRC="figs/img59.png" BORDER="0" ALT=""> on <IMG ALIGN="bottom" SRC="figs/img60.png" BORDER="0" ALT="">,
+whose edge set is <IMG ALIGN="middle" SRC="figs/img61.png" BORDER="0" ALT="">. There is an edge in <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> for each 
+key in the set of keys <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+</P>
+<P>
+In what follows, we shall be interested in the <I>2-core</I> of
+the random graph <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, that is, the maximal subgraph 
+of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> with minimal degree at 
+least 2 (see <A HREF="#papers">[2</A>] for details).
+Because of its importance in our context, we call the 2-core the
+<I>critical</I> subgraph of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> and denote it by <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">.
+The vertices and edges in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> are said to be <I>critical</I>.
+We let <IMG ALIGN="middle" SRC="figs/img64.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img65.png" BORDER="0" ALT="">.
+Moreover, we let <IMG ALIGN="middle" SRC="figs/img66.png" BORDER="0" ALT=""> be the set of <I>non-critical</I>
+vertices in <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">.
+We also let <IMG ALIGN="middle" SRC="figs/img67.png" BORDER="0" ALT=""> be the set of all critical
+vertices that have at least one non-critical vertex as a neighbour.
+Let <IMG ALIGN="middle" SRC="figs/img68.png" BORDER="0" ALT=""> be the set of <I>non-critical</I> edges in <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">.
+Finally, we let <IMG ALIGN="middle" SRC="figs/img69.png" BORDER="0" ALT=""> be the <I>non-critical</I> subgraph 
+of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">.
+The non-critical subgraph <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> corresponds to the <I>acyclic part</I>
+of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">.
+We have <IMG ALIGN="middle" SRC="figs/img71.png" BORDER="0" ALT="">.
+</P>
+<P>
+We then construct a suitable labelling <IMG ALIGN="middle" SRC="figs/img72.png" BORDER="0" ALT=""> of the vertices
+of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">: we choose <IMG ALIGN="middle" SRC="figs/img73.png" BORDER="0" ALT=""> for each <IMG ALIGN="middle" SRC="figs/img74.png" BORDER="0" ALT=""> in such
+a way that <IMG ALIGN="middle" SRC="figs/img75.png" BORDER="0" ALT=""> (<IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT="">) is a
+minimal perfect hash function for <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+This labelling <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT=""> can be found in linear time
+if the number of edges in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> is at most <IMG ALIGN="middle" SRC="figs/img76.png" BORDER="0" ALT=""> (see <A HREF="#papers">[2</A>] 
+for details).
+</P>
+<P>
+Figure 1 presents a pseudo code for the BMZ algorithm.
+The procedure BMZ (<IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">) receives as input the set of
+keys <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> and produces the labelling <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">.
+The method uses a mapping, ordering and searching approach.
+We now describe each step.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD>procedure BMZ (<IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">)</TD>
+</TR>
+<TR>
+<TD>&nbsp;&nbsp;&nbsp;&nbsp;Mapping (<IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">);</TD>
+</TR>
+<TR>
+<TD>&nbsp;&nbsp;&nbsp;&nbsp;Ordering (<IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">);</TD>
+</TR>
+<TR>
+<TD>&nbsp;&nbsp;&nbsp;&nbsp;Searching (<IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">);</TD>
+</TR>
+<TR>
+<TD><B>Figure 1</B>: Main steps of BMZ algorithm for constructing a minimal perfect hash function</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<H3>Mapping Step</H3>
+
+<P>
+The procedure Mapping (<IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">) receives as input the set 
+of keys <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> and generates the random graph <IMG ALIGN="middle" SRC="figs/img59.png" BORDER="0" ALT="">, by generating 
+two auxiliary functions <IMG ALIGN="middle" SRC="figs/img41.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img78.png" BORDER="0" ALT="">.
+</P>
+<P>
+The functions <IMG ALIGN="middle" SRC="figs/img41.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img42.png" BORDER="0" ALT=""> are constructed as follows.
+We impose some upper bound <IMG ALIGN="bottom" SRC="figs/img79.png" BORDER="0" ALT=""> on the lengths of the keys in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+To define <IMG ALIGN="middle" SRC="figs/img80.png" BORDER="0" ALT=""> (<IMG ALIGN="middle" SRC="figs/img81.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img62.png" BORDER="0" ALT="">), we generate 
+an <IMG ALIGN="middle" SRC="figs/img82.png" BORDER="0" ALT=""> table of random integers <IMG ALIGN="middle" SRC="figs/img83.png" BORDER="0" ALT="">.
+For a key <IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT=""> of length <IMG ALIGN="middle" SRC="figs/img84.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img85.png" BORDER="0" ALT="">, we let 
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/img86.png" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE>
+
+<P>
+The random graph <IMG ALIGN="middle" SRC="figs/img59.png" BORDER="0" ALT=""> has vertex set <IMG ALIGN="middle" SRC="figs/img56.png" BORDER="0" ALT=""> and 
+edge set <IMG ALIGN="middle" SRC="figs/img61.png" BORDER="0" ALT="">.  We need <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> to be 
+simple, i.e., <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> should have neither loops nor multiple edges.
+A loop occurs when <IMG ALIGN="middle" SRC="figs/img87.png" BORDER="0" ALT=""> for some <IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT="">.
+We solve this in an ad hoc manner: we simply let <IMG ALIGN="middle" SRC="figs/img88.png" BORDER="0" ALT=""> in this case. 
+If we still find a loop after this, we generate another pair <IMG ALIGN="middle" SRC="figs/img89.png" BORDER="0" ALT="">.
+When a multiple edge occurs we abort and generate a new pair <IMG ALIGN="middle" SRC="figs/img89.png" BORDER="0" ALT="">. 
+Although the function above causes <A HREF="concepts.html">collisions</A> with probability <I>1/t</I>,
+in <A HREF="index.html">cmph library</A> we use faster hash 
+functions (<A HREF="http://www.cs.yorku.ca/~oz/hash.html">DJB2 hash</A>, <A HREF="http://www.isthe.com/chongo/tech/comp/fnv/">FNV hash</A>,
+ <A HREF="http://burtleburtle.net/bob/hash/doobs.html">Jenkins hash</A> and <A HREF="http://www.cs.yorku.ca/~oz/hash.html">SDBM hash</A>) 
+ in which we do not need to impose any upper bound <IMG ALIGN="bottom" SRC="figs/img79.png" BORDER="0" ALT=""> on the lengths of the keys in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+</P>
+<P>
+As mentioned before, for us to find  the labelling <IMG ALIGN="middle" SRC="figs/img72.png" BORDER="0" ALT=""> of the 
+vertices of <IMG ALIGN="middle" SRC="figs/img59.png" BORDER="0" ALT=""> in linear time,
+we require that <IMG ALIGN="middle" SRC="figs/img108.png" BORDER="0" ALT="">. 
+The crucial step now is to determine the value 
+of <IMG ALIGN="bottom" SRC="figs/img1.png" BORDER="0" ALT=""> (in <IMG ALIGN="bottom" SRC="figs/img57.png" BORDER="0" ALT="">) to obtain a random 
+graph <IMG ALIGN="middle" SRC="figs/img71.png" BORDER="0" ALT=""> with <IMG ALIGN="middle" SRC="figs/img109.png" BORDER="0" ALT="">.
+Botelho, Menoti an Ziviani determinded emprically in <A HREF="#papers">[1</A>] that 
+the value of <IMG ALIGN="bottom" SRC="figs/img1.png" BORDER="0" ALT=""> is <I>1.15</I>. This value is remarkably
+close to the theoretical value determined in <A HREF="#papers">[2</A>], 
+which is around <IMG ALIGN="bottom" SRC="figs/img112.png" BORDER="0" ALT="">.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H3>Ordering Step</H3>
+
+<P>
+The procedure Ordering (<IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">) receives 
+as input the graph <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> and partitions <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> into the two 
+subgraphs <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">, so that <IMG ALIGN="middle" SRC="figs/img71.png" BORDER="0" ALT="">.
+</P>
+<P>
+Figure 2 presents a sample graph with 9 vertices
+and 8 edges, where the degree of a vertex is shown besides each vertex.
+Initially, all vertices with degree 1 are added to a queue <IMG ALIGN="middle" SRC="figs/img136.png" BORDER="0" ALT="">.
+For the example shown in Figure 2(a), <IMG ALIGN="middle" SRC="figs/img137.png" BORDER="0" ALT=""> after the initialization step.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/img138.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><B>Figure 2:</B> Ordering step for a graph with 9 vertices and 8 edges.</TD>
+</TR>
+</TABLE>
+
+<P>
+Next, we remove one vertex <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> from the queue, decrement its degree and
+the degree of the vertices with degree greater than 0 in the adjacent
+list of <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">, as depicted in Figure 2(b) for <IMG ALIGN="bottom" SRC="figs/img140.png" BORDER="0" ALT="">.
+At this point, the adjacencies of <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> with degree 1 are
+inserted into the queue, such as vertex 1.
+This process is repeated until the queue becomes empty.
+All vertices with degree 0 are non-critical vertices and the others are
+critical vertices, as depicted in Figure 2(c).
+Finally, to determine the vertices in <IMG ALIGN="middle" SRC="figs/img141.png" BORDER="0" ALT=""> we collect all 
+vertices <IMG ALIGN="middle" SRC="figs/img142.png" BORDER="0" ALT=""> with at least one vertex <IMG ALIGN="bottom" SRC="figs/img143.png" BORDER="0" ALT=""> that 
+is in Adj<IMG ALIGN="middle" SRC="figs/img144.png" BORDER="0" ALT=""> and in <IMG ALIGN="middle" SRC="figs/img145.png" BORDER="0" ALT="">, as the vertex 8 in Figure 2(c).
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H3>Searching Step</H3>
+
+<P>
+In the searching step, the key part is
+the <I>perfect assignment problem</I>: find <IMG ALIGN="middle" SRC="figs/img153.png" BORDER="0" ALT=""> such that
+the function <IMG ALIGN="middle" SRC="figs/img154.png" BORDER="0" ALT=""> defined by
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/img155.png" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE>
+
+<P>
+is a bijection from <IMG ALIGN="middle" SRC="figs/img156.png" BORDER="0" ALT=""> to <IMG ALIGN="middle" SRC="figs/img157.png" BORDER="0" ALT=""> (recall <IMG ALIGN="middle" SRC="figs/img158.png" BORDER="0" ALT="">).
+We are interested in a labelling <IMG ALIGN="middle" SRC="figs/img72.png" BORDER="0" ALT=""> of
+the vertices of the graph <IMG ALIGN="middle" SRC="figs/img59.png" BORDER="0" ALT=""> with
+the property that if <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img22.png" BORDER="0" ALT=""> are keys 
+in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, then <IMG ALIGN="middle" SRC="figs/img159.png" BORDER="0" ALT="">; that is, if we associate
+to each edge the sum of the labels on its endpoints, then these values
+should be all distinct.
+Moreover, we require that all the sums <IMG ALIGN="middle" SRC="figs/img160.png" BORDER="0" ALT=""> (<IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT="">)
+fall between <IMG ALIGN="bottom" SRC="figs/img115.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img161.png" BORDER="0" ALT="">, and thus we have a bijection
+between <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img157.png" BORDER="0" ALT="">.
+</P>
+<P>
+The procedure Searching (<IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">)
+receives as input <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> and finds a 
+suitable <IMG ALIGN="middle" SRC="figs/img162.png" BORDER="0" ALT=""> bit value for each vertex <IMG ALIGN="middle" SRC="figs/img74.png" BORDER="0" ALT="">, stored in the
+array <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT="">.
+This step is first performed for the vertices in the
+critical subgraph <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> (the 2-core of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">) 
+and then it is performed for the vertices in <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> (the non-critical subgraph
+of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT=""> that contains the "acyclic part" of <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">).
+The reason the assignment of the <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT=""> values is first
+performed on the vertices in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> is to resolve reassignments
+as early as possible (such reassignments are consequences of the cycles
+in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> and are depicted hereinafter).
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H4>Assignment of Values to Critical Vertices</H4>
+
+<P>
+The labels <IMG ALIGN="middle" SRC="figs/img73.png" BORDER="0" ALT=""> (<IMG ALIGN="middle" SRC="figs/img142.png" BORDER="0" ALT="">)
+are assigned in increasing order following a greedy
+strategy where the critical vertices <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> are considered one at a time,
+according to a breadth-first search on <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">.
+If a candidate value <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> for <IMG ALIGN="middle" SRC="figs/img73.png" BORDER="0" ALT=""> is forbidden
+because setting <IMG ALIGN="middle" SRC="figs/img163.png" BORDER="0" ALT=""> would create two edges with the same sum,
+we try <IMG ALIGN="middle" SRC="figs/img164.png" BORDER="0" ALT=""> for <IMG ALIGN="middle" SRC="figs/img73.png" BORDER="0" ALT="">. This fact is referred to 
+as a <I>reassignment</I>.
+</P>
+<P>
+Let <IMG ALIGN="middle" SRC="figs/img165.png" BORDER="0" ALT=""> be the set of addresses assigned to edges in <IMG ALIGN="middle" SRC="figs/img166.png" BORDER="0" ALT="">.
+Initially <IMG ALIGN="middle" SRC="figs/img167.png" BORDER="0" ALT="">.
+Let <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> be a candidate value for <IMG ALIGN="middle" SRC="figs/img73.png" BORDER="0" ALT="">.
+Initially <IMG ALIGN="bottom" SRC="figs/img168.png" BORDER="0" ALT="">.
+Considering the subgraph <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> in Figure 2(c),
+a step by step example of the assignment of values to vertices in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT=""> is 
+presented in Figure 3.
+Initially, a vertex <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> is chosen, the assignment <IMG ALIGN="middle" SRC="figs/img163.png" BORDER="0" ALT=""> is made
+and <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is set to <IMG ALIGN="middle" SRC="figs/img164.png" BORDER="0" ALT="">.
+For example, suppose that vertex <IMG ALIGN="bottom" SRC="figs/img169.png" BORDER="0" ALT=""> in Figure 3(a) is 
+chosen, the assignment <IMG ALIGN="middle" SRC="figs/img170.png" BORDER="0" ALT=""> is made and <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is set to <IMG ALIGN="bottom" SRC="figs/img96.png" BORDER="0" ALT="">.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/img171.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><B>Figure 3:</B> Example of the assignment of values to critical vertices.</TD>
+</TR>
+</TABLE>
+
+<P>
+In Figure 3(b), following the adjacent list of vertex <IMG ALIGN="bottom" SRC="figs/img169.png" BORDER="0" ALT="">,
+the unassigned vertex <IMG ALIGN="bottom" SRC="figs/img115.png" BORDER="0" ALT=""> is reached.
+At this point, we collect in the temporary variable <IMG ALIGN="bottom" SRC="figs/img172.png" BORDER="0" ALT=""> all adjacencies 
+of vertex <IMG ALIGN="bottom" SRC="figs/img115.png" BORDER="0" ALT=""> that have been assigned an <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> value, 
+and <IMG ALIGN="middle" SRC="figs/img173.png" BORDER="0" ALT="">.
+Next, for all <IMG ALIGN="middle" SRC="figs/img174.png" BORDER="0" ALT="">, we check if <IMG ALIGN="middle" SRC="figs/img175.png" BORDER="0" ALT="">.
+Since <IMG ALIGN="middle" SRC="figs/img176.png" BORDER="0" ALT="">, then <IMG ALIGN="middle" SRC="figs/img177.png" BORDER="0" ALT=""> is set 
+to <IMG ALIGN="bottom" SRC="figs/img96.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is incremented 
+by 1 (now <IMG ALIGN="bottom" SRC="figs/img178.png" BORDER="0" ALT="">) and <IMG ALIGN="middle" SRC="figs/img179.png" BORDER="0" ALT="">.
+Next, vertex <IMG ALIGN="bottom" SRC="figs/img180.png" BORDER="0" ALT=""> is reached, <IMG ALIGN="middle" SRC="figs/img181.png" BORDER="0" ALT=""> is set 
+to <IMG ALIGN="bottom" SRC="figs/img62.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is set to <IMG ALIGN="bottom" SRC="figs/img180.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img182.png" BORDER="0" ALT="">.
+Next, vertex <IMG ALIGN="bottom" SRC="figs/img183.png" BORDER="0" ALT=""> is reached and <IMG ALIGN="middle" SRC="figs/img184.png" BORDER="0" ALT="">.
+Since <IMG ALIGN="middle" SRC="figs/img185.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img186.png" BORDER="0" ALT="">, then <IMG ALIGN="middle" SRC="figs/img187.png" BORDER="0" ALT=""> is 
+set to <IMG ALIGN="bottom" SRC="figs/img180.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is set to <IMG ALIGN="bottom" SRC="figs/img183.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img188.png" BORDER="0" ALT="">.
+Finally, vertex <IMG ALIGN="bottom" SRC="figs/img189.png" BORDER="0" ALT=""> is reached and <IMG ALIGN="middle" SRC="figs/img190.png" BORDER="0" ALT="">.
+Since <IMG ALIGN="middle" SRC="figs/img191.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is incremented by 1 and set to 5, as depicted in 
+Figure 3(c).
+Since <IMG ALIGN="middle" SRC="figs/img192.png" BORDER="0" ALT="">, <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> is again incremented by 1 and set to 6, 
+as depicted in Figure 3(d).
+These two reassignments are indicated by the arrows in Figure 3.
+Since <IMG ALIGN="middle" SRC="figs/img193.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img194.png" BORDER="0" ALT="">, then <IMG ALIGN="middle" SRC="figs/img195.png" BORDER="0" ALT=""> is set 
+to <IMG ALIGN="bottom" SRC="figs/img196.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img197.png" BORDER="0" ALT="">. This finishes the algorithm.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H4>Assignment of Values to Non-Critical Vertices</H4>
+
+<P>
+As <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> is acyclic, we can impose the order in which addresses are
+associated with edges in <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT="">, making this step simple to solve
+by a standard depth first search algorithm.
+Therefore, in the assignment of values to vertices in <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> we
+benefit from the unused addresses in the gaps left by the assignment of values
+to vertices in <IMG ALIGN="middle" SRC="figs/img63.png" BORDER="0" ALT="">.
+For that, we start the depth-first search from the vertices in <IMG ALIGN="middle" SRC="figs/img141.png" BORDER="0" ALT=""> because 
+the <IMG ALIGN="middle" SRC="figs/img37.png" BORDER="0" ALT=""> values for these critical vertices were already assigned
+and cannot be changed.
+</P>
+<P>
+Considering the subgraph <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> in Figure 2(c),
+a step by step example of the assignment of values to vertices in <IMG ALIGN="middle" SRC="figs/img70.png" BORDER="0" ALT=""> is 
+presented in Figure 4.
+Figure 4(a) presents the initial state of the algorithm.
+The critical vertex 8 is the only one that has non-critical vertices as
+adjacent.
+In the example presented in Figure 3, the addresses <IMG ALIGN="middle" SRC="figs/img198.png" BORDER="0" ALT=""> were not used.
+So, taking the first unused address <IMG ALIGN="bottom" SRC="figs/img115.png" BORDER="0" ALT=""> and the vertex <IMG ALIGN="bottom" SRC="figs/img96.png" BORDER="0" ALT="">, 
+which is reached from the vertex <IMG ALIGN="bottom" SRC="figs/img169.png" BORDER="0" ALT="">, <IMG ALIGN="middle" SRC="figs/img199.png" BORDER="0" ALT=""> is set 
+to <IMG ALIGN="middle" SRC="figs/img200.png" BORDER="0" ALT="">, as shown in Figure 4(b).
+The only vertex that is reached from vertex <IMG ALIGN="bottom" SRC="figs/img96.png" BORDER="0" ALT=""> is vertex <IMG ALIGN="bottom" SRC="figs/img62.png" BORDER="0" ALT="">, so
+taking the unused address <IMG ALIGN="bottom" SRC="figs/img183.png" BORDER="0" ALT=""> we set <IMG ALIGN="middle" SRC="figs/img201.png" BORDER="0" ALT=""> to <IMG ALIGN="middle" SRC="figs/img202.png" BORDER="0" ALT="">,
+as shown in Figure 4(c).
+This process is repeated until the UnAssignedAddresses list becomes empty.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/img203.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><B>Figure 4:</B> Example of the assignment of values to non-critical vertices.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<A NAME="heuristic"></A>
+<H2>The Heuristic</H2>
+
+<P>
+We now present an heuristic for BMZ algorithm that 
+reduces the value of <IMG ALIGN="bottom" SRC="figs/img1.png" BORDER="0" ALT=""> to any given value between <I>1.15</I> and <I>0.93</I>.
+This reduces the space requirement to store the resulting function 
+to any given value between <IMG ALIGN="bottom" SRC="figs/img12.png" BORDER="0" ALT=""> words and <IMG ALIGN="bottom" SRC="figs/img13.png" BORDER="0" ALT=""> words.
+The heuristic reuses, when possible, the set 
+of <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> values that caused reassignments, just before 
+trying <IMG ALIGN="middle" SRC="figs/img164.png" BORDER="0" ALT="">.
+Decreasing the value of <IMG ALIGN="bottom" SRC="figs/img1.png" BORDER="0" ALT=""> leads to an increase in the number of 
+iterations to generate <IMG ALIGN="bottom" SRC="figs/img32.png" BORDER="0" ALT="">.
+For example, for <IMG ALIGN="bottom" SRC="figs/img244.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img6.png" BORDER="0" ALT="">, the analytical expected number 
+of iterations are <IMG ALIGN="bottom" SRC="figs/img245.png" BORDER="0" ALT=""> and <IMG ALIGN="bottom" SRC="figs/img246.png" BORDER="0" ALT="">, respectively (see <A HREF="#papers">[2</A>] 
+for details),
+while for <IMG ALIGN="bottom" SRC="figs/img128.png" BORDER="0" ALT=""> the same value is around <I>2.13</I>.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Memory Consumption</H2>
+
+<P>
+Now we detail the memory consumption to generate and to store minimal perfect hash functions
+using the BMZ algorithm. The structures responsible for memory consumption are in the 
+following:
+</P>
+
+<UL>
+<LI>Graph:
+  <OL>
+  <LI><B>first</B>: is a vector that stores <I>cn</I> integer numbers, each one representing 
+    the first edge (index in the vector edges) in the list of 
+    edges of each vertex. 
+    The integer numbers are 4 bytes long. Therefore,
+    the vector first is stored in <I>4cn</I> bytes.
+  <P></P>
+  <LI><B>edges</B>: is a vector to represent the edges of the graph. As each edge
+    is compounded by a pair of vertices, each entry stores two integer numbers 
+    of 4 bytes that represent the vertices. As there are <I>n</I> edges, the 
+    vector edges is stored in <I>8n</I> bytes. 
+  <P></P>
+  <LI><B>next</B>: given a vertex <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">, we can discover the edges that 
+    contain <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> following its list of edges, 
+    which starts on first[<IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">] and the next
+    edges are given by next[...first[<IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">]...]. Therefore, the vectors first and next represent 
+    the linked lists of edges of each vertex. As there are two vertices for each edge,
+    when an edge is iserted in the graph, it must be inserted in the two linked lists 
+    of the vertices in its composition. Therefore, there are <I>2n</I> entries of integer
+    numbers in the vector next, so it is stored in <I>4*2n = 8n</I> bytes.
+  <P></P>
+  <LI><B>critical vertices(critical_nodes vector)</B>: is a vector of <I>cn</I> bits, 
+    where each bit indicates if a vertex is critical (1) or non-critical (0). 
+    Therefore, the critical and non-critical vertices are represented in <I>cn/8</I> bytes.
+  <P></P>
+  <LI><B>critical edges (used_edges vector)</B>: is a vector of <I>n</I> bits, where each 
+    bit indicates if an edge is critical (1) or non-critical (0). Therefore, the 
+    critical and non-critical edges are represented in <I>n/8</I> bytes. 
+  <P></P>
+  </OL>
+<LI>Other auxiliary structures 
+  <OL>
+  <LI><B>queue</B>: is a queue of integer numbers used in the breadth-first search of the
+    assignment of values to critical vertices. There is an entry in the queue for 
+    each two critical vertices. Let <IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT=""> be the expected number of critical 
+    vertices. Therefore, the queue is stored in <I>4*0.5*<IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT="">=2<IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT=""></I>.
+  <P></P>
+  <LI><B>visited</B>: is a vector of <I>cn</I> bits, where each bit indicates if the g value of 
+    a given vertex was already defined. Therefore, the vector visited is stored
+    in <I>cn/8</I> bytes.
+  <P></P>
+  <LI><B>function <I>g</I></B>: is represented by a vector of <I>cn</I> integer numbers.
+    As each integer number is 4 bytes long, the function <I>g</I> is stored in
+    <I>4cn</I> bytes. 
+  </OL>
+</UL>
+
+<P>
+Thus, the total memory consumption of BMZ algorithm for generating a minimal 
+perfect hash function (MPHF) is: <I>(8.25c + 16.125)n +2<IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT=""> + O(1)</I> bytes.
+As the value of constant <I>c</I> may be 1.15 and 0.93 we have:
+</P>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH><I>c</I></TH>
+<TH><IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT=""></TH>
+<TH>Memory consumption to generate a MPHF</TH>
+</TR>
+<TR>
+<TD>0.93</TD>
+<TD ALIGN="center"><I>0.497n</I></TD>
+<TD ALIGN="center"><I>24.80n + O(1)</I></TD>
+</TR>
+<TR>
+<TD>1.15</TD>
+<TD ALIGN="center"><I>0.401n</I></TD>
+<TD ALIGN="center"><I>26.42n + O(1)</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 1:</B> Memory consumption to generate a MPHF using the BMZ algorithm.</TD>
+</TR>
+</TABLE>
+
+<P>
+The values of <IMG ALIGN="middle" SRC="figs/img110.png" BORDER="0" ALT=""> were calculated using Eq.(1) presented in <A HREF="#papers">[2</A>].
+</P>
+<P>
+Now we present the memory consumption to store the resulting function.
+We only need to store the <I>g</I> function. Thus, we need <I>4cn</I> bytes.
+Again we have:
+</P>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH><I>c</I></TH>
+<TH>Memory consumption to store a MPHF</TH>
+</TR>
+<TR>
+<TD>0.93</TD>
+<TD ALIGN="center"><I>3.72n</I></TD>
+</TR>
+<TR>
+<TD>1.15</TD>
+<TD ALIGN="center"><I>4.60n</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 2:</B> Memory consumption to store a MPHF generated by the BMZ algorithm.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Experimental Results</H2>
+
+<P>
+<A HREF="comparison.html">CHM x BMZ</A>
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<A NAME="papers"></A>
+<H2>Papers</H2>
+
+<OL>
+<LI><A HREF="http://www.dcc.ufmg.br/~fbotelho">F. C. Botelho</A>, D. Menoti, <A HREF="http://www.dcc.ufmg.br/~nivio">N. Ziviani</A>. <A HREF="papers/bmz_tr004_04.ps">A New algorithm for constructing minimal perfect hash functions</A>, Technical Report TR004/04, Department of Computer Science, Federal University of Minas Gerais, 2004.
+<P></P>
+<LI><A HREF="http://www.dcc.ufmg.br/~fbotelho">F. C. Botelho</A>, Y. Kohayakawa, and <A HREF="http://www.dcc.ufmg.br/~nivio">N. Ziviani</A>. <A HREF="papers/wea05.pdf">A Practical Minimal Perfect Hashing Method</A>. <I>4th International Workshop on efficient and Experimental Algorithms (WEA05),</I> Springer-Verlag Lecture Notes in Computer Science, vol. 3505, Santorini Island, Greece, May 2005, 488-500.
+</OL>
+
+<HR NOSHADE SIZE=1>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><A HREF="index.html">Home</A></TD>
+<TD><A HREF="chd.html">CHD</A></TD>
+<TD><A HREF="bdz.html">BDZ</A></TD>
+<TD><A HREF="bmz.html">BMZ</A></TD>
+<TD><A HREF="chm.html">CHM</A></TD>
+<TD><A HREF="brz.html">BRZ</A></TD>
+<TD><A HREF="fch.html">FCH</A></TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<P>
+Enjoy!
+</P>
+<P>
+<A HREF="mailto:davi@users.sourceforge.net">Davi de Castro Reis</A>
+</P>
+<P>
+<A HREF="mailto:db8192@users.sourceforge.net">Djamel Belazzougui</A>
+</P>
+<P>
+<A HREF="mailto:fc_botelho@users.sourceforge.net">Fabiano Cupertino Botelho</A>
+</P>
+<P>
+<A HREF="mailto:nivio@dcc.ufmg.br">Nivio Ziviani</A>
+</P>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7698683-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags -t html -i BMZ.t2t -o docs/bmz.html -->
+</BODY></HTML>

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<LINK REL="stylesheet" TYPE="text/css" HREF="DOC.css">
+<TITLE>Minimal Perfect Hash Functions - Introduction</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>Minimal Perfect Hash Functions - Introduction</H1>
+</CENTER>
+
+
+<HR NOSHADE SIZE=1>
+
+<H2>Basic Concepts</H2>
+
+<P>
+Suppose <IMG ALIGN="bottom" SRC="figs/img14.png" BORDER="0" ALT=""> is a universe of <I>keys</I>.
+Let <IMG ALIGN="bottom" SRC="figs/img15.png" BORDER="0" ALT=""> be a <I>hash function</I> that maps the keys from <IMG ALIGN="bottom" SRC="figs/img14.png" BORDER="0" ALT=""> to a given interval of integers <IMG ALIGN="middle" SRC="figs/img16.png" BORDER="0" ALT="">.
+Let <IMG ALIGN="middle" SRC="figs/img17.png" BORDER="0" ALT=""> be a set of <IMG ALIGN="bottom" SRC="figs/img8.png" BORDER="0" ALT=""> keys from <IMG ALIGN="bottom" SRC="figs/img14.png" BORDER="0" ALT="">.
+Given a key <IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT="">, the hash function <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT=""> computes an 
+integer in <IMG ALIGN="middle" SRC="figs/img19.png" BORDER="0" ALT=""> for the storage or retrieval of <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> in 
+a <I>hash table</I>.
+Hashing methods for <I>non-static sets</I> of keys can be used to construct
+data structures storing <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> and supporting membership queries
+"<IMG ALIGN="middle" SRC="figs/img18.png" BORDER="0" ALT="">?" in expected time <IMG ALIGN="middle" SRC="figs/img21.png" BORDER="0" ALT="">.
+However, they involve a certain amount of wasted space owing to unused
+locations in the table and waisted time to resolve collisions when
+two keys are hashed to the same table location.
+</P>
+<P>
+For <I>static sets</I> of keys it is possible to compute a function
+to find any key in a table in one probe; such hash functions are called
+<I>perfect</I>. 
+More precisely, given a set of keys <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">, we shall say that a 
+hash function <IMG ALIGN="bottom" SRC="figs/img15.png" BORDER="0" ALT=""> is a <I>perfect hash function</I> 
+for <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> if <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT=""> is an injection on <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">,
+that is, there are no <I>collisions</I> among the keys in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">: 
+if <IMG ALIGN="bottom" SRC="figs/img11.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img22.png" BORDER="0" ALT=""> are in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/img23.png" BORDER="0" ALT="">, 
+then <IMG ALIGN="middle" SRC="figs/img24.png" BORDER="0" ALT="">.
+Figure 1(a) illustrates a perfect hash function.
+Since no collisions occur, each key can be retrieved from the table
+with a single probe.
+If <IMG ALIGN="bottom" SRC="figs/img25.png" BORDER="0" ALT="">, that is, the table has the same size as <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">,
+then we say that <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT=""> is a <I>minimal perfect hash function</I> 
+for <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT="">.
+Figure 1(b) illustrates a minimal perfect hash function.
+Minimal perfect hash functions totally avoid the problem of wasted
+space and time. A perfect hash function <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT=""> is <I>order preserving</I> 
+if the keys in <IMG ALIGN="bottom" SRC="figs/img20.png" BORDER="0" ALT=""> are arranged in some given order 
+and <IMG ALIGN="bottom" SRC="figs/img7.png" BORDER="0" ALT=""> preserves this order in the hash table.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD ALIGN="right"><center><IMG ALIGN="middle" SRC="figs/img26.png" BORDER="0" ALT=""></center></TD>
+</TR>
+<TR>
+<TD><B>Figure 1:</B> (a) Perfect hash function. (b) Minimal perfect hash function.</TD>
+</TR>
+</TABLE>
+
+<P>
+Minimal perfect hash functions are widely used for memory efficient
+storage and fast retrieval of items from static sets, such as words in natural
+languages, reserved words in programming languages or interactive systems,
+universal resource locations (URLs) in Web search engines, or item sets in
+data mining techniques.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><A HREF="index.html">Home</A></TD>
+<TD><A HREF="chd.html">CHD</A></TD>
+<TD><A HREF="bdz.html">BDZ</A></TD>
+<TD><A HREF="bmz.html">BMZ</A></TD>
+<TD><A HREF="chm.html">CHM</A></TD>
+<TD><A HREF="brz.html">BRZ</A></TD>
+<TD><A HREF="fch.html">FCH</A></TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<P>
+Enjoy!
+</P>
+<P>
+<A HREF="mailto:davi@users.sourceforge.net">Davi de Castro Reis</A>
+</P>
+<P>
+<A HREF="mailto:db8192@users.sourceforge.net">Djamel Belazzougui</A>
+</P>
+<P>
+<A HREF="mailto:fc_botelho@users.sourceforge.net">Fabiano Cupertino Botelho</A>
+</P>
+<P>
+<A HREF="mailto:nivio@dcc.ufmg.br">Nivio Ziviani</A>
+</P>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7698683-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags -t html -i CONCEPTS.t2t -o docs/concepts.html -->
+</BODY></HTML>

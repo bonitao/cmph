@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<LINK REL="stylesheet" TYPE="text/css" HREF="DOC.css">
+<TITLE>BDZ Algorithm</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>BDZ Algorithm</H1>
+</CENTER>
+
+
+<HR NOSHADE SIZE=1>
+
+<H2>Introduction</H2>
+
+<P>
+The BDZ algorithm was designed by Fabiano C. Botelho, Djamal Belazzougui, Rasmus Pagh and Nivio Ziviani. It is a simple, efficient, near-optimal space and practical algorithm to generate a family  <IMG ALIGN="bottom" SRC="figs/bdz/img8.png" BORDER="0" ALT=""> of PHFs and MPHFs. It is also referred to as BPZ algorithm because the work presented by Botelho, Pagh and Ziviani in <A HREF="#papers">[2</A>]. In the Botelho's PhD. dissertation <A HREF="#papers">[1</A>] it is also referred to as RAM algorithm because it is more suitable for key sets that can be handled in internal memory.
+</P>
+<P>
+The BDZ algorithm uses <I>r</I>-uniform random hypergraphs given by function values of <I>r</I> uniform random hash functions on the input key set <I>S</I> for generating PHFs and MPHFs that require <I>O(n)</I> bits to be stored. A hypergraph is the generalization of a standard undirected graph where each edge connects <IMG ALIGN="middle" SRC="figs/bdz/img12.png" BORDER="0" ALT=""> vertices. This idea is not new, see e.g. <A HREF="#papers">[8</A>], but we have proceeded differently to achieve a space usage of <I>O(n)</I> bits rather than <I>O(n log n)</I> bits. Evaluation time for all schemes considered is constant. For <I>r=3</I> we obtain a space usage of approximately <I>2.6n</I> bits for an MPHF. More compact, and even simpler, representations can be achieved for larger <I>m</I>. For example, for <I>m=1.23n</I> we can get a space usage of <I>1.95n</I> bits.
+</P>
+<P>
+Our best MPHF space upper bound is within a factor of <I>2</I> from the information theoretical lower bound of approximately <I>1.44</I> bits. We have shown that the BDZ algorithm is far more practical than previous methods with proven space complexity, both because of its simplicity, and because the constant factor of the space complexity is more than <I>6</I> times lower than its closest competitor, for plausible problem sizes. We verify the practicality experimentally, using slightly more space than in the mentioned theoretical bounds.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H2>The Algorithm</H2>
+
+<P>
+The BDZ algorithm is a three-step algorithm that generates PHFs and MPHFs based on random <I>r</I>-partite hypergraphs. This is an approach that provides a much tighter analysis and is much more simple than the one presented in <A HREF="#papers">[3</A>], where it was implicit how to construct similar PHFs.The fastest and most compact functions are generated when <I>r=3</I>. In this case a PHF can be stored in approximately <I>1.95</I> bits per key and an MPHF in approximately <I>2.62</I> bits per key.
+</P>
+<P>
+Figure 1 gives an overview of the algorithm for <I>r=3</I>, taking as input a key set <IMG ALIGN="middle" SRC="figs/bdz/img22.png" BORDER="0" ALT=""> containing three English words, i.e., <I>S={who,band,the}</I>. The edge-oriented data structure proposed in <A HREF="#papers">[4</A>] is used  to represent hypergraphs, where each edge is explicitly represented as an array of <I>r</I> vertices and, for each vertex <I>v</I>, there is a list of edges that are incident on <I>v</I>.
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><IMG ALIGN="middle" SRC="figs/bdz/img50.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><B>Figure 1:</B> (a) The mapping step generates a random acyclic <I>3</I>-partite hypergraph</TD>
+</TR>
+<TR>
+<TD>with <I>m=6</I> vertices and <I>n=3</I> edges and a list <IMG ALIGN="middle" SRC="figs/bdz/img4.png" BORDER="0" ALT=""> of edges obtained when we test</TD>
+</TR>
+<TR>
+<TD>whether the hypergraph is acyclic. (b) The assigning step builds an array <I>g</I> that</TD>
+</TR>
+<TR>
+<TD>maps values from <I>[0,5]</I> to <I>[0,3]</I> to uniquely assign an edge to a vertex. (c) The ranking</TD>
+</TR>
+<TR>
+<TD>step builds the data structure used to compute function <I>rank</I> in <I>O(1)</I> time.</TD>
+</TR>
+</TABLE>
+
+<P>
+The <I>Mapping Step</I> in Figure 1(a) carries out two important tasks:
+</P>
+
+<OL>
+<LI>It assumes that it is possible to find three uniform hash functions <I>h<sub>0</sub></I>, <I>h<sub>1</sub></I> and <I>h<sub>2</sub></I>, with ranges <I>{0,1}</I>, <I>{2,3}</I> and <I>{4,5}</I>, respectively. These functions build an one-to-one mapping of the key set <I>S</I> to the edge set <I>E</I> of a random acyclic <I>3</I>-partite hypergraph <I>G=(V,E)</I>, where <I>|V|=m=6</I> and <I>|E|=n=3</I>. In <A HREF="#papers">[1,2</A>] it is shown that it is possible to obtain such a hypergraph with probability tending to <I>1</I> as <I>n</I> tends to infinity whenever <I>m=cn</I> and <I>c &gt; 1.22</I>. The value of that minimizes the hypergraph size (and thereby the amount of bits to represent the resulting functions) is in the range <I>(1.22,1.23)</I>. To illustrate the mapping, key "who" is mapped to edge <I>{h<sub>0</sub>("who"), h<sub>1</sub>("who"), h<sub>2</sub>("who")} = {1,3,5}</I>, key "band" is mapped to edge <I>{h<sub>0</sub>("band"), h<sub>1</sub>("band"), h<sub>2</sub>("band")} = {1,2,4}</I>, and key "the" is mapped to edge <I>{h<sub>0</sub>("the"), h<sub>1</sub>("the"), h<sub>2</sub>("the")} = {0,2,5}</I>.
+<P></P>
+<LI>It tests whether the resulting random <I>3</I>-partite hypergraph contains cycles by iteratively deleting edges connecting vertices of degree 1. The deleted edges are stored in the order of deletion in a list <IMG ALIGN="middle" SRC="figs/bdz/img4.png" BORDER="0" ALT=""> to be used in the assigning step. The first deleted edge in Figure 1(a) was <I>{1,2,4}</I>, the second one was <I>{1,3,5}</I> and the third one was <I>{0,2,5}</I>. If it ends with an empty graph, then the test succeeds, otherwise it fails. 
+</OL>
+
+<P>
+We now show how to use the Jenkins hash functions <A HREF="#papers">[7</A>] to implement the three hash functions <I>h<sub>i</sub></I>, which map values from <I>S</I> to <I>V<sub>i</sub></I>, where <IMG ALIGN="middle" SRC="figs/bdz/img52.png" BORDER="0" ALT="">. These functions are used to build a random <I>3</I>-partite hypergraph, where <IMG ALIGN="middle" SRC="figs/bdz/img53.png" BORDER="0" ALT=""> and <IMG ALIGN="middle" SRC="figs/bdz/img54.png" BORDER="0" ALT="">. Let <IMG ALIGN="middle" SRC="figs/bdz/img55.png" BORDER="0" ALT=""> be a Jenkins hash function for <IMG ALIGN="middle" SRC="figs/bdz/img56.png" BORDER="0" ALT="">, where
+<I>w=32 or 64</I> for 32-bit and 64-bit architectures, respectively. 
+Let <I>H'</I> be an array of 3 <I>w</I>-bit values. The Jenkins hash function
+allow us to compute in parallel the three entries in <I>H'</I>
+and thereby the three hash functions <I>h<sub>i</sub></I>, as follows:
+</P>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><I>H' = h'(x)</I></TD>
+</TR>
+<TR>
+<TD><I>h<sub>0</sub>(x) = H'[0] mod</I> <IMG ALIGN="middle" SRC="figs/bdz/img136.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><I>h<sub>1</sub>(x) = H'[1] mod</I> <IMG ALIGN="middle" SRC="figs/bdz/img136.png" BORDER="0" ALT=""> <I>+</I> <IMG ALIGN="middle" SRC="figs/bdz/img136.png" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+<TD><I>h<sub>2</sub>(x) = H'[2] mod</I> <IMG ALIGN="middle" SRC="figs/bdz/img136.png" BORDER="0" ALT=""> <I>+ 2</I><IMG ALIGN="middle" SRC="figs/bdz/img136.png" BORDER="0" ALT=""></TD>
+</TR>
+</TABLE>
+
+<P>
+The <I>Assigning Step</I> in Figure 1(b) outputs a PHF that maps the key set <I>S</I> into the range <I>[0,m-1]</I> and is represented by an array <I>g</I> storing values from the range <I>[0,3]</I>. The array <I>g</I> allows to select one out of the <I>3</I> vertices of a given edge, which is associated with a key <I>k</I>. A vertex for a key <I>k</I> is given by either <I>h<sub>0</sub>(k)</I>, <I>h<sub>1</sub>(k)</I> or <I>h<sub>2</sub>(k)</I>. The function <I>h<sub>i</sub>(k)</I> to be used for <I>k</I> is chosen by calculating <I>i = (g[h<sub>0</sub>(k)] + g[h<sub>1</sub>(k)] + g[h<sub>2</sub>(k)]) mod 3</I>. For instance, the values 1 and 4 represent the keys "who" and "band" because <I>i = (g[1] + g[3] + g[5]) mod 3 = 0</I> and <I>h<sub>0</sub>("who") = 1</I>, and <I>i = (g[1] + g[2] + g[4]) mod 3 = 2</I> and <I>h<sub>2</sub>("band") = 4</I>, respectively. The assigning step firstly initializes <I>g[i]=3</I> to mark every vertex as unassigned  and <I>Visited[i]= false</I>, <IMG ALIGN="middle" SRC="figs/bdz/img88.png" BORDER="0" ALT="">. Let <I>Visited</I> be a boolean vector of size <I>m</I> to indicate whether a vertex has been visited. Then, for each edge <IMG ALIGN="middle" SRC="figs/bdz/img90.png" BORDER="0" ALT=""> from tail to head, it looks for the first vertex <I>u</I> belonging <I>e</I> not yet visited. This is a sufficient condition for success <A HREF="#papers">[1,2,8</A>]. Let <I>j</I> be the index of <I>u</I> in <I>e</I> for <I>j</I> in the range <I>[0,2]</I>. Then, it assigns <IMG ALIGN="middle" SRC="figs/bdz/img95.png" BORDER="0" ALT="">. Whenever it passes through a vertex <I>u</I> from <I>e</I>, if <I>u</I> has not yet been visited, it sets <I>Visited[u] = true</I>.
+</P>
+<P>
+If we stop the BDZ algorithm in the assigning step we obtain a PHF with range <I>[0,m-1]</I>. The PHF has the following form: <I>phf(x) = h<sub>i(x)</sub>(x)</I>, where key <I>x</I> is in <I>S</I> and <I>i(x) = (g[h<sub>0</sub>(x)] + g[h<sub>1</sub>(x)] + g[h<sub>2</sub>(x)]) mod 3</I>. In this case we do not need information for ranking and can set <I>g[i] = 0</I> whenever <I>g[i]</I> is equal to <I>3</I>, where <I>i</I> is in the range <I>[0,m-1]</I>. Therefore, the range of the values stored in <I>g</I> is narrowed from <I>[0,3]</I> to <I>[0,2]</I>. By using arithmetic coding as block of values (see <A HREF="#papers">[1,2</A>] for details), or any compression technique that allows to perform random access in constant time to an array of compressed values <A HREF="#papers">[5,6,12</A>], we can store the resulting PHFs in <I>mlog 3  = cnlog 3</I> bits, where <I>c &gt; 1.22</I>. For <I>c = 1.23</I>, the space requirement is <I>1.95n</I> bits.
+</P>
+<P>
+The <I>Ranking Step</I> in Figure 1 (c) outputs a data structure that permits to narrow the range of a PHF generated in the assigning step from <I>[0,m-1]</I> to <I>[0,n-1]</I> and thereby an MPHF is produced. The data structure allows to compute in constant time  a function <I>rank</I> from <I>[0,m-1]</I> to <I>[0,n-1]</I> that counts the number of assigned positions  before a given position <I>v</I> in <I>g</I>. For instance, <I>rank(4) = 2</I> because the positions <I>0</I> and <I>1</I> are assigned since <I>g[0]</I>  and <I>g[1]</I> are not equal to <I>3</I>.
+</P>
+<P>
+For the implementation of the ranking step we have borrowed a simple and efficient implementation from <A HREF="#papers">[10</A>]. It requires <IMG ALIGN="middle" SRC="figs/bdz/img111.png" BORDER="0" ALT=""> additional bits of space, where <IMG ALIGN="middle" SRC="figs/bdz/img112.png" BORDER="0" ALT="">, and is obtained by storing explicitly the <I>rank</I> of every <I>k</I>th index in a rankTable, where <IMG ALIGN="middle" SRC="figs/bdz/img114.png" BORDER="0" ALT="">. The larger is <I>k</I> the more compact is the resulting MPHF. Therefore, the users can tradeoff space for evaluation time by setting <I>k</I> appropriately in the implementation. We only allow values for <I>k</I> that are power of two (i.e., <I>k=2<sup>b<sub>k</sub></sup></I> for some constant <I>b<sub>k</sub></I> in order to replace the expensive division and modulo operations by bit-shift and bitwise "and" operations, respectively. We have used <I>k=256</I> in the experiments for generating more succinct MPHFs. We remark that it is still possible to obtain a more compact data structure by using the results presented in <A HREF="#papers">[9,11</A>], but at the cost of a much more complex implementation.
+</P>
+<P>
+We need to use an additional lookup table <I>T<sub>r</sub></I> to guarantee the constant evaluation time of <I>rank(u)</I>. Let us illustrate how <I>rank(u)</I> is computed using both the rankTable and the lookup table <I>T<sub>r</sub></I>. We first look up  the rank of the largest precomputed index <I>v</I> lower than or equal to <I>u</I>  in the rankTable,  and use <I>T<sub>r</sub></I> to count the number of assigned vertices from position <I>v</I> to <I>u-1</I>. The lookup table <I>T_r</I> allows us to count in constant time the number of assigned vertices in <IMG ALIGN="middle" SRC="figs/bdz/img122.png" BORDER="0" ALT=""> bits, where <IMG ALIGN="middle" SRC="figs/bdz/img112.png" BORDER="0" ALT="">. Thus the actual evaluation time is <IMG ALIGN="middle" SRC="figs/bdz/img123.png" BORDER="0" ALT="">. For simplicity and without loss of generality we let <IMG ALIGN="middle" SRC="figs/bdz/img124.png" BORDER="0" ALT=""> be a multiple of the number of bits <IMG ALIGN="middle" SRC="figs/bdz/img125.png" BORDER="0" ALT=""> used to encode each entry of <I>g</I>. As the values in <I>g</I> come from the range <I>[0,3]</I>,
+then <IMG ALIGN="middle" SRC="figs/bdz/img126.png" BORDER="0" ALT=""> bits and we have tried <IMG ALIGN="middle" SRC="figs/bdz/img124.png" BORDER="0" ALT=""> equal to <I>8</I> and <I>16</I>. We would expect that <IMG ALIGN="middle" SRC="figs/bdz/img124.png" BORDER="0" ALT=""> equal to 16 should provide a faster evaluation time because we would need to carry out fewer lookups in <I>T<sub>r</sub></I>. But, for both values the lookup table <I>T<sub>r</sub></I> fits entirely in  the CPU cache and we did not realize any significant difference in the evaluation times. Therefore we settle for the value <I>8</I>. We remark that each value of <I>r</I> requires  a different lookup table //T<sub>r</sub> that can be generated a priori.
+</P>
+<P>
+The resulting MPHFs have the following form: <I>h(x) = rank(phf(x))</I>. Then, we cannot get rid of the raking information by replacing the values 3 by 0 in the entries of <I>g</I>. In this case each entry in the array <I>g</I> is encoded with <I>2</I> bits and we need <IMG ALIGN="middle" SRC="figs/bdz/img133.png" BORDER="0" ALT=""> additional bits to compute function <I>rank</I> in constant time. Then, the total space to store the resulting functions is <IMG ALIGN="middle" SRC="figs/bdz/img134.png" BORDER="0" ALT=""> bits. By using <I>c = 1.23</I> and <IMG ALIGN="middle" SRC="figs/bdz/img135.png" BORDER="0" ALT=""> we have obtained MPHFs that require approximately <I>2.62</I> bits per key to be stored.
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Memory Consumption</H2>
+
+<P>
+Now we detail the memory consumption to generate and to store minimal perfect hash functions
+using the BDZ algorithm. The structures responsible for memory consumption are in the 
+following:
+</P>
+
+<UL>
+<LI>3-graph:
+  <OL>
+  <LI><B>first</B>: is a vector that stores <I>cn</I> integer numbers, each one representing 
+    the first edge (index in the vector edges) in the list of 
+    incident edges of each vertex. The integer numbers are 4 bytes long. Therefore,
+    the vector first is stored in <I>4cn</I> bytes.
+  <P></P>
+  <LI><B>edges</B>: is a vector to represent the edges of the graph. As each edge
+    is compounded by three vertices, each entry stores three integer numbers 
+    of 4 bytes that represent the vertices. As there are <I>n</I> edges, the 
+    vector edges is stored in <I>12n</I> bytes. 
+  <P></P>
+  <LI><B>next</B>: given a vertex <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">, we can discover the edges that 
+    contain <IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT=""> following its list of incident edges, 
+    which starts on first[<IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">] and the next
+    edges are given by next[...first[<IMG ALIGN="bottom" SRC="figs/img139.png" BORDER="0" ALT="">]...]. Therefore, the vectors first and next represent 
+    the linked lists of edges of each vertex. As there are three vertices for each edge,
+    when an edge is iserted in the 3-graph, it must be inserted in the three linked lists 
+    of the vertices in its composition. Therefore, there are <I>3n</I> entries of integer
+    numbers in the vector next, so it is stored in <I>4*3n = 12n</I> bytes.
+  <P></P>
+  <LI><B>Vertices degree (vert_degree vector)</B>: is a vector of <I>cn</I> bytes
+    that represents the degree of each vertex. We can use just one byte for each
+    vertex because the 3-graph is sparse, once it has more vertices than edges. 
+    Therefore, the vertices degree is represented in <I>cn</I> bytes.
+  <P></P>
+  </OL>
+<LI>Acyclicity test:    
+  <OL>
+  <LI><B>List of deleted edges obtained when we test whether the 3-graph is a forest (queue vector)</B>: 
+    is a vector of <I>n</I> integer numbers containing indexes of vector edges. Therefore, it 
+    requires <I>4n</I> bytes in internal memory. 
+  <P></P>
+  <LI><B>Marked edges in the acyclicity test (marked_edges vector)</B>: 
+    is a bit vector of <I>n</I> bits to indicate the edges that have already been deleted during 
+    the acyclicity test. Therefore, it requires <I>n/8</I> bytes in internal memory. 
+  <P></P>
+  </OL>
+<LI>MPHF description     
+  <OL>
+  <LI><B>function <I>g</I></B>: is represented by a vector of <I>2cn</I> bits. Therefore, it is 
+    stored in <I>0.25cn</I> bytes
+  <LI><B>ranktable</B>: is a lookup table used to store some precomputed ranking information.
+    It has <I>(cn)/(2^b)</I> entries of 4-byte integer numbers. Therefore it is stored in 
+    <I>(4cn)/(2^b)</I> bytes. The larger is b, the more compact is the resulting MPHFs and
+    the slower are the functions. So b imposes a trade-of between space and time.
+  <LI><B>Total</B>: 0.25cn + (4cn)/(2^b) bytes
+  </OL>
+</UL>
+
+<P>
+Thus, the total memory consumption of BDZ algorithm for generating a minimal 
+perfect hash function (MPHF) is: <I>(28.125 + 5c)n + 0.25cn + (4cn)/(2^b) + O(1)</I> bytes.
+As the value of constant <I>c</I> may be larger than or equal to 1.23 we have:
+</P>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH><I>c</I></TH>
+<TH><I>b</I></TH>
+<TH>Memory consumption to generate a MPHF  (in bytes)</TH>
+</TR>
+<TR>
+<TD>1.23</TD>
+<TD ALIGN="center"><I>7</I></TD>
+<TD ALIGN="center"><I>34.62n + O(1)</I></TD>
+</TR>
+<TR>
+<TD>1.23</TD>
+<TD ALIGN="center"><I>8</I></TD>
+<TD ALIGN="center"><I>34.60n + O(1)</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 1:</B> Memory consumption to generate a MPHF using the BDZ algorithm.</TD>
+</TR>
+</TABLE>
+
+<P>
+Now we present the memory consumption to store the resulting function.
+So we have:
+</P>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH><I>c</I></TH>
+<TH><I>b</I></TH>
+<TH>Memory consumption to store a MPHF (in bits)</TH>
+</TR>
+<TR>
+<TD>1.23</TD>
+<TD ALIGN="center"><I>7</I></TD>
+<TD ALIGN="center"><I>2.77n + O(1)</I></TD>
+</TR>
+<TR>
+<TD>1.23</TD>
+<TD ALIGN="center"><I>8</I></TD>
+<TD ALIGN="center"><I>2.61n + O(1)</I></TD>
+</TR>
+</TABLE>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><B>Table 2:</B> Memory consumption to store a MPHF generated by the BDZ algorithm.</TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<H2>Experimental Results</H2>
+
+<P>
+Experimental results to compare the BDZ algorithm with the other ones in the CMPH
+library are presented in Botelho, Pagh and Ziviani <A HREF="#papers">[1,2</A>].
+</P>
+
+<HR NOSHADE SIZE=1>
+
+<A NAME="papers"></A>
+<H2>Papers</H2>
+
+<OL>
+<LI><A HREF="http://www.dcc.ufmg.br/~fbotelho">F. C. Botelho</A>. <A HREF="papers/thesis.pdf">Near-Optimal Space Perfect Hashing Algorithms</A>. <I>PhD. Thesis</I>, <I>Department of Computer Science</I>, <I>Federal University of Minas Gerais</I>, September 2008. Supervised by <A HREF="http://www.dcc.ufmg.br/~nivio">N. Ziviani</A>.
+<P></P>
+<LI><A HREF="http://www.dcc.ufmg.br/~fbotelho">F. C. Botelho</A>, <A HREF="http://www.itu.dk/~pagh/">R. Pagh</A>, <A HREF="http://www.dcc.ufmg.br/~nivio">N. Ziviani</A>. <A HREF="papers/wads07.pdf">Simple and space-efficient minimal perfect hash functions</A>. <I>In Proceedings of the 10th International Workshop on Algorithms and Data Structures (WADs'07),</I> Springer-Verlag Lecture Notes in Computer Science, vol. 4619, Halifax, Canada, August 2007, 139-150.
+<P></P>
+<LI>B. Chazelle, J. Kilian, R. Rubinfeld, and A. Tal. The bloomier filter: An efficient data structure for static support lookup tables. <I>In Proceedings of the 15th annual ACM-SIAM symposium on Discrete algorithms (SODA'04)</I>, pages 30–39, Philadelphia, PA, USA, 2004. Society for Industrial and Applied Mathematics.
+<P></P>
+<LI>J. Ebert. A versatile data structure for edges oriented graph algorithms. <I>Communication of The ACM</I>, (30):513–519, 1987.
+<P></P>
+<LI>K. Fredriksson and F. Nikitin. Simple compression code supporting random access and fast string matching. <I>In Proceedings of the 6th International Workshop on Efficient and Experimental Algorithms (WEA’07)</I>, pages 203–216, 2007.
+<P></P>
+<LI>R. Gonzalez and G. Navarro. Statistical encoding of succinct data structures. <I>In Proceedings of the 19th Annual Symposium on Combinatorial Pattern Matching (CPM’06)</I>, pages 294–305, 2006.
+<P></P>
+<LI>B. Jenkins. Algorithm alley: Hash functions. <I>Dr. Dobb's Journal of Software Tools</I>, 22(9), september 1997. Extended version available at <A HREF="http://burtleburtle.net/bob/hash/doobs.html">http://burtleburtle.net/bob/hash/doobs.html</A>.
+<P></P>
+<LI>B.S. Majewski, N.C. Wormald, G. Havas, and Z.J. Czech. A family of perfect hashing methods. <I>The Computer Journal</I>, 39(6):547–554, 1996.
+<P></P>
+<LI>D. Okanohara and K. Sadakane. Practical entropy-compressed rank/select dictionary. <I>In Proceedings of the Workshop on Algorithm Engineering and Experiments (ALENEX’07)</I>, 2007.
+<P></P>
+<LI><A HREF="http://www.itu.dk/~pagh/">R. Pagh</A>. Low redundancy in static dictionaries with constant query time. <I>SIAM Journal on Computing</I>, 31(2):353–363, 2001.
+<P></P>
+<LI>R. Raman, V. Raman, and S. S. Rao. Succinct indexable dictionaries with applications to encoding k-ary trees and multisets. <I>In Proceedings of the thirteenth annual ACM-SIAM symposium on Discrete algorithms (SODA’02)</I>, pages 233–242, Philadelphia PA, USA, 2002. Society for Industrial and Applied Mathematics.
+<P></P>
+<LI>K. Sadakane and R. Grossi. Squeezing succinct data structures into entropy bounds. <I>In Proceedings of the 17th annual ACM-SIAM symposium on Discrete algorithms (SODA’06)</I>, pages 1230–1239, 2006.
+</OL>
+
+<HR NOSHADE SIZE=1>
+
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><A HREF="index.html">Home</A></TD>
+<TD><A HREF="chd.html">CHD</A></TD>
+<TD><A HREF="bdz.html">BDZ</A></TD>
+<TD><A HREF="bmz.html">BMZ</A></TD>
+<TD><A HREF="chm.html">CHM</A></TD>
+<TD><A HREF="brz.html">BRZ</A></TD>
+<TD><A HREF="fch.html">FCH</A></TD>
+</TR>
+</TABLE>
+
+<HR NOSHADE SIZE=1>
+
+<P>
+Enjoy!
+</P>
+<P>
+<A HREF="mailto:davi@users.sourceforge.net">Davi de Castro Reis</A>
+</P>
+<P>
+<A HREF="mailto:db8192@users.sourceforge.net">Djamel Belazzougui</A>
+</P>
+<P>
+<A HREF="mailto:fc_botelho@users.sourceforge.net">Fabiano Cupertino Botelho</A>
+</P>
+<P>
+<A HREF="mailto:nivio@dcc.ufmg.br">Nivio Ziviani</A>
+</P>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7698683-2");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags -t html -i BDZ.t2t -o docs/bdz.html -->
+</BODY></HTML>

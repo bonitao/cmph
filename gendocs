@@ -1,18 +1,18 @@
 #!/bin/sh
 
-txt2tags -t html --mask-email -i README.t2t -o index.html
-txt2tags -t html -i CHD.t2t -o chd.html
-txt2tags -t html -i BDZ.t2t -o bdz.html
-txt2tags -t html -i BMZ.t2t -o bmz.html
-txt2tags -t html -i BRZ.t2t -o brz.html
-txt2tags -t html -i CHM.t2t -o chm.html
-txt2tags -t html -i FCH.t2t -o fch.html
-txt2tags -t html -i COMPARISON.t2t -o comparison.html
-txt2tags -t html -i GPERF.t2t -o gperf.html
-txt2tags -t html -i FAQ.t2t -o faq.html
-txt2tags -t html -i CONCEPTS.t2t -o concepts.html
-txt2tags -t html -i NEWSLOG.t2t -o newslog.html
-txt2tags -t html -i EXAMPLES.t2t -o examples.html
+txt2tags -t html --mask-email -i README.t2t -o docs/index.html
+txt2tags -t html -i CHD.t2t -o docs/chd.html
+txt2tags -t html -i BDZ.t2t -o docs/bdz.html
+txt2tags -t html -i BMZ.t2t -o docs/bmz.html
+txt2tags -t html -i BRZ.t2t -o docs/brz.html
+txt2tags -t html -i CHM.t2t -o docs/chm.html
+txt2tags -t html -i FCH.t2t -o docs/fch.html
+txt2tags -t html -i COMPARISON.t2t -o docs/comparison.html
+txt2tags -t html -i GPERF.t2t -o docs/gperf.html
+txt2tags -t html -i FAQ.t2t -o docs/faq.html
+txt2tags -t html -i CONCEPTS.t2t -o docs/concepts.html
+txt2tags -t html -i NEWSLOG.t2t -o docs/newslog.html
+txt2tags -t html -i EXAMPLES.t2t -o docs/examples.html
 
 txt2tags -t txt --mask-email -i README.t2t -o README
 txt2tags -t txt -i CHD.t2t -o CHD
