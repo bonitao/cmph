@@ -32,7 +32,7 @@ typedef unsigned int cmph_uint32;
   typedef unsigned long long cmph_uint64;
 #endif
 
-typedef enum { CMPH_HASH_JENKINS, CMPH_HASH_COUNT } CMPH_HASH;
+typedef enum { CMPH_HASH_JENKINS, CMPH_HASH_WYHASH, CMPH_HASH_COUNT } CMPH_HASH;
 extern const char *cmph_hash_names[];
 typedef enum { CMPH_BMZ, CMPH_BMZ8, CMPH_CHM, CMPH_BRZ, CMPH_FCH,
                CMPH_BDZ, CMPH_BDZ_PH,

@@ -1,5 +1,5 @@
-#ifndef __JEKINS_HASH_H__
-#define __JEKINS_HASH_H__
+#ifndef __JENKINS_HASH_H__
+#define __JENKINS_HASH_H__
 
 #include "hash.h"
 
