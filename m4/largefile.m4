@@ -23,7 +23,7 @@ changequote([, ])dnl
 	     fi
 	     ac_save_CC="$CC"
 	     CC="$CC $ac_cv_sys_largefile_CFLAGS"
-	     AC_TRY_LINK(, , , ac_cv_sys_largefile_CFLAGS=no)
+	     AC_LINK_IFELSE(, , , ac_cv_sys_largefile_CFLAGS=no)
 	     CC="$ac_save_CC"
 	   esac])
       }])])
