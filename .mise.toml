@@ -1,0 +1,19 @@
+[settings]
+lockfile = true
+experimental = true
+paranoid = false
+github.github_attestations = false
+aqua.github_attestations = false
+aqua.cosign = false
+aqua.slsa = false
+aqua.minisign = false
+
+[tools]
+# Autotools build system
+autoconf = "2.72"
+automake = "1.17"
+libtool = "2.5.4"
+# Build tools
+make = "4.4.1"
+# Test dependencies (sources compiled via postinstall hook)
+"github:libcheck/check" = { version = "0.10.0", postinstall = "cd $MISE_TOOL_INSTALL_PATH && [ -f _prefix/lib/libcheck.a ] || (./configure --prefix=$MISE_TOOL_INSTALL_PATH/_prefix --disable-shared && make -j4 && make install)" }
