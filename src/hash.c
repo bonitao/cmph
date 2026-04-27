@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 
 const char *cmph_hash_names[] = { "jenkins", "wyhash", NULL };
