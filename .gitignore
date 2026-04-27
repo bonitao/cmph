@@ -104,3 +104,22 @@ Makefile
 *.log
 *.trs
 /test-suite.log
+
+# In-tree built test/example/CLI binaries (autotools _PROGRAMS)
+*_test
+*_tests
+*.mph
+src/cmph
+src/bm_numbers
+cxxmph/cxxmph
+cxxmph/bm_map
+examples/vector_adapter_ex1
+examples/file_adapter_ex2
+examples/struct_vector_adapter_ex3
+examples/small_set_ex4
+
+# GNU GLOBAL / etags
+TAGS
+GPATH
+GRTAGS
+GTAGS
