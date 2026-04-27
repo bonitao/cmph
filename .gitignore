@@ -78,3 +78,29 @@ Makefile
 !.vscode/*.code-snippets
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,autotools
+
+### Local additions: libtool, object files, backups, autotools generated ###
+
+# Libtool
+*.lo
+*.la
+.libs/
+/libtool
+
+# Object files
+*.o
+
+# Editor / sed backup files (e.g. configure~, *.orig from patch)
+*~
+*.orig
+
+# Autotools generated at top level
+/INSTALL
+/config.h
+/cmph.pc
+/cxxmph.pc
+
+# Automake test framework output
+*.log
+*.trs
+/test-suite.log
