@@ -7,7 +7,7 @@
 //#define DEBUG
 #include "debug.h"
 
-const char *cmph_hash_names[] = { "jenkins", "wyhash", NULL };
+const char *cmph_hash_names[] = { "jenkins", "wyhash", "crc32", NULL };
 
 hash_state_t *hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
 {
@@ -24,6 +24,11 @@ hash_state_t *hash_state_new(CMPH_HASH hashfunc, cmph_uint32 hashsize)
 			state = (hash_state_t *)wyhash_state_new(hashsize);
 	  		DEBUGP("Wyhash function created\n");
 			break;
+		case CMPH_HASH_CRC32:
+	  		DEBUGP("CRC32 function - %u\n", hashsize);
+			state = (hash_state_t *)crc32_state_new(hashsize);
+	  		DEBUGP("CRC32 function created\n");
+			break;
 		default:
 			assert(0);
 	}
@@ -38,6 +43,8 @@ cmph_uint32 hash(hash_state_t *state, const char *key, cmph_uint32 keylen)
 			return jenkins_hash((jenkins_state_t *)state, key, keylen);
 		case CMPH_HASH_WYHASH:
 			return wyhash_hash((wyhash_state_t *)state, key, keylen);
+		case CMPH_HASH_CRC32:
+			return crc32_hash((crc32_state_t *)state, key, keylen);
 		default:
 			assert(0);
 	}
@@ -54,6 +61,9 @@ void hash_vector(hash_state_t *state, const char *key, cmph_uint32 keylen, cmph_
 			break;
 		case CMPH_HASH_WYHASH:
 			wyhash_hash_vector_((wyhash_state_t *)state, key, keylen, hashes);
+			break;
+		case CMPH_HASH_CRC32:
+			crc32_hash_vector_((crc32_state_t *)state, key, keylen, hashes);
 			break;
 		default:
 			assert(0);
@@ -75,6 +85,12 @@ void hash_state_dump(hash_state_t *state, char **buf, cmph_uint32 *buflen)
 			break;
 		case CMPH_HASH_WYHASH:
 			wyhash_state_dump((wyhash_state_t *)state, &algobuf, buflen);
+			if (*buflen == UINT_MAX) {
+                                goto cmph_cleanup;
+                        }
+			break;
+		case CMPH_HASH_CRC32:
+			crc32_state_dump((crc32_state_t *)state, &algobuf, buflen);
 			if (*buflen == UINT_MAX) {
                                 goto cmph_cleanup;
                         }
@@ -104,6 +120,9 @@ hash_state_t * hash_state_copy(hash_state_t *src_state)
 		case CMPH_HASH_WYHASH:
 			dest_state = (hash_state_t *)wyhash_state_copy((wyhash_state_t *)src_state);
 			break;
+		case CMPH_HASH_CRC32:
+			dest_state = (hash_state_t *)crc32_state_copy((crc32_state_t *)src_state);
+			break;
 		default:
 			assert(0);
 	}
@@ -132,6 +151,8 @@ hash_state_t *hash_state_load(const char *buf, cmph_uint32 buflen)
 			return (hash_state_t *)jenkins_state_load(buf + offset, buflen - offset);
 		case CMPH_HASH_WYHASH:
 			return (hash_state_t *)wyhash_state_load(buf + offset, buflen - offset);
+		case CMPH_HASH_CRC32:
+			return (hash_state_t *)crc32_state_load(buf + offset, buflen - offset);
 		default:
 			return NULL;
 	}
@@ -146,6 +167,9 @@ void hash_state_destroy(hash_state_t *state)
 			break;
 		case CMPH_HASH_WYHASH:
 			wyhash_state_destroy((wyhash_state_t *)state);
+			break;
+		case CMPH_HASH_CRC32:
+			crc32_state_destroy((crc32_state_t *)state);
 			break;
 		default:
 			assert(0);
@@ -173,6 +197,10 @@ void hash_state_pack(hash_state_t *state, void *hash_packed)
 			// pack the wyhash hash function
 			wyhash_state_pack((wyhash_state_t *)state, hash_packed);
 			break;
+		case CMPH_HASH_CRC32:
+			// pack the crc32 hash function
+			crc32_state_pack((crc32_state_t *)state, hash_packed);
+			break;
 		default:
 			assert(0);
 	}
@@ -195,6 +223,9 @@ cmph_uint32 hash_state_packed_size(CMPH_HASH hashfunc)
 		case CMPH_HASH_WYHASH:
 			size += wyhash_state_packed_size();
 			break;
+		case CMPH_HASH_CRC32:
+			size += crc32_state_packed_size();
+			break;
 		default:
 			assert(0);
 	}
@@ -216,6 +247,8 @@ cmph_uint32 hash_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cm
 			return jenkins_hash_packed(hash_packed, k, keylen);
 		case CMPH_HASH_WYHASH:
 			return wyhash_hash_packed(hash_packed, k, keylen);
+		case CMPH_HASH_CRC32:
+			return crc32_hash_packed(hash_packed, k, keylen);
 		default:
 			assert(0);
 	}
@@ -238,6 +271,9 @@ void hash_vector_packed(void *hash_packed, CMPH_HASH hashfunc, const char *k, cm
 			break;
 		case CMPH_HASH_WYHASH:
 			wyhash_hash_vector_packed(hash_packed, k, keylen, hashes);
+			break;
+		case CMPH_HASH_CRC32:
+			crc32_hash_vector_packed(hash_packed, k, keylen, hashes);
 			break;
 		default:
 			assert(0);

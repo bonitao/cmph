@@ -25,6 +25,34 @@ CFLAGS="$ac_cv_sys_largefile_CFLAGS $CFLAGS"
 LDFLAGS="$ac_cv_sys_largefile_LDFLAGS $LDFLAGS"
 LIBS="$LIBS $ac_cv_sys_largefile_LIBS"
 
+dnl Probe for hardware CRC32C intrinsics. The probe compiles a TU that
+dnl references _mm_crc32_u8; on x86 this comes from <smmintrin.h> when
+dnl SSE4.2 is available, on aarch64 it would come from a bundled
+dnl sse2neon.h shim (not yet shipped). When the probe fails, the
+dnl crc32_hash translation unit falls back to its software LUT.
+AC_CACHE_CHECK([for crc32c intrinsics],
+  ac_cv_crc32_hw, [
+  ac_cv_crc32_hw=no
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+    [[
+#if defined(__aarch64__)
+# include "sse2neon.h"
+#elif defined __SSE4_2__ &&                                           \
+    (defined __x86_64__ || defined __i686_64__ || defined _M_AMD64 || \
+	defined _M_IX86)
+# include <smmintrin.h>
+#endif]], [[
+(void)_mm_crc32_u8(0L, 0L);
+]])],
+    [ac_cv_crc32_hw=yes])
+  ])
+if test x$ac_cv_crc32_hw = xyes;
+then
+  AC_DEFINE(HAVE_CRC32_HW, 1,
+    [Define if crc32c-ni is supported.])
+fi
+AM_CONDITIONAL([CRC32_HW], [test x$ac_cv_crc32_hw = xyes])
+
 dnl Checks for headers
 AC_CHECK_HEADERS([getopt.h math.h])
 
