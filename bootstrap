@@ -1,0 +1,78 @@
+#!/bin/sh
+
+check_and_install() {
+	command -v "$1" >/dev/null 2>&1 || {
+		if command -v apt-get >/dev/null 2>&1; then
+			sudo apt-get update && sudo apt-get install -y "$2"
+		elif command -v yum >/dev/null 2>&1; then
+			sudo yum install -y "$2"
+		elif command -v apk >/dev/null 2>&1; then
+			sudo apk add --no-cache "$2"
+		elif command -v pacman >/dev/null 2>&1; then
+			sudo pacman --noconfirm -Sy "$2"
+		elif command -v brew >/dev/null 2>&1; then
+			brew install "$2"
+		else
+			echo "Package manager not found. Please install $2 manually."
+			exit 1
+		fi
+	}
+}
+
+mise_version=v2025.9.17
+mise_install_path="$HOME/.local/bin/mise"
+
+install_mise() {
+	set -e
+
+	# Ensure curl is installed
+	check_and_install curl curl
+
+	echo "Installing Mise version $mise_version at $mise_install_path..."
+	curl "https://mise.run" | MISE_INSTALL_PATH=$mise_install_path MISE_VERSION=$mise_version sh
+	echo "Mise installation completed."
+
+	set +e
+}
+
+setup_mise() {
+	# Recursively trust all projects in the monorepo by finding mise.toml and running `mise trust` in each directory
+	echo "Trusting all projects in the monorepo..."
+	find . -type f -name ".mise.toml" -execdir "$mise_install_path" trust -y . \;
+
+	echo "Installing default tools..."
+	$mise_install_path install
+
+	echo "Mise setup completed."
+}
+
+activate_mise() {
+	# Detect if the script is being sourced (so we can activate mise in the current shell).
+	# https://stackoverflow.com/questions/2683279/how-to-detect-if-a-script-is-being-sourced/28776166#28776166
+	if [ -n "$BASH_VERSION" ]; then
+		[ "$0" != "$BASH_SOURCE" ] && sourced=1 || sourced=0
+	else
+		case ${0##*/} in sh|-sh|dash|-dash) sourced=1 ;; *) sourced=0 ;; esac
+	fi
+
+	if [ "$sourced" -eq 1 ]; then
+		echo "Activating Mise in the current shell..."
+		eval "$("$mise_install_path" activate --shims)"
+		echo "Mise is now active in this shell."
+	else
+		echo "Could not activate Mise because this script was run as a normal command."
+		echo "To activate Mise in the current shell, run:"
+		echo "    . $0"
+		echo "Alternatively, consult 'mise activate --help' for more options."
+	fi
+}
+
+if [ ! -x "$mise_install_path" ]; then
+	echo "Mise not found. Starting installation and setup..."
+	install_mise
+	setup_mise
+	activate_mise
+else
+	echo "Mise is already installed at $mise_install_path."
+	activate_mise
+fi
